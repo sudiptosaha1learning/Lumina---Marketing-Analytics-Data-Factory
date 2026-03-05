@@ -358,8 +358,16 @@ function ModelDrawer({ model, region, onClose }: ModelDrawerProps) {
                         ))}
                       </Pie>
                       <Tooltip
-                        contentStyle={{ background: "#0a0c10", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#fff", fontSize: "11px" }}
-                        formatter={(val: number) => [`${val}%`, ""]}
+                        contentStyle={{
+                          background: "#1e2235",
+                          border: "1px solid rgba(59,130,246,0.35)",
+                          borderRadius: "8px",
+                          fontSize: "12px",
+                          padding: "8px 12px",
+                        }}
+                        itemStyle={{ color: "#e2e8f0", fontWeight: 600 }}
+                        labelStyle={{ color: "#94a3b8", marginBottom: "2px" }}
+                        formatter={(val: number, name: string) => [`${val}%`, name]}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -387,8 +395,16 @@ function ModelDrawer({ model, region, onClose }: ModelDrawerProps) {
                       <XAxis dataKey="label" tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 9 }} axisLine={false} tickLine={false} />
                       <YAxis tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 9 }} axisLine={false} tickLine={false} />
                       <Tooltip
-                        contentStyle={{ background: "#0a0c10", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#fff", fontSize: "11px" }}
-                        formatter={(val: number) => [`${val}%`, ""]}
+                        contentStyle={{
+                          background: "#1e2235",
+                          border: "1px solid rgba(59,130,246,0.35)",
+                          borderRadius: "8px",
+                          fontSize: "12px",
+                          padding: "8px 12px",
+                        }}
+                        itemStyle={{ color: "#e2e8f0", fontWeight: 600 }}
+                        labelStyle={{ color: "#94a3b8", marginBottom: "2px" }}
+                        formatter={(val: number, name: string) => [`${val}%`, name]}
                       />
                       <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                         {distribution.map((entry, idx) => (

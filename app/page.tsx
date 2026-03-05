@@ -7,11 +7,15 @@ import { ModelMosaic } from "@/components/dashboard/ModelMosaic";
 import { ReasoningEngine } from "@/components/dashboard/ReasoningEngine";
 import { MissionCommand } from "@/components/dashboard/MissionCommand";
 import { RetailerDrillDown } from "@/components/dashboard/RetailerDrillDown";
+import { ThemeProvider, useTheme } from "@/components/dashboard/ThemeProvider";
 import { modelCards, missions, type Region, type Timeframe, type Mission } from "@/lib/dashboard-data";
 
-export default function DashboardPage() {
+function DashboardInner() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const [region, setRegion] = useState<Region>("Global");
-  const [timeframe, setTimeframe] = useState<Timeframe>("Q3 2025");
+  const [timeframe, setTimeframe] = useState<Timeframe>("Q1 2026");
   const [activeView, setActiveView] = useState<"mosaic" | "missions" | "retailers">("mosaic");
   const [synthesisComplete, setSynthesisComplete] = useState(false);
   const [highlightedModels, setHighlightedModels] = useState<string[]>([]);
@@ -32,22 +36,42 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: "#060810" }}>
+    <div
+      className="min-h-screen transition-colors duration-300"
+      style={{ background: isDark ? "#060810" : "#f0f2f8" }}
+    >
       {/* Background grid pattern */}
-      <div className="fixed inset-0 pointer-events-none"
+      <div
+        className="fixed inset-0 pointer-events-none"
         style={{
-          backgroundImage: `
-            linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px)
-          `,
+          backgroundImage: isDark
+            ? `linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+               linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px)`
+            : `linear-gradient(rgba(59,130,246,0.06) 1px, transparent 1px),
+               linear-gradient(90deg, rgba(59,130,246,0.06) 1px, transparent 1px)`,
           backgroundSize: "48px 48px",
-        }} />
+        }}
+      />
 
       {/* Ambient glow */}
-      <div className="fixed top-0 left-1/4 w-96 h-96 rounded-full pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%)", filter: "blur(40px)" }} />
-      <div className="fixed bottom-1/4 right-1/4 w-64 h-64 rounded-full pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(139,92,246,0.05) 0%, transparent 70%)", filter: "blur(40px)" }} />
+      <div
+        className="fixed top-0 left-1/4 w-96 h-96 rounded-full pointer-events-none"
+        style={{
+          background: isDark
+            ? "radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%)"
+            : "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)",
+          filter: "blur(40px)",
+        }}
+      />
+      <div
+        className="fixed bottom-1/4 right-1/4 w-64 h-64 rounded-full pointer-events-none"
+        style={{
+          background: isDark
+            ? "radial-gradient(circle, rgba(139,92,246,0.05) 0%, transparent 70%)"
+            : "radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)",
+          filter: "blur(40px)",
+        }}
+      />
 
       {/* Sidebar */}
       <Sidebar
@@ -69,7 +93,7 @@ export default function DashboardPage() {
       <main className="pl-64 pt-16 min-h-screen">
         <div className="p-6 max-w-[1600px]">
 
-          {/* ── STATE 1: MODEL MOSAIC ───────────────────────────── */}
+          {/* STATE 1: MODEL MOSAIC */}
           {activeView === "mosaic" && (
             <div className="space-y-6">
               {/* KPI Summary Strip */}
@@ -80,11 +104,19 @@ export default function DashboardPage() {
                   { label: "Revenue Opportunity", value: region === "North America" ? "$41.6M" : region === "Europe" ? "$29.8M" : "$84.2M", sub: "Upselling Engine", color: "#8b5cf6" },
                   { label: "At-Risk Orders", value: region === "North America" ? "187" : region === "Europe" ? "156" : "412", sub: "Cancellation Model · 18.4% MoM", color: "#f59e0b" },
                 ].map((kpi) => (
-                  <div key={kpi.label} className="p-4 rounded-2xl"
-                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(16px)" }}>
-                    <div className="text-white/40 text-[10px] uppercase tracking-wider mb-1">{kpi.label}</div>
-                    <div className="font-heading text-white text-2xl font-bold">{kpi.value}</div>
-                    <div className="text-white/35 text-[10px] mt-1 flex items-center gap-1">
+                  <div
+                    key={kpi.label}
+                    className="p-4 rounded-2xl transition-all duration-300"
+                    style={{
+                      background: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.85)",
+                      border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.07)",
+                      backdropFilter: "blur(16px)",
+                      boxShadow: isDark ? "none" : "0 2px 12px rgba(0,0,0,0.06)",
+                    }}
+                  >
+                    <div className={`text-[10px] uppercase tracking-wider mb-1 ${isDark ? "text-white/40" : "text-slate-500"}`}>{kpi.label}</div>
+                    <div className={`font-heading text-2xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{kpi.value}</div>
+                    <div className={`text-[10px] mt-1 flex items-center gap-1 ${isDark ? "text-white/35" : "text-slate-400"}`}>
                       <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: kpi.color }} />
                       {kpi.sub}
                     </div>
@@ -94,9 +126,9 @@ export default function DashboardPage() {
 
               {/* Section label */}
               <div className="flex items-center gap-3">
-                <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.07)" }} />
-                <span className="text-white/30 text-xs uppercase tracking-widest px-3">Intelligence Model Mosaic</span>
-                <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.07)" }} />
+                <div className="h-px flex-1" style={{ background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)" }} />
+                <span className={`text-xs uppercase tracking-widest px-3 ${isDark ? "text-white/30" : "text-slate-400"}`}>Intelligence Model Mosaic</span>
+                <div className="h-px flex-1" style={{ background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)" }} />
               </div>
 
               {/* Model Grid */}
@@ -108,9 +140,9 @@ export default function DashboardPage() {
 
               {/* Section label */}
               <div className="flex items-center gap-3">
-                <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.07)" }} />
-                <span className="text-white/30 text-xs uppercase tracking-widest px-3">Reasoning Engine</span>
-                <div className="h-px flex-1" style={{ background: "rgba(255,255,255,0.07)" }} />
+                <div className="h-px flex-1" style={{ background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)" }} />
+                <span className={`text-xs uppercase tracking-widest px-3 ${isDark ? "text-white/30" : "text-slate-400"}`}>Reasoning Engine</span>
+                <div className="h-px flex-1" style={{ background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)" }} />
               </div>
 
               {/* Reasoning Engine */}
@@ -121,16 +153,20 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ── STATE 2: MISSION COMMAND ────────────────────────── */}
+          {/* STATE 2: MISSION COMMAND */}
           {activeView === "missions" && (
             <div className="space-y-6">
-              {/* Return to mosaic breadcrumb */}
               <button
                 onClick={() => setActiveView("mosaic")}
-                className="flex items-center gap-2 text-white/40 hover:text-white/70 text-sm transition-colors"
+                className={`flex items-center gap-2 text-sm transition-colors ${isDark ? "text-white/40 hover:text-white/70" : "text-slate-400 hover:text-slate-700"}`}
               >
-                <div className="w-5 h-5 rounded-lg flex items-center justify-center"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                <div
+                  className="w-5 h-5 rounded-lg flex items-center justify-center"
+                  style={{
+                    background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+                    border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)",
+                  }}
+                >
                   <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
                     <path d="M5 1.5L2.5 4L5 6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
@@ -146,7 +182,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ── STATE 3: RETAILER DRILL-DOWN ────────────────────── */}
+          {/* STATE 3: RETAILER DRILL-DOWN */}
           {activeView === "retailers" && activeMission && (
             <RetailerDrillDown
               mission={activeMission}
@@ -159,3 +195,12 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+export default function DashboardPage() {
+  return (
+    <ThemeProvider>
+      <DashboardInner />
+    </ThemeProvider>
+  );
+}
+

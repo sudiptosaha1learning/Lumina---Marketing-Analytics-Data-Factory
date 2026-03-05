@@ -116,12 +116,49 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* ── Light theme overrides ───────────────────────────────────────────────── */
+.light {
+  --background: oklch(0.97 0.005 240);
+  --foreground: oklch(0.12 0.015 250);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.12 0.015 250);
+  --popover: oklch(0.99 0 0);
+  --popover-foreground: oklch(0.12 0.015 250);
+  --primary: oklch(0.52 0.22 264);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.93 0.01 250);
+  --secondary-foreground: oklch(0.2 0.015 250);
+  --muted: oklch(0.94 0.008 250);
+  --muted-foreground: oklch(0.45 0.01 250);
+  --accent: oklch(0.52 0.22 264);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.88 0.01 250);
+  --input: oklch(0.92 0.01 250);
+  --ring: oklch(0.52 0.22 264);
+  --chart-1: oklch(0.52 0.22 264);
+  --chart-2: oklch(0.58 0.18 200);
+  --chart-3: oklch(0.55 0.16 140);
+  --chart-4: oklch(0.62 0.18 80);
+  --chart-5: oklch(0.55 0.25 320);
+  --sidebar: oklch(0.99 0 0);
+  --sidebar-foreground: oklch(0.15 0.015 250);
+  --sidebar-primary: oklch(0.52 0.22 264);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.94 0.01 250);
+  --sidebar-accent-foreground: oklch(0.2 0.015 250);
+  --sidebar-border: oklch(0.88 0.01 250);
+  --sidebar-ring: oklch(0.52 0.22 264);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
@@ -132,11 +169,19 @@
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.08);
   }
+  .light .glass {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.07);
+  }
   .glass-strong {
     background: rgba(255, 255, 255, 0.07);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .light .glass-strong {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0, 0, 0, 0.1);
   }
   .cobalt-glow {
     box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), 0 0 40px rgba(59, 130, 246, 0.1);
