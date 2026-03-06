@@ -38,6 +38,24 @@ export function RetailerDrillDown({ mission, region, onBack }: RetailerDrillDown
   // Always derived from actual customer records — guarantees header total matches retailer totals
   const totalFilteredCustomers = filteredRetailers.reduce((sum, r) => sum + r.customers.length, 0);
 
+  // Derive projected revenue from visible retailers (parse numeric value, sum, reformat with currency prefix)
+  const derivedRevenue = (() => {
+    if (filteredRetailers.length === 0) return "—";
+    // Collect raw values
+    const values = filteredRetailers.map((r) => {
+      const raw = r.projectedRevenue.replace(/[^0-9.]/g, "");
+      return parseFloat(raw) || 0;
+    });
+    const total = values.reduce((a, b) => a + b, 0);
+    // Determine currency prefix from the first retailer
+    const firstCurrency = filteredRetailers[0].projectedRevenue.startsWith("£")
+      ? "£"
+      : filteredRetailers[0].projectedRevenue.startsWith("€")
+        ? "€"
+        : "$";
+    return `${firstCurrency}${total.toFixed(2)}M`;
+  })();
+
   const textPrimary = isDark ? "#e2e8f0" : "#0f172a";
   const textSecondary = isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.50)";
   const textMuted = isDark ? "rgba(255,255,255,0.30)" : "rgba(0,0,0,0.35)";
@@ -96,9 +114,9 @@ export function RetailerDrillDown({ mission, region, onBack }: RetailerDrillDown
         </div>
         <div className="flex gap-4 flex-shrink-0 flex-wrap">
           {[
-            { label: "Revenue", value: mission.projectedRevenue[region] },
+            { label: "Revenue", value: derivedRevenue },
             { label: "Customers", value: totalFilteredCustomers.toLocaleString() },
-            { label: "Conv.", value: mission.conversionRate[region] },
+            { label: "Conv.", value: filteredRetailers.length > 0 ? mission.conversionRate[region] : "—" },
           ].map((s) => (
             <div key={s.label} className="text-center">
               <div className="font-bold text-sm font-heading" style={{ color: textPrimary }}>{s.value}</div>

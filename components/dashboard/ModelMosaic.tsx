@@ -273,9 +273,9 @@ function ModelDrawer({ model, region, onClose }: ModelDrawerProps) {
 
           {drawerTab === "overview" && (
             <>
-              {/* Region Metrics */}
+              {/* Region Metrics — 2-up on small, then wrap to show all 4 */}
               <div className="grid grid-cols-2 gap-3">
-                {(["Global", "North America", "Europe"] as Region[]).map((r) => (
+                {(["Global", "North America", "Europe", "UK"] as Region[]).map((r) => (
                   <div key={r} className="p-3 rounded-xl"
                     style={{
                       background: r === region ? `rgba(${hexToRgb(model.color)}, 0.1)` : surfaceBg,

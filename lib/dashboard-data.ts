@@ -509,12 +509,12 @@ export const missions: Mission[] = [
     priority: "Critical",
     // targetCustomers per region = sum of retailer.targetCustomers in that region
     // Princeton(3) + Manhattan(4) + Beverly Hills(3) = 10 (North America)
-    // Mayfair(3) + Munich(2) = 5 (Europe) — already in loyalty but also listed for EV pivot (UK retailer below = 3 UK)
-    // UK: Knightsbridge(3)
-    // Global = sum all = 10 + 5 + 3 = 18
-    projectedRevenue: { Global: "$1.92M", "North America": "$1.09M", Europe: "$0.54M", UK: "£0.29M" },
-    targetCustomers: { Global: 18, "North America": 10, Europe: 5, UK: 3 },
-    conversionRate: { Global: "34%", "North America": "38%", Europe: "31%", UK: "36%" },
+    // Europe: 0 — no European retailers in this mission
+    // UK: Knightsbridge(3) + Edinburgh(2) = 5
+    // Global = 10 + 0 + 5 = 15
+    projectedRevenue: { Global: "$1.63M", "North America": "$1.09M", Europe: "$0M", UK: "£0.47M" },
+    targetCustomers: { Global: 15, "North America": 10, Europe: 0, UK: 5 },
+    conversionRate: { Global: "34%", "North America": "38%", Europe: "N/A", UK: "36%" },
     sourceModels: ["buyback", "renewal", "upselling", "intelligent-lead"],
     color: "#3b82f6",
     tagline: "Turn equity into EV ownership — before the window closes",
