@@ -2,16 +2,17 @@
 
 import { useState, useRef } from "react";
 import { Cpu, Zap, ChevronRight, CheckCircle } from "lucide-react";
-import { reasoningSteps } from "@/lib/dashboard-data";
+import { reasoningSteps, missions as allMissions, type Region } from "@/lib/dashboard-data";
 import { useTheme } from "@/components/dashboard/ThemeProvider";
 import { cn } from "@/lib/utils";
 
 interface ReasoningEngineProps {
   onComplete: () => void;
   onHighlightModels: (ids: string[]) => void;
+  region: Region;
 }
 
-export function ReasoningEngine({ onComplete, onHighlightModels }: ReasoningEngineProps) {
+export function ReasoningEngine({ onComplete, onHighlightModels, region }: ReasoningEngineProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [isThinking, setIsThinking] = useState(false);
@@ -19,6 +20,8 @@ export function ReasoningEngine({ onComplete, onHighlightModels }: ReasoningEngi
   const [isComplete, setIsComplete] = useState(false);
   const [progress, setProgress] = useState(0);
   const logRef = useRef<HTMLDivElement>(null);
+
+  const totalCustomers = allMissions.reduce((sum, m) => sum + (m.targetCustomers[region] ?? 0), 0);
 
   const surfaceBg = isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.9)";
   const surfaceBorder = isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)";
@@ -190,6 +193,12 @@ export function ReasoningEngine({ onComplete, onHighlightModels }: ReasoningEngi
                   </div>
                   <div className="text-xs mt-0.5" style={{ color: textSecondary }}>
                     Combined revenue potential: $72.2M · Confidence: 91.3%
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-xs font-semibold text-green-600">
+                      Opportunity Cluster Detected for {totalCustomers.toLocaleString()} Customers
+                    </span>
                   </div>
                 </div>
                 <button

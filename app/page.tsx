@@ -149,6 +149,7 @@ function DashboardInner() {
               <ReasoningEngine
                 onComplete={handleSynthesisComplete}
                 onHighlightModels={setHighlightedModels}
+                region={region}
               />
             </div>
           )}

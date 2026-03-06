@@ -30,6 +30,8 @@ export function MissionCommand({ missions, region, onViewRetailers }: MissionCom
   const textPrimary = isDark ? "#e2e8f0" : "#0f172a";
   const textSecondary = isDark ? "rgba(255,255,255,0.40)" : "rgba(0,0,0,0.45)";
 
+  const totalCustomers = missions.reduce((sum, m) => sum + (m.targetCustomers[region] ?? 0), 0);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -44,6 +46,12 @@ export function MissionCommand({ missions, region, onViewRetailers }: MissionCom
           <p className="text-sm ml-3.5" style={{ color: textSecondary }}>
             3 strategic missions synthesised · Combined opportunity: $72.2M
           </p>
+          <div className="flex items-center gap-1.5 ml-3.5 mt-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+            <span className="text-xs font-semibold text-green-600">
+              Opportunity Cluster Detected for {totalCustomers.toLocaleString()} Customers
+            </span>
+          </div>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl"
           style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)" }}>
