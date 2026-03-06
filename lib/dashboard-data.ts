@@ -32,6 +32,13 @@ export function closeDate(daysFromNow: number): string {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
+export type Lifecycle = "Acquire" | "Renew" | "Maintain";
+
+export interface ModelSignal {
+  name: string;
+  strength: number; // 0–100
+}
+
 export interface ModelRecommendation {
   title: string;
   priority: "Immediate" | "Short-term" | "Strategic";
@@ -42,6 +49,7 @@ export interface ModelCardData {
   id: string;
   title: string;
   shortTitle: string;
+  lifecycle: Lifecycle;
   metric: string;
   metricValue: Record<Region, string>;
   metricDelta: Record<Region, string>;
@@ -51,6 +59,7 @@ export interface ModelCardData {
   lastRunOffsetHours: number; // hours before now
   modelVersion: string;
   accuracy: number;
+  signals: ModelSignal[];
   color: string;
   icon: string;
   regionalDistribution: Record<Region, { label: string; value: number; color: string }[]>;
@@ -71,6 +80,7 @@ export const modelCards: ModelCardData[] = [
     id: "intelligent-lead",
     title: "Intelligent Lead Identification",
     shortTitle: "Intelligent Lead",
+    lifecycle: "Acquire",
     metric: "Active Lead Pipeline",
     metricValue: { Global: "14,820", "North America": "6,340", Europe: "5,910", UK: "2,570" },
     metricDelta: { Global: "+12.4%", "North America": "+18.2%", Europe: "+7.6%", UK: "+14.1%" },
@@ -85,6 +95,13 @@ export const modelCards: ModelCardData[] = [
     lastRunOffsetHours: -2,
     modelVersion: "v4.2.1",
     accuracy: 87,
+    signals: [
+      { name: "Digital browsing intent", strength: 91 },
+      { name: "Social media affinity", strength: 88 },
+      { name: "Competitive ownership overlap", strength: 84 },
+      { name: "Geo-demographic index", strength: 79 },
+      { name: "Lifestyle & wealth proxy", strength: 73 },
+    ],
     color: "#3b82f6",
     icon: "Users",
     regionalDistribution: {
@@ -116,7 +133,7 @@ export const modelCards: ModelCardData[] = [
     pedigree: {
       inputFeatures: ["Digital browsing signals", "Social media intent", "Competitive ownership data", "Geo-demographic index", "Lifestyle scoring"],
       outputType: "Lead Propensity Score (0–1) + Vehicle Affinity Rank",
-      trainingDataSize: "4.2M customer interactions (36 months)",
+      trainingDataSize: "4.2M customer interactions (120 months · 10 years)",
       refreshCadence: "Daily at 06:00 UTC",
       nextRunOffsetHours: 22,
       slaCompliance: "99.8%",
@@ -216,6 +233,7 @@ export const modelCards: ModelCardData[] = [
     id: "lead-scoring",
     title: "Lead Scoring & Prioritisation",
     shortTitle: "Lead Scoring",
+    lifecycle: "Acquire",
     metric: "High-Priority Score (≥0.85)",
     metricValue: { Global: "3,247", "North America": "1,412", Europe: "1,108", UK: "727" },
     metricDelta: { Global: "+8.7%", "North America": "+14.3%", Europe: "+5.1%", UK: "+11.2%" },
@@ -230,6 +248,13 @@ export const modelCards: ModelCardData[] = [
     lastRunOffsetHours: -1,
     modelVersion: "v3.8.4",
     accuracy: 91,
+    signals: [
+      { name: "Enquiry recency & frequency", strength: 94 },
+      { name: "Configurator engagement depth", strength: 92 },
+      { name: "Test drive history", strength: 89 },
+      { name: "Finance pre-approval status", strength: 87 },
+      { name: "Social wealth proxy", strength: 82 },
+    ],
     color: "#6366f1",
     icon: "TrendingUp",
     regionalDistribution: {
@@ -257,7 +282,7 @@ export const modelCards: ModelCardData[] = [
     pedigree: {
       inputFeatures: ["Enquiry recency & frequency", "Configurator engagement depth", "Test drive history", "Finance pre-approval status", "Social wealth proxy"],
       outputType: "Priority Score (0–1) + Urgency Flag",
-      trainingDataSize: "1.8M qualified leads (24 months)",
+      trainingDataSize: "1.8M qualified leads (120 months · 10 years)",
       refreshCadence: "Every 6 hours",
       nextRunOffsetHours: 4,
       slaCompliance: "99.5%",
@@ -354,6 +379,7 @@ export const modelCards: ModelCardData[] = [
     id: "renewal",
     title: "Contract Renewal Optimisation",
     shortTitle: "Renewal",
+    lifecycle: "Renew",
     metric: "High-Equity Leases Ending Q2 2026",
     metricValue: { Global: "8,912", "North America": "4,210", Europe: "3,180", UK: "1,522" },
     metricDelta: { Global: "+3.2%", "North America": "+6.8%", Europe: "-1.2%", UK: "+4.8%" },
@@ -368,6 +394,13 @@ export const modelCards: ModelCardData[] = [
     lastRunOffsetHours: -10,
     modelVersion: "v5.1.0",
     accuracy: 89,
+    signals: [
+      { name: "Lease equity position", strength: 93 },
+      { name: "Contract maturity proximity", strength: 91 },
+      { name: "EV transition intent", strength: 86 },
+      { name: "Repeat purchase history", strength: 83 },
+      { name: "Finance product alignment", strength: 76 },
+    ],
     color: "#10b981",
     icon: "RefreshCw",
     regionalDistribution: {
@@ -395,7 +428,7 @@ export const modelCards: ModelCardData[] = [
     pedigree: {
       inputFeatures: ["Contract end date", "Residual value vs. market", "Mileage trajectory", "Service history score", "Repeat-buyer probability"],
       outputType: "Renewal Probability + Optimal Contact Window",
-      trainingDataSize: "2.3M historical contracts (48 months)",
+      trainingDataSize: "2.3M historical contracts (120 months · 10 years)",
       refreshCadence: "Daily at 22:00 UTC",
       nextRunOffsetHours: 14,
       slaCompliance: "99.9%",
@@ -491,6 +524,7 @@ export const modelCards: ModelCardData[] = [
     id: "cancellation",
     title: "Cancellation Risk Prediction",
     shortTitle: "Cancellation",
+    lifecycle: "Acquire",
     metric: "At-Risk Orders (≥70% churn)",
     metricValue: { Global: "412", "North America": "187", Europe: "156", UK: "69" },
     metricDelta: { Global: "-18.4%", "North America": "-22.1%", Europe: "-13.8%", UK: "-16.2%" },
@@ -505,6 +539,13 @@ export const modelCards: ModelCardData[] = [
     lastRunOffsetHours: -4,
     modelVersion: "v2.9.2",
     accuracy: 84,
+    signals: [
+      { name: "Delivery delay duration", strength: 88 },
+      { name: "NPS sentiment score", strength: 85 },
+      { name: "Competitor conquest offer signals", strength: 78 },
+      { name: "EV charging anxiety index", strength: 71 },
+      { name: "Inbound contact frequency", strength: 66 },
+    ],
     color: "#f59e0b",
     icon: "AlertTriangle",
     regionalDistribution: {
@@ -536,7 +577,7 @@ export const modelCards: ModelCardData[] = [
     pedigree: {
       inputFeatures: ["Order age", "Customer contact frequency", "Delivery ETA variance", "NPS score trajectory", "Competitor price index"],
       outputType: "Churn Probability (0–1) + Primary Risk Driver",
-      trainingDataSize: "890K order histories (36 months)",
+      trainingDataSize: "890K order histories (120 months · 10 years)",
       refreshCadence: "Every 4 hours",
       nextRunOffsetHours: 4,
       slaCompliance: "99.3%",
@@ -626,6 +667,7 @@ export const modelCards: ModelCardData[] = [
     id: "service-retention",
     title: "Service Retention Intelligence",
     shortTitle: "Service Retention",
+    lifecycle: "Maintain",
     metric: "Retention Opportunity Score",
     metricValue: { Global: "71.4%", "North America": "68.2%", Europe: "74.8%", UK: "76.3%" },
     metricDelta: { Global: "+4.1%", "North America": "+2.8%", Europe: "+5.9%", UK: "+6.7%" },
@@ -640,6 +682,13 @@ export const modelCards: ModelCardData[] = [
     lastRunOffsetHours: -8,
     modelVersion: "v3.3.7",
     accuracy: 86,
+    signals: [
+      { name: "Service interval proximity", strength: 92 },
+      { name: "OTA telemetry health alerts", strength: 90 },
+      { name: "Care plan expiry status", strength: 88 },
+      { name: "Warranty cliff proximity", strength: 85 },
+      { name: "Independent garage risk score", strength: 72 },
+    ],
     color: "#06b6d4",
     icon: "Wrench",
     regionalDistribution: {
@@ -669,7 +718,7 @@ export const modelCards: ModelCardData[] = [
     pedigree: {
       inputFeatures: ["Last service date", "Mileage since service", "OTA update status", "Customer lifetime value", "Nearest approved retailer distance"],
       outputType: "Defection Risk Score + Recommended Intervention",
-      trainingDataSize: "3.1M service records (60 months)",
+      trainingDataSize: "3.1M service records (120 months · 10 years)",
       refreshCadence: "Daily at 04:00 UTC",
       nextRunOffsetHours: 20,
       slaCompliance: "99.7%",
@@ -764,6 +813,7 @@ export const modelCards: ModelCardData[] = [
     id: "upselling",
     title: "Upselling & Cross-sell Engine",
     shortTitle: "Upselling",
+    lifecycle: "Maintain",
     metric: "Upsell Revenue Opportunity",
     metricValue: { Global: "$84.2M", "North America": "$41.6M", Europe: "$29.8M", UK: "£12.8M" },
     metricDelta: { Global: "+22.7%", "North America": "+31.4%", Europe: "+16.2%", UK: "+24.9%" },
@@ -778,6 +828,13 @@ export const modelCards: ModelCardData[] = [
     lastRunOffsetHours: -9,
     modelVersion: "v4.0.3",
     accuracy: 82,
+    signals: [
+      { name: "Owner tenure & mileage profile", strength: 89 },
+      { name: "Spec gap analysis vs. aspirational", strength: 87 },
+      { name: "Life-stage event triggers", strength: 81 },
+      { name: "Accessory purchase history", strength: 78 },
+      { name: "Cross-model interest signals", strength: 63 },
+    ],
     color: "#8b5cf6",
     icon: "ArrowUpRight",
     regionalDistribution: {
@@ -805,7 +862,7 @@ export const modelCards: ModelCardData[] = [
     pedigree: {
       inputFeatures: ["Current vehicle spec", "Configurator behaviour", "Household income proxy", "Lifestyle & life-stage events", "Competitor activity exposure"],
       outputType: "Upgrade Propensity + Revenue Impact Estimate",
-      trainingDataSize: "2.6M owner journeys (48 months)",
+      trainingDataSize: "2.6M owner journeys (120 months · 10 years)",
       refreshCadence: "Daily at 23:00 UTC",
       nextRunOffsetHours: 15,
       slaCompliance: "99.1%",
@@ -902,6 +959,7 @@ export const modelCards: ModelCardData[] = [
     id: "buyback",
     title: "Buyback & Trade-In Valuation",
     shortTitle: "Buyback",
+    lifecycle: "Renew",
     metric: "Positive Equity Vehicles",
     metricValue: { Global: "5,640", "North America": "2,890", Europe: "1,920", UK: "830" },
     metricDelta: { Global: "+9.3%", "North America": "+15.7%", Europe: "+4.2%", UK: "+10.8%" },
@@ -916,6 +974,13 @@ export const modelCards: ModelCardData[] = [
     lastRunOffsetHours: -3,
     modelVersion: "v6.0.1",
     accuracy: 93,
+    signals: [
+      { name: "CAP HPI live valuation feed", strength: 96 },
+      { name: "Vehicle mileage & condition data", strength: 94 },
+      { name: "Auction realisation rate", strength: 91 },
+      { name: "Equity position vs. settlement", strength: 90 },
+      { name: "Residual value forecast accuracy", strength: 87 },
+    ],
     color: "#ef4444",
     icon: "DollarSign",
     regionalDistribution: {
@@ -944,7 +1009,7 @@ export const modelCards: ModelCardData[] = [
     pedigree: {
       inputFeatures: ["Current market value (Black Book/CAP HPI)", "Mileage & condition grade", "Regional demand index", "Days to auction floor", "Owner equity position"],
       outputType: "Trade-in Valuation + Equity Position + Urgency Score",
-      trainingDataSize: "1.9M trade-in transactions (60 months)",
+      trainingDataSize: "1.9M trade-in transactions (120 months · 10 years)",
       refreshCadence: "Twice daily (06:00 & 18:00 UTC)",
       nextRunOffsetHours: 9,
       slaCompliance: "99.9%",

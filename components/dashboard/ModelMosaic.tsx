@@ -67,6 +67,8 @@ function ModelCard({ model, region, isHighlighted, isSelected, onClick }: ModelC
   const Icon = iconMap[model.icon] || Activity;
   const trend = model.metricTrend[region];
   const delta = model.metricDelta[region];
+  const signal = getSignalStrength(model.accuracy);
+  const lc = lifecycleConfig[model.lifecycle] || lifecycleConfig["Acquire"];
 
   const cardBg = isSelected
     ? `rgba(${hexToRgb(model.color)}, 0.12)`
@@ -112,11 +114,27 @@ function ModelCard({ model, region, isHighlighted, isSelected, onClick }: ModelC
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"
         style={{ background: `radial-gradient(circle at top left, rgba(${hexToRgb(model.color)}, 0.06) 0%, transparent 70%)` }} />
 
-      {/* Accuracy badge */}
-      <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full"
-        style={{ background: `rgba(${hexToRgb(model.color)}, 0.15)` }}>
-        <div className="w-1.5 h-1.5 rounded-full" style={{ background: model.color }} />
-        <span className="text-[10px] font-semibold" style={{ color: model.color }}>{model.accuracy}%</span>
+      {/* Top-right badges: lifecycle + accuracy */}
+      <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
+        {/* Lifecycle tag */}
+        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+          style={{ background: lc.bg, border: lc.border }}>
+          <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: lc.color }}>{model.lifecycle}</span>
+        </div>
+        {/* Accuracy + Signal strength */}
+        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+          style={{ background: signal.bg }}>
+          <div className="flex items-end gap-[2px]">
+            {[1, 2, 3].map((bar) => (
+              <div key={bar} className="w-[3px] rounded-[1px]"
+                style={{
+                  height: bar === 1 ? "5px" : bar === 2 ? "8px" : "11px",
+                  background: bar <= signal.bars ? signal.color : isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)",
+                }} />
+            ))}
+          </div>
+          <span className="text-[10px] font-semibold" style={{ color: signal.color }}>{model.accuracy}%</span>
+        </div>
       </div>
 
       {/* Icon + Title */}
@@ -192,6 +210,8 @@ function ModelDrawer({ model, region, onClose }: ModelDrawerProps) {
   const isDark = theme === "dark";
   const [drawerTab, setDrawerTab] = useState<"overview" | "pedigree" | "distribution">("overview");
   const distribution = model.regionalDistribution[region];
+  const signal = getSignalStrength(model.accuracy);
+  const lc = lifecycleConfig[model.lifecycle] || lifecycleConfig["Acquire"];
 
   const drawerBg = isDark ? "rgba(8, 11, 20, 0.98)" : "rgba(248, 250, 253, 0.99)";
   const drawerBorder = isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)";
@@ -227,12 +247,34 @@ function ModelDrawer({ model, region, onClose }: ModelDrawerProps) {
             </div>
             <div>
               <h2 className="font-heading font-semibold text-base leading-tight" style={{ color: textPrimary }}>{model.title}</h2>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                {/* Lifecycle tag */}
+                <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                  style={{ background: lc.bg, border: lc.border, color: lc.color }}>
+                  {model.lifecycle}
+                </span>
+                <span style={{ color: textMuted }}>·</span>
                 <span className="text-xs" style={{ color: textSecondary }}>{model.modelVersion}</span>
                 <span style={{ color: textMuted }}>·</span>
                 <span className="flex items-center gap-1 text-xs" style={{ color: model.color }}>
                   <CheckCircle className="w-3 h-3" />
                   {model.accuracy}% accuracy
+                </span>
+                <span style={{ color: textMuted }}>·</span>
+                {/* Signal strength */}
+                <span className="flex items-center gap-1 text-xs font-semibold"
+                  style={{ color: signal.color }}>
+                  <span className="flex items-end gap-[2px]">
+                    {[1, 2, 3].map((bar) => (
+                      <span key={bar} className="inline-block rounded-[1px]"
+                        style={{
+                          width: "3px",
+                          height: bar === 1 ? "5px" : bar === 2 ? "8px" : "11px",
+                          background: bar <= signal.bars ? signal.color : isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)",
+                        }} />
+                    ))}
+                  </span>
+                  {signal.label} Signal
                 </span>
               </div>
             </div>
@@ -300,6 +342,42 @@ function ModelDrawer({ model, region, onClose }: ModelDrawerProps) {
                   {model.insightSummary[region]}
                 </p>
               </div>
+
+              {/* Signal Strength Breakdown */}
+              {model.signals?.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-3.5 h-3.5" style={{ color: signal.color }} />
+                      <span className="text-xs font-medium uppercase tracking-wider" style={{ color: textSecondary }}>Signal Strength</span>
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                      style={{ background: signal.bg, color: signal.color }}>
+                      {signal.label}
+                    </span>
+                  </div>
+                  <div className="space-y-2.5">
+                    {model.signals.map((sig) => {
+                      const sigLevel = sig.strength >= 85 ? { color: "#10b981", bg: "rgba(16,185,129,0.1)" }
+                        : sig.strength >= 60 ? { color: "#f59e0b", bg: "rgba(245,158,11,0.1)" }
+                        : { color: "#ef4444", bg: "rgba(239,68,68,0.1)" };
+                      return (
+                        <div key={sig.name}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs" style={{ color: isDark ? "rgba(255,255,255,0.65)" : "rgba(0,0,0,0.6)" }}>{sig.name}</span>
+                            <span className="text-[10px] font-semibold ml-2" style={{ color: sigLevel.color }}>{sig.strength}%</span>
+                          </div>
+                          <div className="h-1.5 rounded-full overflow-hidden"
+                            style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)" }}>
+                            <div className="h-full rounded-full transition-all duration-700"
+                              style={{ width: `${sig.strength}%`, background: sigLevel.color }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Data Sources */}
               <div>
@@ -537,3 +615,15 @@ function hexToRgb(hex: string): string {
     ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
     : "59, 130, 246";
 }
+
+function getSignalStrength(accuracy: number): { label: string; color: string; bg: string; bars: number } {
+  if (accuracy >= 85) return { label: "High", color: "#10b981", bg: "rgba(16,185,129,0.12)", bars: 3 };
+  if (accuracy >= 60) return { label: "Medium", color: "#f59e0b", bg: "rgba(245,158,11,0.12)", bars: 2 };
+  return { label: "Low", color: "#ef4444", bg: "rgba(239,68,68,0.12)", bars: 1 };
+}
+
+const lifecycleConfig: Record<string, { color: string; bg: string; border: string }> = {
+  Acquire: { color: "#3b82f6", bg: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.25)" },
+  Renew:   { color: "#10b981", bg: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)" },
+  Maintain: { color: "#8b5cf6", bg: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.25)" },
+};
