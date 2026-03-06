@@ -329,29 +329,34 @@ function ModelDrawer({ model, region, onClose }: ModelDrawerProps) {
                   </div>
                   <div className="space-y-3">
                     {model.recommendations[region].map((rec, idx) => {
-                      const priorityConfig = {
-                        Immediate: {
+                      const rgb = hexToRgb(model.color);
+                      type PConfig = { icon: React.ElementType; bg: string; border: string; badgeBg: string; color: string };
+                      let priorityConfig: PConfig;
+                      if (rec.priority === "Immediate") {
+                        priorityConfig = {
                           icon: Zap,
                           bg: isDark ? "rgba(239,68,68,0.08)" : "rgba(239,68,68,0.06)",
                           border: isDark ? "1px solid rgba(239,68,68,0.22)" : "1px solid rgba(239,68,68,0.18)",
                           badgeBg: isDark ? "rgba(239,68,68,0.15)" : "rgba(239,68,68,0.1)",
                           color: "#ef4444",
-                        },
-                        "Short-term": {
+                        };
+                      } else if (rec.priority === "Short-term") {
+                        priorityConfig = {
                           icon: Target,
-                          bg: isDark ? `rgba(${hexToRgb(model.color)},0.07)` : `rgba(${hexToRgb(model.color)},0.05)`,
-                          border: isDark ? `1px solid rgba(${hexToRgb(model.color)},0.22)` : `1px solid rgba(${hexToRgb(model.color)},0.16)`,
-                          badgeBg: isDark ? `rgba(${hexToRgb(model.color)},0.15)` : `rgba(${hexToRgb(model.color)},0.1)`,
+                          bg: isDark ? `rgba(${rgb},0.07)` : `rgba(${rgb},0.05)`,
+                          border: isDark ? `1px solid rgba(${rgb},0.22)` : `1px solid rgba(${rgb},0.16)`,
+                          badgeBg: isDark ? `rgba(${rgb},0.15)` : `rgba(${rgb},0.1)`,
                           color: model.color,
-                        },
-                        Strategic: {
+                        };
+                      } else {
+                        priorityConfig = {
                           icon: TrendingDown,
                           bg: isDark ? "rgba(139,92,246,0.07)" : "rgba(139,92,246,0.05)",
                           border: isDark ? "1px solid rgba(139,92,246,0.2)" : "1px solid rgba(139,92,246,0.14)",
                           badgeBg: isDark ? "rgba(139,92,246,0.15)" : "rgba(139,92,246,0.1)",
                           color: "#8b5cf6",
-                        },
-                      }[rec.priority];
+                        };
+                      }
                       const PriorityIcon = priorityConfig.icon;
 
                       return (
