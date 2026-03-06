@@ -13,7 +13,7 @@ interface TopbarProps {
   activeView: "mosaic" | "missions" | "retailers";
 }
 
-const regions: Region[] = ["Global", "North America", "Europe"];
+const regions: Region[] = ["Global", "North America", "Europe", "UK"];
 const timeframes: Timeframe[] = ["Q1 2026", "Q2 2026", "Q3 2026", "Q4 2026", "FY 2026"];
 
 const viewTitles = {

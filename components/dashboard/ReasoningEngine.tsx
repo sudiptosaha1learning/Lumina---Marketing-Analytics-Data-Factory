@@ -115,20 +115,6 @@ export function ReasoningEngine({ onComplete, onHighlightModels }: ReasoningEngi
               <p className="text-sm leading-relaxed" style={{ color: textSecondary }}>
                 The Reasoning Engine synthesises all 7 intelligence models simultaneously, identifies cross-model patterns, and generates prioritised strategic missions with full explainability chains.
               </p>
-              <div className="flex flex-wrap gap-3 mt-4">
-                {[
-                  { label: "7 Models", sub: "cross-correlated" },
-                  { label: "14,820", sub: "prospects evaluated" },
-                  { label: "3 Missions", sub: "will be generated" },
-                  { label: "$72.2M", sub: "opportunity scoped" },
-                ].map((stat) => (
-                  <div key={stat.label} className="px-3 py-2 rounded-xl"
-                    style={{ background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.18)" }}>
-                    <div className="text-blue-500 font-bold text-sm font-heading">{stat.label}</div>
-                    <div className="text-[10px]" style={{ color: textMuted }}>{stat.sub}</div>
-                  </div>
-                ))}
-              </div>
             </div>
             <button
               onClick={startSynthesis}

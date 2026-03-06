@@ -6,7 +6,7 @@ import {
   TrendingUp, Users, DollarSign, ChevronRight,
   Layers, Lightbulb, ArrowRight, CheckCircle, AlertCircle
 } from "lucide-react";
-import { type Mission, type Region, modelCards } from "@/lib/dashboard-data";
+import { type Mission, type Region, modelCards, launchDate, closeDate } from "@/lib/dashboard-data";
 import { useTheme } from "@/components/dashboard/ThemeProvider";
 import { cn } from "@/lib/utils";
 
@@ -396,7 +396,7 @@ function ExplainabilityPanel({ mission, isDark, onClose }: ExplainabilityPanelPr
               <div className="p-3 rounded-xl" style={{ background: surfaceBg, border: surfaceBorder }}>
                 <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: textMuted }}>Timeline</div>
                 <div className="text-xs leading-snug" style={{ color: isDark ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.75)" }}>
-                  {mission.therefore.timeline}
+                  {`Launch: ${launchDate(mission.therefore.timelineDaysFromNow.launch)} | Close: ${closeDate(mission.therefore.timelineDaysFromNow.close)}`}
                 </div>
               </div>
               <div className="p-3 rounded-xl"

@@ -99,10 +99,10 @@ function DashboardInner() {
               {/* KPI Summary Strip */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { label: "Total Lead Pipeline", value: region === "North America" ? "6,340" : region === "Europe" ? "5,910" : "14,820", sub: "Intelligent Lead + Lead Scoring", color: "#3b82f6" },
-                  { label: "Positive Equity Vehicles", value: region === "North America" ? "2,890" : region === "Europe" ? "1,920" : "5,640", sub: "Buyback Model · Avg. +$4.2k", color: "#10b981" },
-                  { label: "Revenue Opportunity", value: region === "North America" ? "$41.6M" : region === "Europe" ? "$29.8M" : "$84.2M", sub: "Upselling Engine", color: "#8b5cf6" },
-                  { label: "At-Risk Orders", value: region === "North America" ? "187" : region === "Europe" ? "156" : "412", sub: "Cancellation Model · 18.4% MoM", color: "#f59e0b" },
+                  { label: "Total Lead Pipeline", value: region === "North America" ? "6,340" : region === "Europe" ? "5,910" : region === "UK" ? "2,570" : "14,820", sub: "Intelligent Lead + Lead Scoring", color: "#3b82f6" },
+                  { label: "Positive Equity Vehicles", value: region === "North America" ? "2,890" : region === "Europe" ? "1,920" : region === "UK" ? "830" : "5,640", sub: "Buyback Model · Avg. +£/$/€4k equity", color: "#10b981" },
+                  { label: "Revenue Opportunity", value: region === "North America" ? "$41.6M" : region === "Europe" ? "$29.8M" : region === "UK" ? "£12.8M" : "$84.2M", sub: "Upselling Engine", color: "#8b5cf6" },
+                  { label: "At-Risk Orders", value: region === "North America" ? "187" : region === "Europe" ? "156" : region === "UK" ? "69" : "412", sub: "Cancellation Model · -18.4% MoM", color: "#f59e0b" },
                 ].map((kpi) => (
                   <div
                     key={kpi.label}

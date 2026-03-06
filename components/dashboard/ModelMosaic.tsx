@@ -7,7 +7,7 @@ import {
   ChevronRight, Activity, Shield, Layers
 } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from "recharts";
-import { type ModelCardData, type Region } from "@/lib/dashboard-data";
+import { type ModelCardData, type Region, formatUtcDate, formatUtcDatePlus } from "@/lib/dashboard-data";
 import { useTheme } from "@/components/dashboard/ThemeProvider";
 import { cn } from "@/lib/utils";
 
@@ -173,7 +173,7 @@ function ModelCard({ model, region, isHighlighted, isSelected, onClick }: ModelC
       {/* Version */}
       <div className="mt-2 flex items-center gap-1 text-[9px]" style={{ color: textMuted }}>
         <Clock className="w-2.5 h-2.5" />
-        <span className="truncate">Last run: {model.lastRun.replace(" UTC", "")}</span>
+                <span className="truncate">Last run: {formatUtcDate(model.lastRunOffsetHours).replace(" UTC", "")}</span>
       </div>
     </button>
   );
@@ -328,7 +328,7 @@ function ModelDrawer({ model, region, onClose }: ModelDrawerProps) {
                   { label: "Output Type", value: model.pedigree.outputType, icon: Activity },
                   { label: "Training Data", value: model.pedigree.trainingDataSize, icon: Database },
                   { label: "Refresh Cadence", value: model.pedigree.refreshCadence, icon: RefreshCw },
-                  { label: "Next Scheduled Run", value: model.pedigree.nextScheduledRun, icon: Clock },
+                  { label: "Next Scheduled Run", value: formatUtcDatePlus(model.pedigree.nextRunOffsetHours > 0 ? 1 : 0, 6), icon: Clock },
                   { label: "SLA Compliance", value: model.pedigree.slaCompliance, icon: Shield },
                 ].map((item) => (
                   <div key={item.label} className="flex items-start gap-3 p-3 rounded-xl"
