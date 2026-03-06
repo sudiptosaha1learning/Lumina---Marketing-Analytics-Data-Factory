@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 interface RetailerDrillDownProps {
   mission: Mission;
   region: Region;
+  simMultipliers: { revenue: number; customers: number; conversion: number } | null;
   onBack: () => void;
 }
 
@@ -23,7 +24,7 @@ const tierColors = {
   "Tier 3": { color: "#6b7280", bg: "rgba(107,114,128,0.12)", border: "rgba(107,114,128,0.3)" },
 };
 
-export function RetailerDrillDown({ mission, region, onBack }: RetailerDrillDownProps) {
+export function RetailerDrillDown({ mission, region, simMultipliers, onBack }: RetailerDrillDownProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [selectedRetailer, setSelectedRetailer] = useState<RetailerData | null>(null);
@@ -35,25 +36,47 @@ export function RetailerDrillDown({ mission, region, onBack }: RetailerDrillDown
     (r) => region === "Global" || r.region === region
   );
 
-  // Always derived from actual customer records — guarantees header total matches retailer totals
-  const totalFilteredCustomers = filteredRetailers.reduce((sum, r) => sum + r.customers.length, 0);
+  // Canonical revenue: use the mission-level value (same source as Mission Command Center).
+  // Apply sim multiplier when a simulation is active so values stay in sync.
+  const canonicalRevenue = (() => {
+    const raw = mission.projectedRevenue[region];
+    if (!simMultipliers || raw === "N/A") return raw;
+    const prefix = raw.startsWith("£") ? "£" : "$";
+    const num = parseFloat(raw.replace(/[^0-9.]/g, ""));
+    if (isNaN(num)) return raw;
+    return `${prefix}${(num * simMultipliers.revenue).toFixed(2)}M`;
+  })();
 
-  // Derive projected revenue from visible retailers (parse numeric value, sum, reformat with currency prefix)
-  const derivedRevenue = (() => {
-    if (filteredRetailers.length === 0) return "—";
-    // Collect raw values
-    const values = filteredRetailers.map((r) => {
-      const raw = r.projectedRevenue.replace(/[^0-9.]/g, "");
-      return parseFloat(raw) || 0;
-    });
-    const total = values.reduce((a, b) => a + b, 0);
-    // Determine currency prefix from the first retailer
-    const firstCurrency = filteredRetailers[0].projectedRevenue.startsWith("£")
-      ? "£"
-      : filteredRetailers[0].projectedRevenue.startsWith("€")
-        ? "€"
-        : "$";
-    return `${firstCurrency}${total.toFixed(2)}M`;
+  // Canonical conversion rate: apply sim multiplier when active.
+  const canonicalConversion = (() => {
+    const raw = mission.conversionRate[region];
+    if (!simMultipliers || raw === "N/A") return raw;
+    const num = parseFloat(raw.replace("%", ""));
+    if (isNaN(num)) return raw;
+    return `${Math.min(99, num * simMultipliers.conversion).toFixed(0)}%`;
+  })();
+
+  // Per-retailer revenue helper: scale each retailer's revenue proportionally
+  // so individual rows are consistent with the mission-level total.
+  const retailerRevenue = (r: RetailerData): string => {
+    const raw = r.projectedRevenue;
+    if (!simMultipliers || raw === "N/A") return raw;
+    const prefix = raw.startsWith("£") ? "£" : "$";
+    const num = parseFloat(raw.replace(/[^0-9.]/g, ""));
+    if (isNaN(num)) return raw;
+    return `${prefix}${(num * simMultipliers.revenue).toFixed(2)}M`;
+  };
+
+  // Retailer customer count: scale with sim customers multiplier when active.
+  const retailerCustomerCount = (r: RetailerData): string => {
+    if (!simMultipliers) return r.customers.length.toString();
+    return Math.round(r.customers.length * simMultipliers.customers).toString();
+  };
+
+  // Total customers across all filtered retailers — scaled by sim multiplier when active
+  const totalFilteredCustomers = (() => {
+    const raw = filteredRetailers.reduce((sum, r) => sum + r.customers.length, 0);
+    return simMultipliers ? Math.round(raw * simMultipliers.customers) : raw;
   })();
 
   const textPrimary = isDark ? "#e2e8f0" : "#0f172a";
@@ -114,9 +137,9 @@ export function RetailerDrillDown({ mission, region, onBack }: RetailerDrillDown
         </div>
         <div className="flex gap-4 flex-shrink-0 flex-wrap">
           {[
-            { label: "Revenue", value: derivedRevenue },
+            { label: "Revenue", value: canonicalRevenue },
             { label: "Customers", value: totalFilteredCustomers.toLocaleString() },
-            { label: "Conv.", value: filteredRetailers.length > 0 ? mission.conversionRate[region] : "—" },
+            { label: "Conv.", value: filteredRetailers.length > 0 ? canonicalConversion : "—" },
           ].map((s) => (
             <div key={s.label} className="text-center">
               <div className="font-bold text-sm font-heading" style={{ color: textPrimary }}>{s.value}</div>
@@ -194,11 +217,11 @@ export function RetailerDrillDown({ mission, region, onBack }: RetailerDrillDown
                     </div>
                     <div className="text-right hidden sm:block">
                       <div className="text-[10px] mb-0.5" style={{ color: textSecondary }}>Target Customers</div>
-                      <div className="font-bold text-sm" style={{ color: textPrimary }}>{retailer.targetCustomers}</div>
+                      <div className="font-bold text-sm" style={{ color: textPrimary }}>{retailerCustomerCount(retailer)}</div>
                     </div>
                     <div className="text-right hidden md:block">
                       <div className="text-[10px] mb-0.5" style={{ color: textSecondary }}>Proj. Revenue</div>
-                      <div className="text-green-600 font-bold text-sm">{retailer.projectedRevenue}</div>
+                      <div className="text-green-600 font-bold text-sm">{retailerRevenue(retailer)}</div>
                     </div>
                     <ChevronRight className={cn(
                       "w-4 h-4 transition-transform duration-200",

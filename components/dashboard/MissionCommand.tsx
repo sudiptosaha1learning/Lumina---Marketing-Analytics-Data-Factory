@@ -14,7 +14,7 @@ import { useTheme } from "@/components/dashboard/ThemeProvider";
 interface MissionCommandProps {
   missions: Mission[];
   region: Region;
-  onViewRetailers: (mission: Mission) => void;
+  onViewRetailers: (mission: Mission, simMultipliers: { revenue: number; customers: number; conversion: number } | null) => void;
 }
 
 const PRIORITY_CONFIG = {
@@ -357,7 +357,7 @@ export function MissionCommand({ missions, region, onViewRetailers }: MissionCom
               isDark={isDark}
               simMultipliers={simMult}
               onExplain={() => setExplainabilityMission(mission)}
-              onViewRetailers={() => onViewRetailers(mission)}
+              onViewRetailers={() => onViewRetailers(mission, simMult)}
             />
           );
         })}

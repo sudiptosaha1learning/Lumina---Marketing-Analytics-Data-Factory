@@ -10,6 +10,8 @@ import { RetailerDrillDown } from "@/components/dashboard/RetailerDrillDown";
 import { ThemeProvider, useTheme } from "@/components/dashboard/ThemeProvider";
 import { modelCards, missions, type Region, type Timeframe, type Mission } from "@/lib/dashboard-data";
 
+type SimMultipliers = { revenue: number; customers: number; conversion: number } | null;
+
 function DashboardInner() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -20,14 +22,16 @@ function DashboardInner() {
   const [synthesisComplete, setSynthesisComplete] = useState(false);
   const [highlightedModels, setHighlightedModels] = useState<string[]>([]);
   const [activeMission, setActiveMission] = useState<Mission | null>(null);
+  const [activeSimMultipliers, setActiveSimMultipliers] = useState<SimMultipliers>(null);
 
   const handleSynthesisComplete = () => {
     setSynthesisComplete(true);
     setActiveView("missions");
   };
 
-  const handleViewRetailers = (mission: Mission) => {
+  const handleViewRetailers = (mission: Mission, simMultipliers: SimMultipliers) => {
     setActiveMission(mission);
+    setActiveSimMultipliers(simMultipliers);
     setActiveView("retailers");
   };
 
@@ -188,6 +192,7 @@ function DashboardInner() {
             <RetailerDrillDown
               mission={activeMission}
               region={region}
+              simMultipliers={activeSimMultipliers}
               onBack={handleBackFromRetailers}
             />
           )}
