@@ -97,7 +97,7 @@ function ModelCard({ model, region, isHighlighted, isSelected, onClick }: ModelC
       className={cn(
         "relative text-left rounded-2xl p-5 transition-all duration-300 group overflow-hidden",
         isSelected ? "ring-2" : "hover:scale-[1.01]",
-        isHighlighted ? "ring-2 animate-pulse" : ""
+        isHighlighted ? "ring-2" : ""
       )}
       style={{
         background: cardBg,

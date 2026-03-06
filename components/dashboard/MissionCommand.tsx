@@ -15,6 +15,16 @@ interface MissionCommandProps {
   missions: Mission[];
   region: Region;
   onViewRetailers: (mission: Mission, simMultipliers: { revenue: number; customers: number; conversion: number } | null) => void;
+  // Lifted sim state — allows parent to persist simulation across navigation
+  simState?: SimState;
+  onSimStateChange?: (state: SimState) => void;
+}
+
+export interface SimState {
+  businessMode: boolean;
+  primaryObjective: BusinessObjective | null;
+  simParams: SimParams;
+  simActive: boolean;
 }
 
 const PRIORITY_CONFIG = {
@@ -242,15 +252,35 @@ function computeSimMultipliers(
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function MissionCommand({ missions, region, onViewRetailers }: MissionCommandProps) {
+export function MissionCommand({ missions, region, onViewRetailers, simState, onSimStateChange }: MissionCommandProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [explainabilityMission, setExplainabilityMission] = useState<Mission | null>(null);
-  const [businessMode, setBusinessMode] = useState(false);
-  const [primaryObjective, setPrimaryObjective] = useState<BusinessObjective | null>(null);
-  const [simParams, setSimParams] = useState<SimParams>(DEFAULT_PARAMS);
-  const [simActive, setSimActive] = useState(false);
   const [simRunning, setSimRunning] = useState(false);
+
+  // Internal fallback state — used when no external simState is provided
+  const [_businessMode,      set_BusinessMode]      = useState(false);
+  const [_primaryObjective,  set_PrimaryObjective]  = useState<BusinessObjective | null>(null);
+  const [_simParams,         set_SimParams]         = useState<SimParams>(DEFAULT_PARAMS);
+  const [_simActive,         set_SimActive]         = useState(false);
+
+  // Resolve: prefer lifted state, fall back to internal
+  const businessMode     = simState ? simState.businessMode     : _businessMode;
+  const primaryObjective = simState ? simState.primaryObjective : _primaryObjective;
+  const simParams        = simState ? simState.simParams        : _simParams;
+  const simActive        = simState ? simState.simActive        : _simActive;
+
+  // Unified setter — writes to lifted state if available, otherwise internal
+  const setSimState = useCallback((patch: Partial<SimState>) => {
+    if (onSimStateChange && simState) {
+      onSimStateChange({ ...simState, ...patch });
+    } else {
+      if (patch.businessMode     !== undefined) set_BusinessMode(patch.businessMode);
+      if (patch.primaryObjective !== undefined) set_PrimaryObjective(patch.primaryObjective);
+      if (patch.simParams        !== undefined) set_SimParams(patch.simParams);
+      if (patch.simActive        !== undefined) set_SimActive(patch.simActive);
+    }
+  }, [simState, onSimStateChange]);
 
   const textPrimary   = isDark ? "#e2e8f0" : "#0f172a";
   const textSecondary = isDark ? "rgba(255,255,255,0.40)" : "rgba(0,0,0,0.45)";
@@ -259,30 +289,26 @@ export function MissionCommand({ missions, region, onViewRetailers }: MissionCom
 
   const handleSelectObjective = useCallback((obj: BusinessObjective) => {
     const next = primaryObjective === obj ? null : obj;
-    setPrimaryObjective(next);
-    setSimActive(false);
-    if (next) {
-      setSimParams((prev) => ({ ...prev, ...OBJECTIVE_PRESETS[next] }));
-    } else {
-      setSimParams(DEFAULT_PARAMS);
-    }
-  }, [primaryObjective]);
+    setSimState({
+      primaryObjective: next,
+      simActive: false,
+      simParams: next ? { ...simParams, ...OBJECTIVE_PRESETS[next] } : DEFAULT_PARAMS,
+    });
+  }, [primaryObjective, simParams, setSimState]);
 
   const handleParamChange = useCallback((key: keyof SimParams, val: number) => {
-    setSimParams((prev) => ({ ...prev, [key]: val }));
-  }, []);
+    setSimState({ simParams: { ...simParams, [key]: val } });
+  }, [simParams, setSimState]);
 
   const runSimulation = useCallback(() => {
     if (!primaryObjective) return;
     setSimRunning(true);
-    setTimeout(() => { setSimRunning(false); setSimActive(true); }, 900);
-  }, [primaryObjective]);
+    setTimeout(() => { setSimRunning(false); setSimState({ simActive: true }); }, 900);
+  }, [primaryObjective, setSimState]);
 
   const resetSim = useCallback(() => {
-    setSimActive(false);
-    setPrimaryObjective(null);
-    setSimParams(DEFAULT_PARAMS);
-  }, []);
+    setSimState({ simActive: false, primaryObjective: null, simParams: DEFAULT_PARAMS });
+  }, [setSimState]);
 
   return (
     <div className="space-y-6">
@@ -313,7 +339,11 @@ export function MissionCommand({ missions, region, onViewRetailers }: MissionCom
             <span className="text-green-600 text-xs font-medium">Synthesis Active</span>
           </div>
           <button
-            onClick={() => { setBusinessMode((v) => !v); if (businessMode) resetSim(); }}
+            onClick={() => {
+                const next = !businessMode;
+                setSimState({ businessMode: next });
+                if (!next) resetSim();
+              }}
             className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200"
             style={{
               background: businessMode ? "rgba(139,92,246,0.15)" : isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",

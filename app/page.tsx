@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Topbar } from "@/components/dashboard/Topbar";
 import { ModelMosaic } from "@/components/dashboard/ModelMosaic";
 import { ReasoningEngine } from "@/components/dashboard/ReasoningEngine";
-import { MissionCommand } from "@/components/dashboard/MissionCommand";
+import { MissionCommand, type SimState } from "@/components/dashboard/MissionCommand";
 import { RetailerDrillDown } from "@/components/dashboard/RetailerDrillDown";
 import { ThemeProvider, useTheme } from "@/components/dashboard/ThemeProvider";
 import { modelCards, missions, type Region, type Timeframe, type Mission } from "@/lib/dashboard-data";
@@ -23,6 +23,19 @@ function DashboardInner() {
   const [highlightedModels, setHighlightedModels] = useState<string[]>([]);
   const [activeMission, setActiveMission] = useState<Mission | null>(null);
   const [activeSimMultipliers, setActiveSimMultipliers] = useState<SimMultipliers>(null);
+  const [missionSimState, setMissionSimState] = useState<SimState>({
+    businessMode: false,
+    primaryObjective: null,
+    simParams: {
+      revenueWeight: 50,
+      marginProtection: 50,
+      evFocus: 50,
+      carModelMix: 50,
+      lifecycleBias: 50,
+      incentiveAggression: 50,
+    },
+    simActive: false,
+  });
 
   const handleSynthesisComplete = () => {
     setSynthesisComplete(true);
@@ -183,6 +196,8 @@ function DashboardInner() {
                 missions={missions}
                 region={region}
                 onViewRetailers={handleViewRetailers}
+                simState={missionSimState}
+                onSimStateChange={setMissionSimState}
               />
             </div>
           )}
