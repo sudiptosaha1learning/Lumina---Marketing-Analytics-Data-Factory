@@ -1,22 +1,41 @@
-import re
+import re, pathlib, os
 
-files = [
-    "/vercel/share/v0-project/lib/dashboard-data.ts",
-    "/vercel/share/v0-project/components/dashboard/ModelMosaic.tsx",
-    "/vercel/share/v0-project/components/dashboard/ReasoningEngine.tsx",
-    "/vercel/share/v0-project/components/dashboard/MissionCommand.tsx",
-    "/vercel/share/v0-project/components/dashboard/RetailerDrillDown.tsx",
-    "/vercel/share/v0-project/components/dashboard/Sidebar.tsx",
-    "/vercel/share/v0-project/components/dashboard/Topbar.tsx",
-    "/vercel/share/v0-project/components/dashboard/ThemeProvider.tsx",
-    "/vercel/share/v0-project/app/page.tsx",
-    "/vercel/share/v0-project/app/layout.tsx",
+# Discover project root dynamically
+def find_root():
+    for candidate in ["/vercel/path0", "/app", "/workspace", "/home/user/app"]:
+        if pathlib.Path(candidate, "package.json").exists():
+            return candidate
+    # Walk up from cwd
+    p = pathlib.Path(os.getcwd())
+    while p != p.parent:
+        if (p / "package.json").exists():
+            return str(p)
+        p = p.parent
+    return os.getcwd()
+
+BASE = find_root()
+print(f"[INFO] Project root: {BASE}")
+
+targets = [
+    "lib/dashboard-data.ts",
+    "components/dashboard/ModelMosaic.tsx",
+    "components/dashboard/ReasoningEngine.tsx",
+    "components/dashboard/MissionCommand.tsx",
+    "components/dashboard/RetailerDrillDown.tsx",
+    "components/dashboard/Sidebar.tsx",
+    "components/dashboard/Topbar.tsx",
+    "components/dashboard/ThemeProvider.tsx",
+    "app/page.tsx",
+    "app/layout.tsx",
 ]
 
-for path in files:
+for rel in targets:
+    path = pathlib.Path(BASE) / rel
+    if not path.exists():
+        print(f"[MISSING] {rel}")
+        continue
     try:
-        with open(path, "r", encoding="utf-8") as f:
-            src = f.read()
+        src = path.read_text(encoding="utf-8")
         opens   = src.count("{")
         closes  = src.count("}")
         opensq  = src.count("[")
@@ -24,17 +43,15 @@ for path in files:
         openp   = src.count("(")
         closep  = src.count(")")
         bt      = src.count("`")
-        short   = path.split("/")[-1]
         issues = []
-        if opens != closes:   issues.append(f"BRACES imbalanced: open={opens} close={closes} diff={opens-closes}")
-        if opensq != closesq: issues.append(f"BRACKETS imbalanced: open={opensq} close={closesq} diff={opensq-closesq}")
-        if openp != closep:   issues.append(f"PARENS imbalanced: open={openp} close={closep} diff={openp-closep}")
-        if bt % 2 != 0:       issues.append(f"BACKTICKS odd count: {bt}")
+        if opens != closes:   issues.append(f"BRACES: open={opens} close={closes} diff={opens-closes}")
+        if opensq != closesq: issues.append(f"BRACKETS: open={opensq} close={closesq} diff={opensq-closesq}")
+        if openp != closep:   issues.append(f"PARENS: open={openp} close={closep} diff={openp-closep}")
+        if bt % 2 != 0:       issues.append(f"BACKTICKS odd: {bt}")
         if issues:
-            print(f"[FAIL] {short}:")
-            for i in issues:
-                print(f"       {i}")
+            print(f"[FAIL] {rel}:")
+            for i in issues: print(f"       {i}")
         else:
-            print(f"[OK]   {short} | braces={opens} brackets={opensq} parens={openp} backticks={bt}")
+            print(f"[OK]   {rel} ({path.stat().st_size} bytes)")
     except Exception as e:
-        print(f"[ERROR] {path}: {e}")
+        print(f"[ERROR] {rel}: {e}")
