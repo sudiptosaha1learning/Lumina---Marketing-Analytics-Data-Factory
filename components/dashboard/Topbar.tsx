@@ -17,7 +17,7 @@ const regions: Region[] = ["Global", "North America", "Europe", "UK"];
 const timeframes: Timeframe[] = ["Q1 2026", "Q2 2026", "Q3 2026", "Q4 2026", "FY 2026"];
 
 const viewTitles = {
-  mosaic: { title: "Model Intelligence Mosaic", subtitle: "7 AI models · Live data feed" },
+  mosaic: { title: "Model Intelligence Mosaic", subtitle: "7 models · Live data feed" },
   missions: { title: "Mission Command Centre", subtitle: "3 strategic missions synthesised" },
   retailers: { title: "Retailer & Customer Drill-Down", subtitle: "Final mile intelligence" },
 };
@@ -86,8 +86,8 @@ export function Topbar({ region, timeframe, onRegionChange, onTimeframeChange, a
                 timeframe === t
                   ? "text-white"
                   : isDark
-                  ? "text-white/40 hover:text-white/70"
-                  : "text-slate-500 hover:text-slate-800"
+                    ? "text-white/40 hover:text-white/70"
+                    : "text-slate-500 hover:text-slate-800"
               )}
               style={timeframe === t ? activeTabStyle : {}}
             >
@@ -108,8 +108,8 @@ export function Topbar({ region, timeframe, onRegionChange, onTimeframeChange, a
                 region === r
                   ? "text-white"
                   : isDark
-                  ? "text-white/40 hover:text-white/70"
-                  : "text-slate-500 hover:text-slate-800"
+                    ? "text-white/40 hover:text-white/70"
+                    : "text-slate-500 hover:text-slate-800"
               )}
               style={region === r ? activeTabStyle : {}}
             >
