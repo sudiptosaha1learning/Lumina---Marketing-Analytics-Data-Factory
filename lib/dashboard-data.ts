@@ -32,6 +32,12 @@ export function closeDate(daysFromNow: number): string {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
+export interface ModelRecommendation {
+  title: string;
+  priority: "Immediate" | "Short-term" | "Strategic";
+  actions: string[];
+}
+
 export interface ModelCardData {
   id: string;
   title: string;
@@ -57,6 +63,7 @@ export interface ModelCardData {
     slaCompliance: string;
     modelType: string;
   };
+  recommendations: Record<Region, ModelRecommendation[]>;
 }
 
 export const modelCards: ModelCardData[] = [
@@ -115,6 +122,95 @@ export const modelCards: ModelCardData[] = [
       slaCompliance: "99.8%",
       modelType: "Gradient Boosted Trees (XGBoost) + Collaborative Filtering",
     },
+    recommendations: {
+      Global: [
+        {
+          title: "Activate Conquest Lead Sequencing",
+          priority: "Immediate",
+          actions: [
+            "Deploy 3-touch personalised email sequence to 2,140 BMW/Mercedes conquest leads within 48 hrs — focus on Defender 90 & Range Rover Sport P400e value proposition.",
+            "Suppress leads with propensity score <0.55 from paid channels to reduce CPL by an estimated 22%.",
+            "Brief all retailer sales managers on top 50 conquest leads per market via daily Salesforce digest.",
+          ],
+        },
+        {
+          title: "Enhance Signal Capture Across Digital Touchpoints",
+          priority: "Short-term",
+          actions: [
+            "Integrate JLR Configurator session depth events into the model feature pipeline to improve affinity scoring for bespoke trim levels.",
+            "Activate Meta Pixel conversion events on brochure download and finance calculator pages to enrich upper-funnel profiles.",
+          ],
+        },
+        {
+          title: "Expand Model to Fleet & Corporate Segment",
+          priority: "Strategic",
+          actions: [
+            "Extend the propensity model to cover Fleet / SME segment — an untapped pool estimated at 3,800 corporate renewal prospects globally.",
+            "Partner with IHS Markit fleet data to include company vehicle policy changes as a leading indicator.",
+          ],
+        },
+      ],
+      "North America": [
+        {
+          title: "Tesla Intender Conquest Push",
+          priority: "Immediate",
+          actions: [
+            "Activate targeted paid media against 1,480 Tesla Model Y intenders showing Defender 90 crossover score ≥0.78 — focus on Texas, Colorado, and Pacific Northwest DMAs.",
+            "Arm retailers with bespoke test-drive invite offering 'Off-Road vs EV Range' head-to-head experience with Defender PHEV.",
+          ],
+        },
+        {
+          title: "Retailer-Level Lead Prioritisation Playbook",
+          priority: "Short-term",
+          actions: [
+            "Distribute weekly ranked lead lists to the top 15 NA retailers with recommended contact scripts segmented by propensity tier (Tier 1: ≥0.85, Tier 2: 0.70–0.84).",
+            "Introduce 48-hour contact SLA tracking in Salesforce to correlate lead response speed with conversion rate.",
+          ],
+        },
+      ],
+      Europe: [
+        {
+          title: "DACH Audi Q5 Conquest Activation",
+          priority: "Immediate",
+          actions: [
+            "Launch localised Range Rover Sport digital campaign in Germany, Austria, and Switzerland targeting 890 Audi Q5 owners flagged with ≥0.72 consideration signal.",
+            "Co-ordinate with DACH retailer network to offer factory-visit experience — proven +18% conversion lift for this segment.",
+          ],
+        },
+        {
+          title: "EV Transition Lead Nurturing",
+          priority: "Short-term",
+          actions: [
+            "Build a dedicated EV lead nurture track in HubSpot for 1,200 European prospects showing Range Rover Electric pre-interest signals — include WLTP range content, BAFA grant calculator, and home-charger partnership offer.",
+          ],
+        },
+      ],
+      UK: [
+        {
+          title: "SE England BMW X5 / Volvo XC90 Conquest Sprint",
+          priority: "Immediate",
+          actions: [
+            "Activate highly targeted direct mail + digital retargeting campaign against 680 BMW X5 and Volvo XC90 owners in Surrey, Berkshire, and Hertfordshire — highest affinity cluster in UK portfolio at 0.82.",
+            "Include personalised PHEV cost-of-ownership comparison (BIK tax, Benefit-in-Kind savings vs combustion equivalent) as primary value lever.",
+          ],
+        },
+        {
+          title: "InControl App Activation for Lead Nurturing",
+          priority: "Short-term",
+          actions: [
+            "Trigger personalised upgrade content within JLR InControl app for existing owners showing Range Rover PHEV affinity signals — in-app engagement shows 2.4× higher conversion vs outbound email for UK segment.",
+            "Add 'Request a private viewing' CTA to the InControl notification for the top 300 high-scoring UK leads.",
+          ],
+        },
+        {
+          title: "Northern England Market Expansion",
+          priority: "Strategic",
+          actions: [
+            "Current UK lead concentration is 78% South of England. Model data identifies 420 under-served prospects in Manchester, Leeds, and Edinburgh — invest in retailer incentive programme to develop Northern UK pipeline.",
+          ],
+        },
+      ],
+    },
   },
   {
     id: "lead-scoring",
@@ -167,6 +263,92 @@ export const modelCards: ModelCardData[] = [
       slaCompliance: "99.5%",
       modelType: "Random Forest Ensemble + Logistic Regression blend",
     },
+    recommendations: {
+      Global: [
+        {
+          title: "48-Hour Contact Protocol for Tier 1 Leads",
+          priority: "Immediate",
+          actions: [
+            "Enforce a 48-hour retailer contact SLA for all 1,006 leads scored ≥0.90 globally — data shows conversion drops 34% after 72 hours with no contact.",
+            "Trigger automated SMS + email from the assigned sales advisor the moment a lead enters Tier 1 (≥0.90) to maintain personal, premium feel.",
+            "Flag Tier 1 leads in Salesforce with a 'priority' indicator visible on retailer dashboards — remove from general lead pool rotation.",
+          ],
+        },
+        {
+          title: "Score Decay Monitoring",
+          priority: "Short-term",
+          actions: [
+            "Implement weekly score-decay alerts for leads that have dropped from ≥0.85 to <0.70 without a recorded contact attempt — these represent avoidable pipeline losses.",
+            "Route decayed leads to a re-engagement nurture sequence rather than removal, preserving approximately 18% of the dropped pool based on historical data.",
+          ],
+        },
+        {
+          title: "Predictive Score Integration into DMS",
+          priority: "Strategic",
+          actions: [
+            "Integrate the priority score directly into Keyloop and CDK DMS so sales advisors see the score alongside enquiry details — reducing the friction of switching between systems.",
+          ],
+        },
+      ],
+      "North America": [
+        {
+          title: "Metro Cluster Fast-Track Programme",
+          priority: "Immediate",
+          actions: [
+            "Manhattan, Beverly Hills, and Miami Metro clusters account for 38% of NA Tier 1 leads — assign dedicated luxury concierge sales specialists to these geographies for white-glove outreach.",
+            "Coordinate bespoke Range Rover Autobiography private preview events at all three locations within the next 30 days to convert highest-score leads.",
+          ],
+        },
+        {
+          title: "Finance Pre-Approval Fast Path",
+          priority: "Short-term",
+          actions: [
+            "38% of NA Tier 1 leads have a finance pre-approval signal — fast-track these to a same-day finance proposal, compressing the buy cycle by an estimated 8 days.",
+          ],
+        },
+      ],
+      Europe: [
+        {
+          title: "Zürich & Munich Priority Engagement",
+          priority: "Immediate",
+          actions: [
+            "727 European Tier 1 leads are concentrated in Munich, Zürich, and London (Mayfair) — brief local retailer teams on bespoke outreach with EV variant messaging given 61% EV preference rate.",
+            "Deploy German and French-language personalised video message from sales director to top 50 scored leads in each market.",
+          ],
+        },
+        {
+          title: "EV Specification Lead Routing",
+          priority: "Short-term",
+          actions: [
+            "61% of European Tier 1 leads indicate EV variant preference — route these to EV-certified sales consultants to ensure they receive accurate WLTP, BAFA grant, and charging infrastructure information.",
+          ],
+        },
+      ],
+      UK: [
+        {
+          title: "Knightsbridge & Mayfair VIP Outreach",
+          priority: "Immediate",
+          actions: [
+            "254 UK Tier 1 leads are in the Knightsbridge, Mayfair, and Cobham clusters showing Range Rover Autobiography SV intent at 74% — assign to senior account managers and trigger bespoke handwritten invitation for a private viewing.",
+            "Schedule a Colour & Trim bespoke appointment at the Jaguar Land Rover Mayfair flagship for the top 40 scored leads within 2 weeks.",
+          ],
+        },
+        {
+          title: "Salary Sacrifice & BIK Messaging",
+          priority: "Short-term",
+          actions: [
+            "72% of UK Tier 1 leads are company-car eligible — include personalised Benefit-in-Kind (BIK) tax comparison table in the first outreach email, as this is the primary financial motivator for UK premium-segment buyers.",
+          ],
+        },
+        {
+          title: "Score Model Refresh with FCA Affordability Data",
+          priority: "Strategic",
+          actions: [
+            "Partner with JLR Financial Services to incorporate FCA soft-search affordability signals into the UK scoring model — projected accuracy improvement from 91% to 93.5% based on back-testing.",
+          ],
+        },
+      ],
+    },
   },
   {
     id: "renewal",
@@ -218,6 +400,91 @@ export const modelCards: ModelCardData[] = [
       nextRunOffsetHours: 14,
       slaCompliance: "99.9%",
       modelType: "Survival Analysis (Cox PH) + Neural Network",
+    },
+    recommendations: {
+      Global: [
+        {
+          title: "90-Day Equity Window Activation",
+          priority: "Immediate",
+          actions: [
+            "Contact all 750 Range Rover lessees with >$8k positive equity and lease ending within 90 days — offer a guaranteed equity settlement figure valid for 21 days to create urgency.",
+            "Personalise outreach with the customer's exact equity position ('Your current Range Rover is worth £X more than your settlement figure') — this single message element has shown a 41% uplift in renewal intent in A/B tests.",
+            "Assign one dedicated renewal specialist per retailer to own these 750 accounts end-to-end, preventing cross-sell distraction.",
+          ],
+        },
+        {
+          title: "Early Renewal Incentive Tiering",
+          priority: "Short-term",
+          actions: [
+            "Introduce a three-tier renewal incentive: renew 90+ days early (£/$/€500 service credit), 60–89 days (£/$/€300 accessory voucher), 30–59 days (complimentary first service). Model predicts 28% of renewals can be pulled forward, improving order bank visibility.",
+          ],
+        },
+        {
+          title: "Repeat-Buyer Loyalty Scoring Integration",
+          priority: "Strategic",
+          actions: [
+            "Integrate the renewal model output with the upselling engine to identify the subset of renewing customers who also qualify for a nameplate upgrade — estimated 22% overlap, worth an average +$12k incremental revenue per customer.",
+          ],
+        },
+      ],
+      "North America": [
+        {
+          title: "Q2 2026 Lease Maturity Blitz",
+          priority: "Immediate",
+          actions: [
+            "4,210 NA leases ending Q2 2026 with 62% showing proactive renewal intent — segment into three groups: (A) EV switchers → Range Rover Electric pathway, (B) PHEV retainers → P440e upgrade, (C) combustion loyalists → Autobiography MY2026.",
+            "Partner with Chase Auto and Ally Financial to offer 0% documentation fee for early renewal on JLR Financial Services plans.",
+          ],
+        },
+        {
+          title: "Dealer Equity Conversation Training",
+          priority: "Short-term",
+          actions: [
+            "Brief NA retail teams on how to present the equity conversation using a one-page visual summary — many advisors are currently underselling the equity position, leaving $2.1M estimated value on the table per quarter.",
+          ],
+        },
+      ],
+      Europe: [
+        {
+          title: "BAFA & SEAI Grant Bundling",
+          priority: "Immediate",
+          actions: [
+            "Bundle the €3,500 BAFA (Germany) / SEAI (Ireland) BEV grant with the early renewal offer for the 3,180 EU lease holders — this reduces the effective price gap between PHEV and full EV to <€1,200 for most customers.",
+            "Create a 'Switch to Electric, Switch Now' one-page customer summary in German, French, and Italian for retailer use.",
+          ],
+        },
+        {
+          title: "Range Rover Electric Pipeline Reservation",
+          priority: "Short-term",
+          actions: [
+            "Hold a priority allocation of 420 Range Rover Electric units from the Q3 2026 production run for EU customers currently in the renewal model — first-mover advantage as BMW iX and Audi Q8 e-tron supply remains constrained.",
+          ],
+        },
+      ],
+      UK: [
+        {
+          title: "PCP Equity Call Campaign",
+          priority: "Immediate",
+          actions: [
+            "1,522 UK PCP contracts maturing Q2 2026 — initiate outbound call campaign 90 days before maturity date with a specific equity figure and a structured 'Equity Settlement + New PCP' proposal.",
+            "OZEV plug-in grant eligibility ends for many customers in this cohort — include a 'Grant deadline awareness' message to create a conversion window: 58% already show EV intent.",
+          ],
+        },
+        {
+          title: "Salary Sacrifice Renewal Pathway",
+          priority: "Short-term",
+          actions: [
+            "Partner with Tusker and Zenith to offer UK Salary Sacrifice renewal as an alternative to personal PCP — for higher-rate taxpayers in this cohort, the Salary Sacrifice route reduces monthly cost by an estimated 32%, making a Range Rover PHEV directly competitive with a BMW X5 on a company scheme.",
+          ],
+        },
+        {
+          title: "Scottish & Northern England Maturity Cluster",
+          priority: "Strategic",
+          actions: [
+            "Model identifies a secondary cluster of 340 UK leases maturing in Scotland and Northern England — currently underserved by renewal outreach. Activate Edinburgh and Manchester JLR retailers with the same equity-first script used in the South.",
+          ],
+        },
+      ],
     },
   },
   {
@@ -275,6 +542,85 @@ export const modelCards: ModelCardData[] = [
       slaCompliance: "99.3%",
       modelType: "Gradient Boosted Classifier + SHAP explainability",
     },
+    recommendations: {
+      Global: [
+        {
+          title: "Proactive Save Programme for 412 At-Risk Orders",
+          priority: "Immediate",
+          actions: [
+            "Deploy a dedicated 'Order Save' team to contact all 412 flagged customers within 24 hours — scripted around four core objection types: delivery delay, price sensitivity, competitor offer, and spec change.",
+            "For delivery-delay cases (42% of at-risk pool), provide a revised delivery date commitment in writing with a £/$/€250 inconvenience payment offer — this has shown a 44% save rate in prior campaigns.",
+            "Escalate any customer with churn probability >0.90 directly to the retailer principal for personal phone call within 4 hours.",
+          ],
+        },
+        {
+          title: "Delivery Delay Communication Protocol",
+          priority: "Short-term",
+          actions: [
+            "Introduce bi-weekly proactive delivery status update via SMS and email for all customers with orders >8 weeks old — reduces inbound cancellation enquiries by an estimated 31% based on pilot data.",
+            "Create a JLR order-tracking page (similar to automotive industry best practice) accessible to customers so they can self-serve delivery progress.",
+          ],
+        },
+        {
+          title: "SHAP Feature Monitoring Dashboard",
+          priority: "Strategic",
+          actions: [
+            "Surface the top SHAP feature driving each individual customer's risk score in the retailer DMS — enabling sales advisors to address the specific root cause rather than a generic save script.",
+          ],
+        },
+      ],
+      "North America": [
+        {
+          title: "Delivery Delay Save Incentive",
+          priority: "Immediate",
+          actions: [
+            "187 NA at-risk orders; 51% are delivery-delay driven. Implement a tiered 'Thank You for Waiting' incentive: delay 10–14 wks → complimentary Black Pack accessories ($1,200 value); delay >14 wks → 2-year service plan ($2,800 value).",
+            "Brief NA retail network on the 44% save rate data point — many retailers are currently waiting for customers to cancel rather than proactively intervening.",
+          ],
+        },
+        {
+          title: "Competitor Counter-Offer Playbook",
+          priority: "Short-term",
+          actions: [
+            "24% of NA cancellations are driven by a competitor offer (primarily BMW X5 and Cadillac Escalade). Issue a 'Competitive Response Toolkit' to retail managers with approved price-match flexibilities, finance rate matching, and priority allocation levers.",
+          ],
+        },
+      ],
+      Europe: [
+        {
+          title: "EV Anxiety De-risking Programme",
+          priority: "Immediate",
+          actions: [
+            "38% of EU at-risk orders are EV-anxiety driven — immediately offer a free home-charger installation survey (Ohme or Wallbox partnership) to all affected customers, reducing the perceived barrier to EV ownership.",
+            "Pair each at-risk EV order with a 48-hour 'real-world EV experience' loaner vehicle programme at the nearest retailer.",
+          ],
+        },
+        {
+          title: "Delivery Lead Time Transparency",
+          priority: "Short-term",
+          actions: [
+            "31% of EU cancellations are delivery-delay driven — implement a personalised WhatsApp update channel for European customers (high adoption in DE/FR/NL markets) providing milestone notifications as their vehicle moves through production.",
+          ],
+        },
+      ],
+      UK: [
+        {
+          title: "Defender MHEV Delay Save Campaign",
+          priority: "Immediate",
+          actions: [
+            "72% of UK at-risk orders are Defender MHEV customers waiting beyond 14 weeks — activate a personalised outreach programme offering a fully-specced Defender loaner vehicle during the extended wait, demonstrating confidence in the product.",
+            "For customers >16 weeks into wait: offer an immediate upgrade path to a Defender 110 P400e from current stock at the same price, eliminating the wait entirely.",
+          ],
+        },
+        {
+          title: "UK Competitor Counter Strategy",
+          priority: "Short-term",
+          actions: [
+            "26% of UK cancellations are lost to competitor offers — primarily Land Rover Defender competitor Toyota Land Cruiser and Mercedes GLE. Issue retailer-level competitive response authority to match finance rates to within 0.3% and offer a complimentary 3-year service plan as a retention tool.",
+          ],
+        },
+      ],
+    },
   },
   {
     id: "service-retention",
@@ -329,6 +675,90 @@ export const modelCards: ModelCardData[] = [
       slaCompliance: "99.7%",
       modelType: "Hazard Model + Decision Tree",
     },
+    recommendations: {
+      Global: [
+        {
+          title: "Care Plan Renewal Blitz — 1,840 Overdue Vehicles",
+          priority: "Immediate",
+          actions: [
+            "Activate a personalised outreach sequence for all 1,840 vehicles overdue for care plan renewal — SMS, email, and in-app InControl notification in a 3-day cadence. Pilot data shows 31% uplift when all three channels fire in sequence.",
+            "Offer a 'Lock-in' price guarantee: renew within 14 days at current rate before scheduled April service price adjustment — creates urgency without discounting.",
+          ],
+        },
+        {
+          title: "Post-Warranty Retention Bridge",
+          priority: "Short-term",
+          actions: [
+            "Identify vehicles within 6 months of warranty expiry and proactively offer a JLR Approved Used inspection + extended warranty package — data shows defection to independents increases 3× in the month after warranty expiry without intervention.",
+          ],
+        },
+        {
+          title: "OTA Update as Service Trigger",
+          priority: "Strategic",
+          actions: [
+            "Use vehicle OTA update completion as a trigger for a personalised service reminder — 'Your software is now updated. While we're monitoring your vehicle, would you like to book your next annual health check?' — shown to increase service bookings by 23% in EU pilot.",
+          ],
+        },
+      ],
+      "North America": [
+        {
+          title: "EliteCare Post-Warranty Retention Offer",
+          priority: "Immediate",
+          actions: [
+            "1,240 NA vehicles predicted to defect to independent service centres post-warranty — activate JLR EliteCare retention offer 90 days before warranty expiry: multi-year service plan at 15% discount with complimentary annual health check.",
+            "Position EliteCare around the JLR-trained technician and OEM parts guarantee vs. independent shops — particularly effective with Range Rover Autobiography and Defender SVR owners who are protective of vehicle value.",
+          ],
+        },
+        {
+          title: "Mobile Service Expansion",
+          priority: "Short-term",
+          actions: [
+            "Model identifies 380 NA customers whose nearest JLR retailer is >45 mins drive — these show 2.1× higher defection rate. Expand JLR Mobile Service vans to cover Manhattan, Beverly Hills, and Silicon Valley corridors to eliminate distance as a barrier.",
+          ],
+        },
+      ],
+      Europe: [
+        {
+          title: "OTA-Triggered Service Appointment Push",
+          priority: "Immediate",
+          actions: [
+            "23% uplift in aftersales visits already observed from OTA notifications in DACH & Nordics — scale this programme immediately to all 5,910 EU vehicles with active InControl connectivity.",
+            "A/B test a 'Book while we've got your car's attention' CTA in the OTA completion notification across French and Italian markets where uptake has been lower.",
+          ],
+        },
+        {
+          title: "EV Battery Health Campaign",
+          priority: "Short-term",
+          actions: [
+            "29% of EU service distribution is EV Battery Check category — proactively offer a free 45-minute EV battery health assessment to all I-Pace and Range Rover PHEV customers over 3 years old. This drives service visits and surfaces trade-in conversations for upsell.",
+          ],
+        },
+      ],
+      UK: [
+        {
+          title: "Home Counties Same-Day Service Campaign",
+          priority: "Immediate",
+          actions: [
+            "UK leads Europe in retention at 76.3% — capitalise on this by promoting the same-day express service capability at Guildford, Cobham, and Stratstone Mayfair for the 41% of UK service-due vehicles in this corridor.",
+            "Send a 'Your Annual Health Check is Due' personalised letter (physical direct mail for premium feel) to the top 500 UK vehicles by CLV score — response rate for physical mail in this segment is 3.8× email.",
+          ],
+        },
+        {
+          title: "Recall Campaign Accelerator",
+          priority: "Short-term",
+          actions: [
+            "11% of UK service distribution involves an active recall campaign — these are guaranteed visits. Use the recall appointment as an opportunity to conduct a vehicle equity appraisal, converting a reactive visit into a proactive renewal conversation for 18% of attendees.",
+          ],
+        },
+        {
+          title: "Loyalty Score Integration",
+          priority: "Strategic",
+          actions: [
+            "Merge service retention scores with the upselling engine to identify UK customers who are both high-retention AND high-upgrade propensity — estimated 620 dual-opportunity customers representing £8.4M combined revenue potential.",
+          ],
+        },
+      ],
+    },
   },
   {
     id: "upselling",
@@ -380,6 +810,92 @@ export const modelCards: ModelCardData[] = [
       nextRunOffsetHours: 15,
       slaCompliance: "99.1%",
       modelType: "Neural Collaborative Filtering + LightGBM",
+    },
+    recommendations: {
+      Global: [
+        {
+          title: "First Edition Upgrade Campaign — 2,890 Qualified Owners",
+          priority: "Immediate",
+          actions: [
+            "Launch a 'First Access' communication to 2,890 globally qualified upgrade candidates — personalised with their current vehicle details, the exact incremental cost, and a comparison against the upgraded specification.",
+            "Use a 2-part email + personal call approach: email from the brand's head of customer experience, followed by a personal call from their assigned retailer within 72 hours.",
+          ],
+        },
+        {
+          title: "Accessories & Packs Revenue Activation",
+          priority: "Short-term",
+          actions: [
+            "26% of upsell opportunity ($21.9M) sits in accessories and packs — activate a post-delivery accessories campaign at 30 days and 6 months after vehicle purchase, when personalisation intent is highest.",
+            "Bundle popular accessories into three named packs ('Adventure', 'Urban Prestige', 'Family Expedition') to simplify the purchase decision and increase average order value by an estimated 34%.",
+          ],
+        },
+        {
+          title: "Life-Stage Event Trigger Integration",
+          priority: "Strategic",
+          actions: [
+            "Integrate life-stage event signals (property purchase, business directorship change, new child) from Experian and Acxiom into the model — these events correlate with +44% upsell propensity and are currently not captured.",
+          ],
+        },
+      ],
+      "North America": [
+        {
+          title: "Defender 90 → 110 MHEV Upgrade Sprint",
+          priority: "Immediate",
+          actions: [
+            "Defender 90 owners showing 0.74 propensity for 110 MHEV upgrade are the highest-value upsell segment in NA — brief all NA Defender retailers with a structured 'Step Up' conversation guide focusing on practicality, payload, and family use cases.",
+            "Offer a zero-cost extended test drive (48-hour home-trial) of the Defender 110 MHEV to the top 280 propensity-scored NA owners — this tactile experience is the primary conversion driver in this segment.",
+          ],
+        },
+        {
+          title: "Range Rover Autobiography Scarcity Messaging",
+          priority: "Short-term",
+          actions: [
+            "14-week order bank on Autobiography creates genuine scarcity — authorise retailers to communicate current allocation status honestly as a conversion lever: 'We have 3 units available for Q3 delivery; two are already allocated.'",
+          ],
+        },
+      ],
+      Europe: [
+        {
+          title: "I-Pace Owner Range Rover Electric Pre-Order Drive",
+          priority: "Immediate",
+          actions: [
+            "I-Pace owners with >30k miles showing 87%+ WLTP range satisfaction represent the ideal Range Rover Electric early adopter — invite all 340 qualifying European I-Pace owners to an exclusive 'Next Chapter of Electric' preview event with a guaranteed pre-order slot.",
+            "Position the upgrade as a like-for-like EV continuation with a significant prestige step-up, not a compromise — compare boot space, towing capacity, and range directly in the invitation.",
+          ],
+        },
+        {
+          title: "DACH Spec Upgrade Localisation",
+          priority: "Short-term",
+          actions: [
+            "44% of EU upsell is EV upgrade driven — ensure all European digital upgrade journeys are localised with BAFA/SEAI grant amounts already deducted from the headline price to present the true cost of upgrading.",
+          ],
+        },
+      ],
+      UK: [
+        {
+          title: "Surrey & Berkshire SV Autobiography Private Event",
+          priority: "Immediate",
+          actions: [
+            "Range Rover Sport P400e owners in Cobham, Guildford, and Ascot showing 0.81 propensity for SV Autobiography upgrade — host a private evening preview at the Stratstone Mayfair showroom with bespoke Colour & Trim consultation included.",
+            "Include a financial illustration showing the SV Autobiography's expected residual value advantage over a standard HSE at 3 years — this segment is highly residual-value conscious.",
+          ],
+        },
+        {
+          title: "Spec Level Upgrade — JLR InControl In-App Offer",
+          priority: "Short-term",
+          actions: [
+            "42% of UK upsell opportunity is spec-level driven — deploy an in-app notification within JLR InControl for owners of Standard and S-spec vehicles showing the incremental monthly cost of upgrading to SE or Autobiography on a new finance arrangement.",
+            "Feature the 3 most popular spec upgrades in the app based on the customer's current model line to make the decision concrete rather than abstract.",
+          ],
+        },
+        {
+          title: "Corporate Fleet Upsell Pathway",
+          priority: "Strategic",
+          actions: [
+            "Model identifies 180 UK corporate customers currently on Defender 90 commercial spec who qualify for Defender 110 HSE — engage fleet account managers with a Total Cost of Ownership comparison that demonstrates the HSE's BIK and residual value advantages.",
+          ],
+        },
+      ],
     },
   },
   {
@@ -433,6 +949,91 @@ export const modelCards: ModelCardData[] = [
       nextRunOffsetHours: 9,
       slaCompliance: "99.9%",
       modelType: "Ensemble Valuation Model (Gradient Boost + CatBoost)",
+    },
+    recommendations: {
+      Global: [
+        {
+          title: "Equity Position Trade-In Campaign",
+          priority: "Immediate",
+          actions: [
+            "Contact all 5,640 positive-equity vehicle owners with a personalised 'Your vehicle is worth more than you think' communication, including their specific equity figure — A/B testing shows this exact framing drives a 41% higher response rate vs. generic trade-in messaging.",
+            "Create urgency with a 21-day equity lock guarantee — protect the valuation while the customer considers, removing the most common objection ('the value might drop before I decide').",
+          ],
+        },
+        {
+          title: "Equity + New Order Bridging Finance",
+          priority: "Short-term",
+          actions: [
+            "Work with JLR Financial Services to create a bridging product that allows customers to lock in the equity value as a deposit on a new order even if their current vehicle is still in use — removes the practical timing barrier for 38% of positive-equity customers who cite 'don't want to be without a car' as a hesitation.",
+          ],
+        },
+        {
+          title: "CAP HPI Data Feed Acceleration",
+          priority: "Strategic",
+          actions: [
+            "Increase CAP HPI valuation data refresh from weekly to daily to improve equity position accuracy — current weekly refresh means some equity figures displayed to customers are up to 7 days stale, occasionally generating incorrect expectations at point of appraisal.",
+          ],
+        },
+      ],
+      "North America": [
+        {
+          title: "Range Rover Autobiography Scarcity + Equity Bundle",
+          priority: "Immediate",
+          actions: [
+            "The combination of +$8.4k Autobiography equity premium AND a 14-week order bank creates a unique 'buy now, profit now' window — craft a campaign message around this dual scarcity for the 1,390 NA Autobiography-spec positive-equity owners.",
+            "Partner with Manheim to provide same-week vehicle collection logistics, removing the 'hassle of selling' objection that affects 29% of NA trade-in hesitant customers.",
+          ],
+        },
+        {
+          title: "Defender 110 Trade-Up Programme",
+          priority: "Short-term",
+          actions: [
+            "33% of NA positive-equity vehicles are Defender 110 — the segment with the highest equity surplus. Create a 'Defender-to-Defender' trade-up programme specifically for this group, offering guaranteed equity + a $1,500 loyalty credit toward any new Defender order.",
+          ],
+        },
+      ],
+      Europe: [
+        {
+          title: "Defender PHEV High-Equity Outreach",
+          priority: "Immediate",
+          actions: [
+            "Defender PHEV models trading at +€5,100 over CAP HPI in Germany and the UK represent the most compelling trade-in conversation in the European portfolio — brief Defender-specialist retailers in DE, UK, and NL on this equity figure with authority to present it proactively during any service visit.",
+            "Launch a 'Your Defender's Value Has Grown' digital campaign targeting the 780 highest-equity EU Defender PHEV owners with an online equity estimator tool.",
+          ],
+        },
+        {
+          title: "Range Rover Electric Trade-In Pathway",
+          priority: "Short-term",
+          actions: [
+            "Position trade-in of a high-equity petrol Range Rover LWB as the natural funding mechanism for a Range Rover Electric reservation — 38% of EU positive-equity vehicles are Range Rover LWB, and the equity covers an estimated 42% of the deposit requirement.",
+          ],
+        },
+      ],
+      UK: [
+        {
+          title: "Mayfair & Knightsbridge Equity Appraisal Event",
+          priority: "Immediate",
+          actions: [
+            "830 UK positive-equity vehicles, concentrated in Mayfair and Knightsbridge — invite the top 120 by equity position to a private 'Vehicle Appraisal Morning' at the Stratstone Mayfair flagship where their vehicle is assessed on-site and an equity certificate is presented in a premium format.",
+            "Offer a same-day new order incentive: any customer who places a new order on the day of their appraisal receives a complimentary 3-year service plan.",
+          ],
+        },
+        {
+          title: "Range Rover PHEV P440e Equity Communication",
+          priority: "Short-term",
+          actions: [
+            "Range Rover PHEV P440e is the most prevalent UK positive-equity vehicle at 48% of the pool — create a personalised equity summary letter for all P440e owners showing their exact CAP HPI value, equity position, and a comparison monthly payment for a new Range Rover Electric on PCP.",
+            "Include the OZEV grant amount already applied to make the new vehicle monthly cost as low as possible in the headline figure.",
+          ],
+        },
+        {
+          title: "CAP HPI Equity Score in Retailer DMS",
+          priority: "Strategic",
+          actions: [
+            "Surface the live equity position score directly in the Keyloop DMS customer record so that any UK retailer service advisor can initiate an equity conversation at any contact point — estimated 18% additional trade-in conversations generated per month from this single integration.",
+          ],
+        },
+      ],
     },
   },
 ];

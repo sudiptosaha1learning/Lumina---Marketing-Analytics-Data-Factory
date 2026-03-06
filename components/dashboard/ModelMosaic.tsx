@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   Users, TrendingUp, RefreshCw, AlertTriangle, Wrench,
   ArrowUpRight, DollarSign, X, Database, Clock, CheckCircle,
-  ChevronRight, Activity, Shield, Layers
+  ChevronRight, Activity, Shield, Layers, Lightbulb, Zap, Target, TrendingDown
 } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from "recharts";
 import { type ModelCardData, type Region, formatUtcDate, formatUtcDatePlus } from "@/lib/dashboard-data";
@@ -317,6 +317,85 @@ function ModelDrawer({ model, region, onClose }: ModelDrawerProps) {
                   ))}
                 </div>
               </div>
+
+              {/* Recommendations */}
+              {model.recommendations[region]?.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Lightbulb className="w-3.5 h-3.5" style={{ color: model.color }} />
+                    <span className="text-xs font-medium uppercase tracking-wider" style={{ color: textSecondary }}>
+                      Recommendations · {region}
+                    </span>
+                  </div>
+                  <div className="space-y-3">
+                    {model.recommendations[region].map((rec, idx) => {
+                      const priorityConfig = {
+                        Immediate: {
+                          icon: Zap,
+                          bg: isDark ? "rgba(239,68,68,0.08)" : "rgba(239,68,68,0.06)",
+                          border: isDark ? "1px solid rgba(239,68,68,0.22)" : "1px solid rgba(239,68,68,0.18)",
+                          badgeBg: isDark ? "rgba(239,68,68,0.15)" : "rgba(239,68,68,0.1)",
+                          color: "#ef4444",
+                        },
+                        "Short-term": {
+                          icon: Target,
+                          bg: isDark ? `rgba(${hexToRgb(model.color)},0.07)` : `rgba(${hexToRgb(model.color)},0.05)`,
+                          border: isDark ? `1px solid rgba(${hexToRgb(model.color)},0.22)` : `1px solid rgba(${hexToRgb(model.color)},0.16)`,
+                          badgeBg: isDark ? `rgba(${hexToRgb(model.color)},0.15)` : `rgba(${hexToRgb(model.color)},0.1)`,
+                          color: model.color,
+                        },
+                        Strategic: {
+                          icon: TrendingDown,
+                          bg: isDark ? "rgba(139,92,246,0.07)" : "rgba(139,92,246,0.05)",
+                          border: isDark ? "1px solid rgba(139,92,246,0.2)" : "1px solid rgba(139,92,246,0.14)",
+                          badgeBg: isDark ? "rgba(139,92,246,0.15)" : "rgba(139,92,246,0.1)",
+                          color: "#8b5cf6",
+                        },
+                      }[rec.priority];
+                      const PriorityIcon = priorityConfig.icon;
+
+                      return (
+                        <div key={idx} className="rounded-xl overflow-hidden"
+                          style={{ background: priorityConfig.bg, border: priorityConfig.border }}>
+                          {/* Header row */}
+                          <div className="flex items-center justify-between px-4 py-3"
+                            style={{ borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.05)" }}>
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
+                                style={{ background: priorityConfig.badgeBg }}>
+                                <PriorityIcon className="w-3 h-3" style={{ color: priorityConfig.color }} />
+                              </div>
+                              <span className="text-sm font-semibold leading-snug" style={{ color: isDark ? "rgba(255,255,255,0.92)" : "rgba(0,0,0,0.85)" }}>
+                                {rec.title}
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-semibold uppercase tracking-wider ml-3 px-2 py-1 rounded-md flex-shrink-0"
+                              style={{ background: priorityConfig.badgeBg, color: priorityConfig.color }}>
+                              {rec.priority}
+                            </span>
+                          </div>
+                          {/* Actions */}
+                          <div className="px-4 py-3 space-y-2.5">
+                            {rec.actions.map((action, aIdx) => (
+                              <div key={aIdx} className="flex items-start gap-2.5">
+                                <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                                  style={{ background: priorityConfig.badgeBg }}>
+                                  <span className="text-[9px] font-bold" style={{ color: priorityConfig.color }}>
+                                    {aIdx + 1}
+                                  </span>
+                                </div>
+                                <p className="text-xs leading-relaxed" style={{ color: isDark ? "rgba(255,255,255,0.68)" : "rgba(0,0,0,0.65)" }}>
+                                  {action}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </>
           )}
 
