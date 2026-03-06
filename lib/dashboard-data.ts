@@ -41,7 +41,7 @@ export const modelCards: ModelCardData[] = [
     metricDelta: { Global: "+12.4%", "North America": "+18.2%", Europe: "+7.6%" },
     metricTrend: { Global: "up", "North America": "up", Europe: "up" },
     insightSummary: {
-      Global: "AI-identified 2,140 conquest leads from BMW 5-Series & Mercedes E-Class segments showing JLR affinity signals",
+      Global: "Identified 2,140 conquest leads from BMW 5-Series & Mercedes E-Class segments showing JLR affinity signals",
       "North America": "Tesla Model Y intenders trending toward Defender 90 with 0.78 crossover propensity score",
       Europe: "Audi Q5 owners in DACH region displaying strong Range Rover Sport consideration signals via digital touchpoints",
     },
