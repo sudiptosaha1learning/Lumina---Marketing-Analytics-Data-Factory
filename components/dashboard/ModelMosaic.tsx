@@ -84,9 +84,9 @@ function ModelCard({ model, region, isHighlighted, isSelected, onClick }: ModelC
     ? "1px solid rgba(255,255,255,0.07)"
     : "1px solid rgba(0,0,0,0.08)";
 
-  const textPrimary = isDark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.85)";
-  const textSecondary = isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)";
-  const textMuted = isDark ? "rgba(255,255,255,0.30)" : "rgba(0,0,0,0.30)";
+  const textPrimary = isDark ? "#f1f5f9" : "rgba(0,0,0,0.88)";
+  const textSecondary = isDark ? "rgba(255,255,255,0.68)" : "rgba(0,0,0,0.55)";
+  const textMuted = isDark ? "rgba(255,255,255,0.48)" : "rgba(0,0,0,0.38)";
   const tagBg = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
   const tagBorder = isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)";
 
@@ -216,9 +216,9 @@ function ModelDrawer({ model, region, onClose }: ModelDrawerProps) {
   const drawerBg = isDark ? "rgba(8, 11, 20, 0.98)" : "rgba(248, 250, 253, 0.99)";
   const drawerBorder = isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)";
   const dividerColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)";
-  const textPrimary = isDark ? "#e2e8f0" : "#0f172a";
-  const textSecondary = isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)";
-  const textMuted = isDark ? "rgba(255,255,255,0.30)" : "rgba(0,0,0,0.35)";
+  const textPrimary = isDark ? "#f1f5f9" : "#0f172a";
+  const textSecondary = isDark ? "rgba(255,255,255,0.68)" : "rgba(0,0,0,0.55)";
+  const textMuted = isDark ? "rgba(255,255,255,0.48)" : "rgba(0,0,0,0.38)";
   const surfaceBg = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)";
   const surfaceBorder = isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.07)";
   const tagBg = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
@@ -338,7 +338,7 @@ function ModelDrawer({ model, region, onClose }: ModelDrawerProps) {
                   <div className="w-1 h-4 rounded-full" style={{ background: model.color }} />
                   <span className="text-xs font-medium uppercase tracking-wider" style={{ color: textSecondary }}>Current Insight</span>
                 </div>
-                <p className="text-sm leading-relaxed" style={{ color: isDark ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.7)" }}>
+                <p className="text-sm leading-relaxed" style={{ color: isDark ? "rgba(255,255,255,0.78)" : "rgba(0,0,0,0.72)" }}>
                   {model.insightSummary[region]}
                 </p>
               </div>
@@ -364,7 +364,7 @@ function ModelDrawer({ model, region, onClose }: ModelDrawerProps) {
                       return (
                         <div key={sig.name}>
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs" style={{ color: isDark ? "rgba(255,255,255,0.65)" : "rgba(0,0,0,0.6)" }}>{sig.name}</span>
+                            <span className="text-xs" style={{ color: isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.62)" }}>{sig.name}</span>
                             <span className="text-[10px] font-semibold ml-2" style={{ color: sigLevel.color }}>{sig.strength}%</span>
                           </div>
                           <div className="h-1.5 rounded-full overflow-hidden"
@@ -390,7 +390,7 @@ function ModelDrawer({ model, region, onClose }: ModelDrawerProps) {
                     <div key={src} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
                       style={{ background: tagBg, border: tagBorder }}>
                       <div className="w-1.5 h-1.5 rounded-full" style={{ background: model.color }} />
-                      <span className="text-xs" style={{ color: isDark ? "rgba(255,255,255,0.65)" : "rgba(0,0,0,0.6)" }}>{src}</span>
+                      <span className="text-xs" style={{ color: isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.62)" }}>{src}</span>
                     </div>
                   ))}
                 </div>

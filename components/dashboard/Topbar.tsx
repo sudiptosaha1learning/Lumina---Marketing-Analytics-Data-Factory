@@ -57,7 +57,7 @@ export function Topbar({ region, timeframe, onRegionChange, onTimeframeChange, a
           </h1>
           <div className="flex items-center gap-2 mt-0.5">
             <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            <span className={`text-xs ${isDark ? "text-white/40" : "text-slate-500"}`}>{subtitle}</span>
+            <span className={`text-xs font-medium ${isDark ? "text-white/60" : "text-slate-500"}`}>{subtitle}</span>
           </div>
         </div>
       </div>
@@ -76,7 +76,7 @@ export function Topbar({ region, timeframe, onRegionChange, onTimeframeChange, a
 
         {/* Timeframe selector */}
         <div className="flex items-center gap-1 p-1 rounded-xl" style={pillStyle}>
-          <Clock className={`w-3.5 h-3.5 ml-1.5 ${isDark ? "text-white/40" : "text-slate-400"}`} />
+          <Clock className={`w-3.5 h-3.5 ml-1.5 ${isDark ? "text-white/55" : "text-slate-400"}`} />
           {timeframes.map((t) => (
             <button
               key={t}
@@ -86,7 +86,7 @@ export function Topbar({ region, timeframe, onRegionChange, onTimeframeChange, a
                 timeframe === t
                   ? "text-white"
                   : isDark
-                    ? "text-white/40 hover:text-white/70"
+                    ? "text-white/60 hover:text-white/85"
                     : "text-slate-500 hover:text-slate-800"
               )}
               style={timeframe === t ? activeTabStyle : {}}
@@ -98,7 +98,7 @@ export function Topbar({ region, timeframe, onRegionChange, onTimeframeChange, a
 
         {/* Region selector */}
         <div className="flex items-center gap-1 p-1 rounded-xl" style={pillStyle}>
-          <Globe className={`w-3.5 h-3.5 ml-1.5 ${isDark ? "text-white/40" : "text-slate-400"}`} />
+          <Globe className={`w-3.5 h-3.5 ml-1.5 ${isDark ? "text-white/55" : "text-slate-400"}`} />
           {regions.map((r) => (
             <button
               key={r}
@@ -108,7 +108,7 @@ export function Topbar({ region, timeframe, onRegionChange, onTimeframeChange, a
                 region === r
                   ? "text-white"
                   : isDark
-                    ? "text-white/40 hover:text-white/70"
+                    ? "text-white/60 hover:text-white/85"
                     : "text-slate-500 hover:text-slate-800"
               )}
               style={region === r ? activeTabStyle : {}}
@@ -120,7 +120,7 @@ export function Topbar({ region, timeframe, onRegionChange, onTimeframeChange, a
 
         {/* Refresh */}
         <button
-          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${isDark ? "text-white/40 hover:text-white/70 hover:bg-white/[0.05]" : "text-slate-400 hover:text-slate-700 hover:bg-black/[0.05]"}`}
+          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${isDark ? "text-white/55 hover:text-white/85 hover:bg-white/[0.05]" : "text-slate-400 hover:text-slate-700 hover:bg-black/[0.05]"}`}
         >
           <RefreshCw className="w-3.5 h-3.5" />
         </button>
@@ -132,7 +132,7 @@ export function Topbar({ region, timeframe, onRegionChange, onTimeframeChange, a
           className={cn(
             "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
             isDark
-              ? "text-white/50 hover:text-yellow-300 hover:bg-yellow-500/10"
+              ? "text-white/55 hover:text-yellow-300 hover:bg-yellow-500/10"
               : "text-slate-500 hover:text-blue-600 hover:bg-blue-500/10"
           )}
         >

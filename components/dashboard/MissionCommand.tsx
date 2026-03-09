@@ -448,8 +448,8 @@ export function MissionCommand({
     [simState, onSimStateChange]
   );
 
-  const textPrimary   = isDark ? "#e2e8f0" : "#0f172a";
-  const textSecondary = isDark ? "rgba(255,255,255,0.40)" : "rgba(0,0,0,0.45)";
+  const textPrimary   = isDark ? "#f1f5f9" : "#0f172a";
+  const textSecondary = isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.55)";
 
   const totalCustomers = missions.reduce((sum, m) => sum + (m.targetCustomers[region] ?? 0), 0);
 
@@ -645,7 +645,7 @@ function AdaptiveSummaryStrip({
   suggestedCount: number;
   primaryObjective: BusinessObjective | null;
 }) {
-  const textMuted = isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)";
+  const textMuted = isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.5)";
   return (
     <div
       className="flex items-center gap-3 flex-wrap px-4 py-3 rounded-xl"
@@ -716,9 +716,9 @@ function BusinessDrivenPanel({
   const panelBg     = isDark ? "rgba(139,92,246,0.05)" : "rgba(139,92,246,0.03)";
   const panelBorder = isDark ? "1px solid rgba(139,92,246,0.18)" : "1px solid rgba(139,92,246,0.13)";
   const divider     = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
-  const textPrimary   = isDark ? "#e2e8f0" : "#0f172a";
-  const textSecondary = isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)";
-  const textMuted     = isDark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.32)";
+  const textPrimary   = isDark ? "#f1f5f9" : "#0f172a";
+  const textSecondary = isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.6)";
+  const textMuted     = isDark ? "rgba(255,255,255,0.50)" : "rgba(0,0,0,0.40)";
 
   const activeSliders = primaryObjective
     ? SLIDERS.filter((s) => s.relevantFor.includes(primaryObjective))
@@ -977,8 +977,8 @@ interface SimSliderProps {
 
 function SimSlider({ def, value, isDark, live, onChange }: SimSliderProps) {
   const Icon = def.icon;
-  const textPrimary = isDark ? "#e2e8f0" : "#0f172a";
-  const textMuted   = isDark ? "rgba(255,255,255,0.30)" : "rgba(0,0,0,0.35)";
+  const textPrimary = isDark ? "#f1f5f9" : "#0f172a";
+  const textMuted   = isDark ? "rgba(255,255,255,0.52)" : "rgba(0,0,0,0.40)";
   const trackBg     = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
 
   return (
@@ -1078,9 +1078,9 @@ function MissionCard({
     (id) => modelCards.find((m) => m.id === id)?.shortTitle ?? id
   );
 
-  const textPrimary   = isDark ? "#e2e8f0" : "#0f172a";
-  const textSecondary = isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)";
-  const textMuted     = isDark ? "rgba(255,255,255,0.30)" : "rgba(0,0,0,0.35)";
+  const textPrimary   = isDark ? "#f1f5f9" : "#0f172a";
+  const textSecondary = isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.6)";
+  const textMuted     = isDark ? "rgba(255,255,255,0.50)" : "rgba(0,0,0,0.40)";
   const surfaceBg     = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)";
   const surfaceBorder = isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.07)";
   const tagBg         = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
@@ -1360,9 +1360,9 @@ interface SuggestedMissionCardProps {
 function SuggestedMissionCard({ suggestion, isDark }: SuggestedMissionCardProps) {
   const [hovered, setHovered] = useState(false);
 
-  const textPrimary   = isDark ? "#e2e8f0" : "#0f172a";
-  const textSecondary = isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)";
-  const textMuted     = isDark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.32)";
+  const textPrimary   = isDark ? "#f1f5f9" : "#0f172a";
+  const textSecondary = isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.6)";
+  const textMuted     = isDark ? "rgba(255,255,255,0.50)" : "rgba(0,0,0,0.40)";
   const surfaceBg     = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)";
   const surfaceBorder = isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.07)";
   const pc = PRIORITY_CONFIG[suggestion.priority] ?? PRIORITY_CONFIG.Strategic;
@@ -1537,9 +1537,9 @@ function ExplainabilityPanel({ mission, isDark, onClose }: ExplainabilityPanelPr
   const panelBg       = isDark ? "rgba(8,11,20,0.99)"              : "rgba(248,250,253,0.99)";
   const panelBorder   = isDark ? "1px solid rgba(255,255,255,0.1)"  : "1px solid rgba(0,0,0,0.1)";
   const dividerColor  = isDark ? "rgba(255,255,255,0.06)"           : "rgba(0,0,0,0.07)";
-  const textPrimary   = isDark ? "#e2e8f0"                          : "#0f172a";
-  const textSecondary = isDark ? "rgba(255,255,255,0.50)"           : "rgba(0,0,0,0.50)";
-  const textMuted     = isDark ? "rgba(255,255,255,0.35)"           : "rgba(0,0,0,0.35)";
+  const textPrimary   = isDark ? "#f1f5f9"                          : "#0f172a";
+  const textSecondary = isDark ? "rgba(255,255,255,0.72)"           : "rgba(0,0,0,0.60)";
+  const textMuted     = isDark ? "rgba(255,255,255,0.52)"           : "rgba(0,0,0,0.40)";
   const surfaceBg     = isDark ? "rgba(255,255,255,0.04)"           : "rgba(0,0,0,0.04)";
   const surfaceBorder = isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.07)";
   const closeBg       = isDark ? "rgba(255,255,255,0.08)"           : "rgba(0,0,0,0.07)";

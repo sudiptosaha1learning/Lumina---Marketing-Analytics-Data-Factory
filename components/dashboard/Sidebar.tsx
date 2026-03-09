@@ -68,7 +68,7 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
         </div>
         <div>
           <div className={`font-heading font-semibold text-sm leading-tight tracking-wide ${isDark ? "text-white" : "text-slate-900"}`}>MERIDIAN</div>
-          <div className={`text-[10px] tracking-widest uppercase ${isDark ? "text-white/40" : "text-slate-400"}`}>Intelligence Platform</div>
+          <div className={`text-[10px] tracking-widest uppercase ${isDark ? "text-white/55" : "text-slate-400"}`}>Intelligence Platform</div>
         </div>
       </div>
 
@@ -82,14 +82,14 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
           style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)" }}
         >
           <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className={`text-xs ${isDark ? "text-white/70" : "text-slate-600"}`}>JLR Global Analytics</span>
+            <span className={`text-xs font-medium ${isDark ? "text-white/68" : "text-slate-600"}`}>JLR Global Analytics</span>
         </div>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1">
         <div className="px-3 mb-3">
-          <span className={`text-[10px] tracking-widest uppercase font-medium ${isDark ? "text-white/30" : "text-slate-400"}`}>Workspace</span>
+          <span className={`text-[10px] tracking-widest uppercase font-semibold ${isDark ? "text-white/48" : "text-slate-400"}`}>Workspace</span>
         </div>
 
         {navItems.map((item) => {
@@ -107,10 +107,10 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
                   ? "text-white"
                   : isEnabled
                   ? isDark
-                    ? "text-white/50 hover:text-white/80 hover:bg-white/[0.05]"
+                    ? "text-white/62 hover:text-white/90 hover:bg-white/[0.05]"
                     : "text-slate-500 hover:text-slate-800 hover:bg-black/[0.04]"
                   : isDark
-                  ? "text-white/20 cursor-not-allowed"
+                  ? "text-white/30 cursor-not-allowed"
                   : "text-slate-300 cursor-not-allowed"
               )}
               style={isActive ? { background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)" } : {}}
@@ -129,7 +129,7 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
                   "text-sm font-medium leading-tight truncate",
                   isActive ? "text-white" : isDark ? "" : "text-slate-700"
                 )}>{item.label}</div>
-                <div className={`text-[10px] truncate ${isDark ? "text-white/30" : "text-slate-400"}`}>{item.sublabel}</div>
+                <div className={`text-[10px] truncate font-medium ${isDark ? "text-white/52" : "text-slate-400"}`}>{item.sublabel}</div>
               </div>
               {isActive && <ChevronRight className="w-3 h-3 text-blue-400 flex-shrink-0" />}
               {!isEnabled && (
@@ -140,7 +140,7 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
         })}
 
         <div className="px-3 mt-6 mb-3">
-          <span className={`text-[10px] tracking-widest uppercase font-medium ${isDark ? "text-white/30" : "text-slate-400"}`}>Analytics</span>
+          <span className={`text-[10px] tracking-widest uppercase font-semibold ${isDark ? "text-white/48" : "text-slate-400"}`}>Analytics</span>
         </div>
 
         {[
@@ -149,7 +149,7 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
         ].map((item) => (
           <button
             key={item.label}
-            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 cursor-not-allowed ${isDark ? "text-white/30" : "text-slate-300"}`}
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 cursor-not-allowed ${isDark ? "text-white/38" : "text-slate-300"}`}
           >
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? "bg-white/[0.03]" : "bg-black/[0.03]"}`}>
               <item.icon className="w-4 h-4" />
@@ -165,7 +165,7 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
         style={{ borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)" }}
       >
         <button
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${isDark ? "text-white/40 hover:text-white/70 hover:bg-white/[0.05]" : "text-slate-500 hover:text-slate-800 hover:bg-black/[0.04]"}`}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${isDark ? "text-white/58 hover:text-white/88 hover:bg-white/[0.05]" : "text-slate-500 hover:text-slate-800 hover:bg-black/[0.04]"}`}
         >
           <Bell className="w-4 h-4" />
           <span className="text-sm">Notifications</span>
@@ -174,7 +174,7 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
           </div>
         </button>
         <button
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${isDark ? "text-white/40 hover:text-white/70 hover:bg-white/[0.05]" : "text-slate-500 hover:text-slate-800 hover:bg-black/[0.04]"}`}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${isDark ? "text-white/58 hover:text-white/88 hover:bg-white/[0.05]" : "text-slate-500 hover:text-slate-800 hover:bg-black/[0.04]"}`}
         >
           <Settings className="w-4 h-4" />
           <span className="text-sm">Settings</span>
@@ -190,8 +190,8 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
             <span className="text-white text-[10px] font-bold">AG</span>
           </div>
           <div className="min-w-0">
-            <div className={`text-xs font-medium truncate ${isDark ? "text-white/80" : "text-slate-800"}`}>Arjun Gupta</div>
-            <div className={`text-[10px] truncate ${isDark ? "text-white/30" : "text-slate-400"}`}>Global Analytics Head</div>
+            <div className={`text-xs font-semibold truncate ${isDark ? "text-white/88" : "text-slate-800"}`}>Arjun Gupta</div>
+            <div className={`text-[10px] truncate font-medium ${isDark ? "text-white/52" : "text-slate-400"}`}>Global Analytics Head</div>
           </div>
         </div>
       </div>

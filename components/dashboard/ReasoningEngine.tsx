@@ -25,15 +25,15 @@ export function ReasoningEngine({ onComplete, onHighlightModels, region }: Reaso
 
   const surfaceBg = isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.9)";
   const surfaceBorder = isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)";
-  const textPrimary = isDark ? "#e2e8f0" : "#0f172a";
-  const textSecondary = isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.55)";
-  const textMuted = isDark ? "rgba(255,255,255,0.40)" : "rgba(0,0,0,0.40)";
+  const textPrimary = isDark ? "#f1f5f9" : "#0f172a";
+  const textSecondary = isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.60)";
+  const textMuted = isDark ? "rgba(255,255,255,0.52)" : "rgba(0,0,0,0.45)";
   const dividerColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)";
   const logBg = isDark ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.04)";
   const logBorder = isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)";
   const stepTextActive = isDark ? "#93c5fd" : "#1d4ed8";
-  const stepTextDone = isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.45)";
-  const stepNum = isDark ? "rgba(255,255,255,0.20)" : "rgba(0,0,0,0.20)";
+  const stepTextDone = isDark ? "rgba(255,255,255,0.60)" : "rgba(0,0,0,0.50)";
+  const stepNum = isDark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.22)";
 
   const startSynthesis = () => {
     setIsThinking(true);
