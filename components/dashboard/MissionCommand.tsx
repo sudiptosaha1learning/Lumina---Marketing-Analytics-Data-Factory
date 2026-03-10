@@ -88,7 +88,7 @@ const OBJECTIVES: ObjectiveDef[] = [
     affinity: ["buyback", "renewal", "intelligent-lead"],
   },
   {
-    id: "Improve Retention",
+    id: "Improve Customer Retention",
     icon: Heart,
     color: "#f59e0b",
     bg: "rgba(245,158,11,0.1)",
@@ -97,7 +97,7 @@ const OBJECTIVES: ObjectiveDef[] = [
     affinity: ["service-retention", "cancellation", "renewal"],
   },
   {
-    id: "Reduce Incentive Burn",
+    id: "Reduce Incentive Spend",
     icon: Scissors,
     color: "#8b5cf6",
     bg: "rgba(139,92,246,0.1)",
@@ -1107,10 +1107,10 @@ function MissionCard({
             ? `rgba(${hexToRgb(mission.color)}, 0.08)`
             : isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.92)",
         border: `1px solid ${suppressed
-            ? isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)"
-            : hovered
-              ? `rgba(${hexToRgb(mission.color)}, 0.4)`
-              : isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)"
+          ? isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)"
+          : hovered
+            ? `rgba(${hexToRgb(mission.color)}, 0.4)`
+            : isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)"
           }`,
         backdropFilter: "blur(16px)",
         opacity: suppressed ? 0.45 : 1,
