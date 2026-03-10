@@ -24,7 +24,7 @@ const navItems = [
   {
     id: "mosaic" as const,
     label: "Model Mosaic",
-    sublabel: "7 Intelligence Models",
+    sublabel: "8 Intelligence Models",
     icon: LayoutDashboard,
     alwaysEnabled: true,
   },
@@ -82,7 +82,7 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
           style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)" }}
         >
           <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className={`text-xs font-medium ${isDark ? "text-white/68" : "text-slate-600"}`}>JLR Global Analytics</span>
+          <span className={`text-xs font-medium ${isDark ? "text-white/68" : "text-slate-600"}`}>JLR Global Analytics</span>
         </div>
       </div>
 
@@ -106,12 +106,12 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
                 isActive
                   ? "text-white"
                   : isEnabled
-                  ? isDark
-                    ? "text-white/62 hover:text-white/90 hover:bg-white/[0.05]"
-                    : "text-slate-500 hover:text-slate-800 hover:bg-black/[0.04]"
-                  : isDark
-                  ? "text-white/30 cursor-not-allowed"
-                  : "text-slate-300 cursor-not-allowed"
+                    ? isDark
+                      ? "text-white/62 hover:text-white/90 hover:bg-white/[0.05]"
+                      : "text-slate-500 hover:text-slate-800 hover:bg-black/[0.04]"
+                    : isDark
+                      ? "text-white/30 cursor-not-allowed"
+                      : "text-slate-300 cursor-not-allowed"
               )}
               style={isActive ? { background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)" } : {}}
             >
