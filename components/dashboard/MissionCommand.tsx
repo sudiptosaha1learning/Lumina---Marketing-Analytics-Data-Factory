@@ -181,7 +181,7 @@ const SLIDERS: SliderDef[] = [
     leftLabel: "Range Rover / Defender",
     rightLabel: "Balanced Model Mix",
     color: "#f97316",
-    relevantFor: ["Maximize Revenue", "Accelerate EV Adoption", "Improve Customer Retention"],
+    relevantFor: ["Maximize Revenue", "Accelerate EV Adoption", "Improve Customer Retention", "Protect Margin"],
     icon: BarChart2,
   },
   {
