@@ -151,8 +151,8 @@ const SLIDERS: SliderDef[] = [
   {
     key: "revenueWeight",
     label: "Revenue vs. Volume",
-    leftLabel: "Volume",
-    rightLabel: "Revenue",
+    leftLabel: "Volume Focus",
+    rightLabel: "Revenue Focus",
     color: "#10b981",
     relevantFor: ["Maximize Revenue", "Protect Margin", "Reduce Incentive Spend"],
     icon: DollarSign,
@@ -169,8 +169,8 @@ const SLIDERS: SliderDef[] = [
   {
     key: "evFocus",
     label: "EV Customer Focus",
-    leftLabel: "ICE Priority",
-    rightLabel: "EV Priority",
+    leftLabel: "ICE Retention",
+    rightLabel: "EV Acceleration",
     color: "#06b6d4",
     relevantFor: ["Accelerate EV Adoption", "Maximize Revenue", "Improve Customer Retention"],
     icon: Leaf,
@@ -178,8 +178,8 @@ const SLIDERS: SliderDef[] = [
   {
     key: "carModelMix",
     label: "Vehicle Model Mix",
-    leftLabel: "Range Rover Focus",
-    rightLabel: "Balanced Mix",
+    leftLabel: "Range Rover / Defender",
+    rightLabel: "Balanced Model Mix",
     color: "#f97316",
     relevantFor: ["Maximize Revenue", "Accelerate EV Adoption", "Improve Customer Retention"],
     icon: BarChart2,
