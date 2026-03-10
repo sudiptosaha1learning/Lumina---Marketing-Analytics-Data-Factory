@@ -1104,10 +1104,10 @@ export const modelCards: ModelCardData[] = [
   {
     id: "customer-experience",
     title: "Customer Experience Index (CEI)",
-    shortTitle: "Experience Index",
+    shortTitle: "Customer Experience Index",
     lifecycle: "Own",
-    metric: "Loyalty Potential Score",
-    metricValue: { Global: "78.6", "North America": "76.2", Europe: "81.4", UK: "82.1" },
+    metric: "Ownership Engagement Score",
+    metricValue: { Global: "68.3", "North America": "44.2", Europe: "78.8", UK: "82.1" },
     metricDelta: { Global: "+3.8", "North America": "+2.4", Europe: "+5.1", UK: "+4.9" },
     metricTrend: { Global: "up", "North America": "up", Europe: "up", UK: "up" },
     insightSummary: {
