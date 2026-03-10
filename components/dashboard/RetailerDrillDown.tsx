@@ -67,15 +67,18 @@ export function RetailerDrillDown({ mission, region, simMultipliers, onBack }: R
     return `${prefix}${(num * simMultipliers.revenue).toFixed(2)}M`;
   };
 
-  // Retailer customer count: scale with sim customers multiplier when active.
+  // Retailer customer count: use the canonical targetCustomers field (which holds the
+  // true population, not the representative profile-card count). Scale with sim multiplier.
   const retailerCustomerCount = (r: RetailerData): string => {
-    if (!simMultipliers) return r.customers.length.toString();
-    return Math.round(r.customers.length * simMultipliers.customers).toString();
+    const base = r.targetCustomers;
+    if (!simMultipliers) return base.toString();
+    return Math.round(base * simMultipliers.customers).toLocaleString();
   };
 
-  // Total customers across all filtered retailers — scaled by sim multiplier when active
+  // Total customers across all filtered retailers — use mission-level canonical value
+  // so it matches the Mission Command Center exactly. Apply sim multiplier when active.
   const totalFilteredCustomers = (() => {
-    const raw = filteredRetailers.reduce((sum, r) => sum + r.customers.length, 0);
+    const raw = mission.targetCustomers[region] ?? 0;
     return simMultipliers ? Math.round(raw * simMultipliers.customers) : raw;
   })();
 
@@ -292,15 +295,16 @@ function ExpandedCustomerList({
 }) {
   const [showAll, setShowAll] = useState(false);
   
-  // Calculate total customers (scaled by sim multiplier)
+  // Use r.targetCustomers (canonical population) rather than customers.length
+  // (which only holds representative profile cards). Apply sim multiplier when active.
   const totalCustomerCount = simMultipliers 
-    ? Math.round(retailer.customers.length * simMultipliers.customers)
-    : retailer.customers.length;
+    ? Math.round(retailer.targetCustomers * simMultipliers.customers)
+    : retailer.targetCustomers;
   
-  // Show max 5 customers initially, or all if showAll is true
+  // Show max 5 profile cards initially; the canonical count drives the "View All" label
   const displayLimit = 5;
   const customersToShow = showAll ? retailer.customers : retailer.customers.slice(0, displayLimit);
-  const hasMore = retailer.customers.length > displayLimit || (simMultipliers && totalCustomerCount > displayLimit);
+  const hasMore = totalCustomerCount > displayLimit;
   const remainingCount = totalCustomerCount - customersToShow.length;
 
   return (

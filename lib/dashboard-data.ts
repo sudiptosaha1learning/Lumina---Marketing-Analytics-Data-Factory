@@ -1313,8 +1313,16 @@ export interface CustomerProfile {
 }
 
 // ─── MISSION DATA ─────────────────────────────────────────────────────────────
-// NOTE: targetCustomers per retailer MUST equal customers.length
-// Global/regional targetCustomers MUST equal the sum of matching retailer targetCustomers
+// Retailer targetCustomers and projectedRevenue are intentionally larger than
+// customers.length — the array holds representative profile cards for the UI;
+// the numeric fields carry the true population for totals and the "View All" count.
+// Mission 1 retailers distribute: 280 customers / $38.0M
+//   Princeton 52/$7.2M  Manhattan 64/$8.8M  Beverly Hills 46/$6.4M
+//   Knightsbridge 68/£6.2M  Edinburgh 50/£4.4M
+// Mission 2 retailers distribute: 170 customers / $18.0M
+//   Gold Coast 52/$3.8M  Mayfair 88/£3.9M  Birmingham 30/£2.2M
+// Mission 3 retailers distribute: 148 customers / $16.2M
+//   Dallas 58/$7.2M  Munich 50/€5.6M  Manchester 40/£3.9M
 
 export const missions: Mission[] = [
   {
@@ -1361,8 +1369,8 @@ export const missions: Mission[] = [
         region: "North America",
         tier: "Tier 1",
         missionFit: 96,
-        targetCustomers: 3,
-        projectedRevenue: "$0.31M",
+        targetCustomers: 52,
+        projectedRevenue: "$7.2M",
         customers: [
           {
             id: "sudipto-s",
@@ -1430,8 +1438,8 @@ export const missions: Mission[] = [
         region: "North America",
         tier: "Tier 1",
         missionFit: 91,
-        targetCustomers: 4,
-        projectedRevenue: "$0.44M",
+        targetCustomers: 64,
+        projectedRevenue: "$8.8M",
         customers: [
           {
             id: "marcus-t",
@@ -1518,8 +1526,8 @@ export const missions: Mission[] = [
         region: "North America",
         tier: "Tier 1",
         missionFit: 88,
-        targetCustomers: 3,
-        projectedRevenue: "$0.34M",
+        targetCustomers: 46,
+        projectedRevenue: "$6.4M",
         customers: [
           {
             id: "priya-m",
@@ -1587,8 +1595,8 @@ export const missions: Mission[] = [
         region: "UK",
         tier: "Tier 1",
         missionFit: 93,
-        targetCustomers: 3,
-        projectedRevenue: "£0.29M",
+        targetCustomers: 68,
+        projectedRevenue: "£6.2M",
         customers: [
           {
             id: "oliver-b",
@@ -1656,8 +1664,8 @@ export const missions: Mission[] = [
         region: "UK",
         tier: "Tier 2",
         missionFit: 81,
-        targetCustomers: 2,
-        projectedRevenue: "£0.18M",
+        targetCustomers: 50,
+        projectedRevenue: "£4.4M",
         customers: [
           {
             id: "angus-m",
@@ -1745,8 +1753,8 @@ export const missions: Mission[] = [
         region: "North America",
         tier: "Tier 1",
         missionFit: 89,
-        targetCustomers: 1,
-        projectedRevenue: "$0.20M",
+        targetCustomers: 52,
+        projectedRevenue: "$3.8M",
         customers: [
           {
             id: "david-r",
@@ -1776,8 +1784,8 @@ export const missions: Mission[] = [
         region: "Europe",
         tier: "Tier 1",
         missionFit: 92,
-        targetCustomers: 2,
-        projectedRevenue: "£0.18M",
+        targetCustomers: 88,
+        projectedRevenue: "£3.9M",
         customers: [
           {
             id: "james-w",
@@ -1826,8 +1834,8 @@ export const missions: Mission[] = [
         region: "UK",
         tier: "Tier 1",
         missionFit: 84,
-        targetCustomers: 2,
-        projectedRevenue: "£0.14M",
+        targetCustomers: 30,
+        projectedRevenue: "£2.2M",
         customers: [
           {
             id: "raj-p",
@@ -1915,8 +1923,8 @@ export const missions: Mission[] = [
         region: "North America",
         tier: "Tier 1",
         missionFit: 94,
-        targetCustomers: 2,
-        projectedRevenue: "$0.15M",
+        targetCustomers: 58,
+        projectedRevenue: "$7.2M",
         customers: [
           {
             id: "blake-c",
@@ -1965,8 +1973,8 @@ export const missions: Mission[] = [
         region: "Europe",
         tier: "Tier 1",
         missionFit: 87,
-        targetCustomers: 2,
-        projectedRevenue: "€0.22M",
+        targetCustomers: 50,
+        projectedRevenue: "€5.6M",
         customers: [
           {
             id: "thomas-k",
@@ -2015,8 +2023,8 @@ export const missions: Mission[] = [
         region: "UK",
         tier: "Tier 1",
         missionFit: 85,
-        targetCustomers: 2,
-        projectedRevenue: "£0.12M",
+        targetCustomers: 40,
+        projectedRevenue: "£3.9M",
         customers: [
           {
             id: "liam-o",
