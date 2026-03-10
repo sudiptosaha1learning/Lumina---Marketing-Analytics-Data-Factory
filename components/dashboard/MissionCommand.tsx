@@ -116,6 +116,11 @@ export interface SimParams {
   carModelMix: number;
   lifecycleBias: number;
   incentiveAggression: number;
+  // Improve Customer Retention specific
+  ownerEngagement: number;
+  customerOffer: number;
+  // Accelerate EV Adoption specific
+  portfolio: number;
 }
 
 const DEFAULT_PARAMS: SimParams = {
@@ -125,13 +130,16 @@ const DEFAULT_PARAMS: SimParams = {
   carModelMix: 50,
   lifecycleBias: 50,
   incentiveAggression: 50,
+  ownerEngagement: 50,
+  customerOffer: 50,
+  portfolio: 50,
 };
 
 const OBJECTIVE_PRESETS: Record<BusinessObjective, Partial<SimParams>> = {
   "Maximize Revenue": { revenueWeight: 80, marginProtection: 30, incentiveAggression: 65, carModelMix: 40 },
   "Protect Margin": { marginProtection: 80, incentiveAggression: 20, revenueWeight: 55 },
-  "Accelerate EV Adoption": { evFocus: 85, lifecycleBias: 55, carModelMix: 60 },
-  "Improve Customer Retention": { lifecycleBias: 80, marginProtection: 60, incentiveAggression: 40 },
+  "Accelerate EV Adoption": { evFocus: 85, lifecycleBias: 55, portfolio: 70 },
+  "Improve Customer Retention": { lifecycleBias: 80, marginProtection: 60, incentiveAggression: 40, ownerEngagement: 70, customerOffer: 65 },
   "Reduce Incentive Spend": { incentiveAggression: 15, marginProtection: 75, revenueWeight: 45 },
 };
 
@@ -172,7 +180,7 @@ const SLIDERS: SliderDef[] = [
     leftLabel: "ICE Retention",
     rightLabel: "EV Acceleration",
     color: "#06b6d4",
-    relevantFor: ["Accelerate EV Adoption", "Maximize Revenue", "Improve Customer Retention"],
+    relevantFor: ["Accelerate EV Adoption", "Maximize Revenue"],
     icon: Leaf,
   },
   {
@@ -181,7 +189,16 @@ const SLIDERS: SliderDef[] = [
     leftLabel: "Range Rover / Defender",
     rightLabel: "Balanced Model Mix",
     color: "#f97316",
-    relevantFor: ["Maximize Revenue", "Accelerate EV Adoption", "Improve Customer Retention", "Protect Margin"],
+    relevantFor: ["Maximize Revenue", "Protect Margin"],
+    icon: BarChart2,
+  },
+  {
+    key: "portfolio",
+    label: "Portfolio",
+    leftLabel: "Balanced Focus",
+    rightLabel: "Electrified",
+    color: "#06b6d4",
+    relevantFor: ["Accelerate EV Adoption"],
     icon: BarChart2,
   },
   {
@@ -201,6 +218,24 @@ const SLIDERS: SliderDef[] = [
     color: "#8b5cf6",
     relevantFor: ["Maximize Revenue", "Reduce Incentive Spend", "Protect Margin"],
     icon: Scissors,
+  },
+  {
+    key: "ownerEngagement",
+    label: "Owners",
+    leftLabel: "Passive",
+    rightLabel: "Engaged",
+    color: "#f59e0b",
+    relevantFor: ["Improve Customer Retention"],
+    icon: Users,
+  },
+  {
+    key: "customerOffer",
+    label: "Customer Offer",
+    leftLabel: "Upgrade Focus",
+    rightLabel: "Ownership Value",
+    color: "#f59e0b",
+    relevantFor: ["Improve Customer Retention"],
+    icon: Heart,
   },
 ];
 
@@ -397,7 +432,20 @@ function computeSimMultipliers(
   const affinityBoost = hasAffinity ? 1.06 : 1.0;
 
   const revenueMultiplier = 0.85 + (p.revenueWeight / 100) * 0.40;
-  const customerMultiplier = 0.70 + ((100 - p.lifecycleBias) / 100) * 0.55 + (p.evFocus / 100) * 0.20;
+  // ownerEngagement and customerOffer boost retention-focused customer multiplier
+  const retentionBoost =
+    primaryObjective === "Improve Customer Retention"
+      ? (p.ownerEngagement / 100) * 0.12 + (p.customerOffer / 100) * 0.08
+      : 0;
+  // portfolio param boosts EV adoption customer multiplier in place of carModelMix
+  const evPortfolioBoost =
+    primaryObjective === "Accelerate EV Adoption" ? (p.portfolio / 100) * 0.12 : 0;
+  const customerMultiplier =
+    0.70 +
+    ((100 - p.lifecycleBias) / 100) * 0.55 +
+    (p.evFocus / 100) * 0.20 +
+    retentionBoost +
+    evPortfolioBoost;
   const conversionBase = 0.90 + (p.marginProtection / 100) * 0.20;
   const conversionMult = conversionBase + (p.incentiveAggression / 100) * 0.08 - ((100 - p.incentiveAggression) / 100) * 0.04;
 
