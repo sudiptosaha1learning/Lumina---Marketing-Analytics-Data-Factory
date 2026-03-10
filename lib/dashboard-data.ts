@@ -1915,6 +1915,10 @@ export const missions: Mission[] = [
           },
         ],
       },
+    ],
+  },
+  {
+    id: "loyalty-recovery",
     title: "The Loyalty Recovery Mission",
     subtitle: "Re-engage high-value churned & at-risk owners before competitor conquest",
     priority: "High",
