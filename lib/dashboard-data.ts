@@ -1111,7 +1111,7 @@ export const modelCards: ModelCardData[] = [
     metricDelta: { Global: "+3.8", "North America": "+2.4", Europe: "+5.1", UK: "+4.9" },
     metricTrend: { Global: "up", "North America": "up", Europe: "up", UK: "up" },
     insightSummary: {
-      Global: "Composite CEI score identifies 2,840 customers with high loyalty potential; 412 showing early churn indicators requiring intervention",
+      Global: "Composite CEI score identifies 2,840 customers with high loyalty potential",
       "North America": "App engagement down 18% for 1,120 NA owners — correlates with 2.3× higher defection probability within 6 months",
       Europe: "Service touchpoint frequency highest in DACH; telematics data shows 94% positive vehicle health status driving loyalty uplift",
       UK: "UK leads global CEI at 82.1; InControl app monthly active users at 89% — highest retailer NPS correlation observed",
