@@ -190,8 +190,8 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
             <span className="text-white text-[10px] font-bold">AG</span>
           </div>
           <div className="min-w-0">
-            <div className={`text-xs font-semibold truncate ${isDark ? "text-white/88" : "text-slate-800"}`}>Arjun Gupta</div>
-            <div className={`text-[10px] truncate font-medium ${isDark ? "text-white/52" : "text-slate-400"}`}>Global Analytics Head</div>
+            <div className={`text-xs font-semibold truncate ${isDark ? "text-white/88" : "text-slate-800"}`}>John Doe</div>
+            <div className={`text-[10px] truncate font-medium ${isDark ? "text-white/52" : "text-slate-400"}`}>Group Product Owner</div>
           </div>
         </div>
       </div>
