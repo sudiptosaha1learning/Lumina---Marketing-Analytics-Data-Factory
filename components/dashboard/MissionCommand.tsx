@@ -998,7 +998,7 @@ function SimSlider({ def, value, isDark, live, onChange }: SimSliderProps) {
             </span>
           )}
         </div>
-        <span className="text-[11px] font-bold tabular-nums" style={{ color: def.color }}>
+        <span className="sr-only" style={{ color: def.color }}>
           {value}
         </span>
       </div>
