@@ -35,8 +35,8 @@ export interface SimState {
 // ─── Priority config ──────────────────────────────────────────────────────────
 
 const PRIORITY_CONFIG = {
-  Critical:  { color: "#ef4444", bg: "rgba(239,68,68,0.12)",  border: "rgba(239,68,68,0.35)"  },
-  High:      { color: "#f59e0b", bg: "rgba(245,158,11,0.12)", border: "rgba(245,158,11,0.35)" },
+  Critical: { color: "#ef4444", bg: "rgba(239,68,68,0.12)", border: "rgba(239,68,68,0.35)" },
+  High: { color: "#f59e0b", bg: "rgba(245,158,11,0.12)", border: "rgba(245,158,11,0.35)" },
   Strategic: { color: "#8b5cf6", bg: "rgba(139,92,246,0.12)", border: "rgba(139,92,246,0.35)" },
 };
 
@@ -46,8 +46,8 @@ export type BusinessObjective =
   | "Maximize Revenue"
   | "Protect Margin"
   | "Accelerate EV Adoption"
-  | "Improve Retention"
-  | "Reduce Incentive Burn";
+  | "Improve Customer Retention"
+  | "Reduce Incentive Spend";
 
 interface ObjectiveDef {
   id: BusinessObjective;
@@ -128,11 +128,11 @@ const DEFAULT_PARAMS: SimParams = {
 };
 
 const OBJECTIVE_PRESETS: Record<BusinessObjective, Partial<SimParams>> = {
-  "Maximize Revenue":       { revenueWeight: 80, marginProtection: 30, incentiveAggression: 65, carModelMix: 40 },
-  "Protect Margin":         { marginProtection: 80, incentiveAggression: 20, revenueWeight: 55 },
+  "Maximize Revenue": { revenueWeight: 80, marginProtection: 30, incentiveAggression: 65, carModelMix: 40 },
+  "Protect Margin": { marginProtection: 80, incentiveAggression: 20, revenueWeight: 55 },
   "Accelerate EV Adoption": { evFocus: 85, lifecycleBias: 55, carModelMix: 60 },
-  "Improve Retention":      { lifecycleBias: 80, marginProtection: 60, incentiveAggression: 40 },
-  "Reduce Incentive Burn":  { incentiveAggression: 15, marginProtection: 75, revenueWeight: 45 },
+  "Improve Retention": { lifecycleBias: 80, marginProtection: 60, incentiveAggression: 40 },
+  "Reduce Incentive Burn": { incentiveAggression: 15, marginProtection: 75, revenueWeight: 45 },
 };
 
 // ─── Slider config ────────────────────────────────────────────────────────────
@@ -396,14 +396,14 @@ function computeSimMultipliers(
   const hasAffinity = missionSourceModels.some((m) => pDef.affinity.includes(m));
   const affinityBoost = hasAffinity ? 1.06 : 1.0;
 
-  const revenueMultiplier  = 0.85 + (p.revenueWeight / 100) * 0.40;
+  const revenueMultiplier = 0.85 + (p.revenueWeight / 100) * 0.40;
   const customerMultiplier = 0.70 + ((100 - p.lifecycleBias) / 100) * 0.55 + (p.evFocus / 100) * 0.20;
-  const conversionBase     = 0.90 + (p.marginProtection / 100) * 0.20;
-  const conversionMult     = conversionBase + (p.incentiveAggression / 100) * 0.08 - ((100 - p.incentiveAggression) / 100) * 0.04;
+  const conversionBase = 0.90 + (p.marginProtection / 100) * 0.20;
+  const conversionMult = conversionBase + (p.incentiveAggression / 100) * 0.08 - ((100 - p.incentiveAggression) / 100) * 0.04;
 
   return {
-    revenue:    revenueMultiplier * affinityBoost,
-    customers:  customerMultiplier,
+    revenue: revenueMultiplier * affinityBoost,
+    customers: customerMultiplier,
     conversion: Math.max(0.80, Math.min(1.35, conversionMult)),
   };
 }
@@ -423,32 +423,32 @@ export function MissionCommand({
   const [simRunning, setSimRunning] = useState(false);
 
   // Internal fallback state
-  const [_businessMode,     set_BusinessMode]     = useState(false);
+  const [_businessMode, set_BusinessMode] = useState(false);
   const [_primaryObjective, set_PrimaryObjective] = useState<BusinessObjective | null>(null);
-  const [_simParams,        set_SimParams]        = useState<SimParams>(DEFAULT_PARAMS);
-  const [_simActive,        set_SimActive]        = useState(false);
+  const [_simParams, set_SimParams] = useState<SimParams>(DEFAULT_PARAMS);
+  const [_simActive, set_SimActive] = useState(false);
 
   // Prefer lifted state when provided
-  const businessMode     = simState ? simState.businessMode     : _businessMode;
+  const businessMode = simState ? simState.businessMode : _businessMode;
   const primaryObjective = simState ? simState.primaryObjective : _primaryObjective;
-  const simParams        = simState ? simState.simParams        : _simParams;
-  const simActive        = simState ? simState.simActive        : _simActive;
+  const simParams = simState ? simState.simParams : _simParams;
+  const simActive = simState ? simState.simActive : _simActive;
 
   const setSimState = useCallback(
     (patch: Partial<SimState>) => {
       if (onSimStateChange && simState) {
         onSimStateChange({ ...simState, ...patch });
       } else {
-        if (patch.businessMode     !== undefined) set_BusinessMode(patch.businessMode);
+        if (patch.businessMode !== undefined) set_BusinessMode(patch.businessMode);
         if (patch.primaryObjective !== undefined) set_PrimaryObjective(patch.primaryObjective);
-        if (patch.simParams        !== undefined) set_SimParams(patch.simParams);
-        if (patch.simActive        !== undefined) set_SimActive(patch.simActive);
+        if (patch.simParams !== undefined) set_SimParams(patch.simParams);
+        if (patch.simActive !== undefined) set_SimActive(patch.simActive);
       }
     },
     [simState, onSimStateChange]
   );
 
-  const textPrimary   = isDark ? "#f1f5f9" : "#0f172a";
+  const textPrimary = isDark ? "#f1f5f9" : "#0f172a";
   const textSecondary = isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.55)";
 
   const totalCustomers = missions.reduce((sum, m) => sum + (m.targetCustomers[region] ?? 0), 0);
@@ -501,7 +501,7 @@ export function MissionCommand({
     setSimState({ simActive: false, primaryObjective: null, simParams: DEFAULT_PARAMS });
   }, [setSimState]);
 
-  const suppressedCount  = Object.keys(suppressionMap).length;
+  const suppressedCount = Object.keys(suppressionMap).length;
   const activeMissionCount = missions.length - suppressedCount + suggestedMissions.length;
 
   return (
@@ -556,7 +556,7 @@ export function MissionCommand({
             }}
           >
             <Sliders className="w-3.5 h-3.5" />
-            Business Driven Mode
+            Business Strategy Simulation
           </button>
         </div>
       </div>
@@ -713,12 +713,12 @@ function BusinessDrivenPanel({
   onRun,
   onReset,
 }: BusinessDrivenPanelProps) {
-  const panelBg     = isDark ? "rgba(139,92,246,0.05)" : "rgba(139,92,246,0.03)";
+  const panelBg = isDark ? "rgba(139,92,246,0.05)" : "rgba(139,92,246,0.03)";
   const panelBorder = isDark ? "1px solid rgba(139,92,246,0.18)" : "1px solid rgba(139,92,246,0.13)";
-  const divider     = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
-  const textPrimary   = isDark ? "#f1f5f9" : "#0f172a";
+  const divider = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
+  const textPrimary = isDark ? "#f1f5f9" : "#0f172a";
   const textSecondary = isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.6)";
-  const textMuted     = isDark ? "rgba(255,255,255,0.50)" : "rgba(0,0,0,0.40)";
+  const textMuted = isDark ? "rgba(255,255,255,0.50)" : "rgba(0,0,0,0.40)";
 
   const activeSliders = primaryObjective
     ? SLIDERS.filter((s) => s.relevantFor.includes(primaryObjective))
@@ -978,8 +978,8 @@ interface SimSliderProps {
 function SimSlider({ def, value, isDark, live, onChange }: SimSliderProps) {
   const Icon = def.icon;
   const textPrimary = isDark ? "#f1f5f9" : "#0f172a";
-  const textMuted   = isDark ? "rgba(255,255,255,0.52)" : "rgba(0,0,0,0.40)";
-  const trackBg     = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
+  const textMuted = isDark ? "rgba(255,255,255,0.52)" : "rgba(0,0,0,0.40)";
+  const trackBg = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -1078,19 +1078,19 @@ function MissionCard({
     (id) => modelCards.find((m) => m.id === id)?.shortTitle ?? id
   );
 
-  const textPrimary   = isDark ? "#f1f5f9" : "#0f172a";
+  const textPrimary = isDark ? "#f1f5f9" : "#0f172a";
   const textSecondary = isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.6)";
-  const textMuted     = isDark ? "rgba(255,255,255,0.50)" : "rgba(0,0,0,0.40)";
-  const surfaceBg     = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)";
+  const textMuted = isDark ? "rgba(255,255,255,0.50)" : "rgba(0,0,0,0.40)";
+  const surfaceBg = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)";
   const surfaceBorder = isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.07)";
-  const tagBg         = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
-  const tagBorder     = isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)";
-  const idxBg         = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
+  const tagBg = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
+  const tagBorder = isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)";
+  const idxBg = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
 
-  const displayRevenue    = simMultipliers
+  const displayRevenue = simMultipliers
     ? formatRevenueSim(mission.projectedRevenue[region], simMultipliers.revenue)
     : mission.projectedRevenue[region];
-  const displayCustomers  = simMultipliers
+  const displayCustomers = simMultipliers
     ? Math.round(mission.targetCustomers[region] * simMultipliers.customers).toLocaleString()
     : mission.targetCustomers[region].toLocaleString();
   const displayConversion = simMultipliers
@@ -1106,13 +1106,12 @@ function MissionCard({
           : hovered
             ? `rgba(${hexToRgb(mission.color)}, 0.08)`
             : isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.92)",
-        border: `1px solid ${
-          suppressed
+        border: `1px solid ${suppressed
             ? isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)"
             : hovered
               ? `rgba(${hexToRgb(mission.color)}, 0.4)`
               : isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)"
-        }`,
+          }`,
         backdropFilter: "blur(16px)",
         opacity: suppressed ? 0.45 : 1,
         boxShadow:
@@ -1237,9 +1236,9 @@ function MissionCard({
         {/* Metrics */}
         <div className="grid grid-cols-3 gap-2 mb-4">
           {[
-            { label: "Revenue",    value: displayRevenue,    orig: mission.projectedRevenue[region],                 icon: DollarSign },
-            { label: "Customers",  value: displayCustomers,  orig: mission.targetCustomers[region].toLocaleString(), icon: Users      },
-            { label: "Conv. Rate", value: displayConversion, orig: mission.conversionRate[region],                   icon: TrendingUp },
+            { label: "Revenue", value: displayRevenue, orig: mission.projectedRevenue[region], icon: DollarSign },
+            { label: "Customers", value: displayCustomers, orig: mission.targetCustomers[region].toLocaleString(), icon: Users },
+            { label: "Conv. Rate", value: displayConversion, orig: mission.conversionRate[region], icon: TrendingUp },
           ].map((stat) => {
             const changed = !!simMultipliers && stat.value !== stat.orig;
             return (
@@ -1248,7 +1247,7 @@ function MissionCard({
                 className="p-2.5 rounded-xl text-center transition-all duration-300"
                 style={{
                   background: changed ? "rgba(139,92,246,0.08)" : surfaceBg,
-                  border:     changed ? "1px solid rgba(139,92,246,0.25)" : surfaceBorder,
+                  border: changed ? "1px solid rgba(139,92,246,0.25)" : surfaceBorder,
                 }}
               >
                 <stat.icon
@@ -1303,7 +1302,7 @@ function MissionCard({
             className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 disabled:cursor-not-allowed"
             style={{
               background: `rgba(${hexToRgb(mission.color)}, 0.12)`,
-              border:     `1px solid rgba(${hexToRgb(mission.color)}, 0.35)`,
+              border: `1px solid rgba(${hexToRgb(mission.color)}, 0.35)`,
               color: mission.color,
             }}
           >
@@ -1360,10 +1359,10 @@ interface SuggestedMissionCardProps {
 function SuggestedMissionCard({ suggestion, isDark }: SuggestedMissionCardProps) {
   const [hovered, setHovered] = useState(false);
 
-  const textPrimary   = isDark ? "#f1f5f9" : "#0f172a";
+  const textPrimary = isDark ? "#f1f5f9" : "#0f172a";
   const textSecondary = isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.6)";
-  const textMuted     = isDark ? "rgba(255,255,255,0.50)" : "rgba(0,0,0,0.40)";
-  const surfaceBg     = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)";
+  const textMuted = isDark ? "rgba(255,255,255,0.50)" : "rgba(0,0,0,0.40)";
+  const surfaceBg = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)";
   const surfaceBorder = isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.07)";
   const pc = PRIORITY_CONFIG[suggestion.priority] ?? PRIORITY_CONFIG.Strategic;
 
@@ -1452,9 +1451,9 @@ function SuggestedMissionCard({ suggestion, isDark }: SuggestedMissionCardProps)
         {/* Projected metrics */}
         <div className="grid grid-cols-3 gap-2 mb-4">
           {[
-            { label: "Revenue",    value: suggestion.projectedRevenue,               icon: DollarSign },
-            { label: "Customers",  value: `${suggestion.projectedCustomers}`,        icon: Users      },
-            { label: "Conv. Rate", value: suggestion.projectedConversion,            icon: TrendingUp },
+            { label: "Revenue", value: suggestion.projectedRevenue, icon: DollarSign },
+            { label: "Customers", value: `${suggestion.projectedCustomers}`, icon: Users },
+            { label: "Conv. Rate", value: suggestion.projectedConversion, icon: TrendingUp },
           ].map((stat) => (
             <div
               key={stat.label}
@@ -1534,15 +1533,15 @@ interface ExplainabilityPanelProps {
 function ExplainabilityPanel({ mission, isDark, onClose }: ExplainabilityPanelProps) {
   const weightColor = { High: "#ef4444", Medium: "#f59e0b", Low: "#10b981" };
 
-  const panelBg       = isDark ? "rgba(8,11,20,0.99)"              : "rgba(248,250,253,0.99)";
-  const panelBorder   = isDark ? "1px solid rgba(255,255,255,0.1)"  : "1px solid rgba(0,0,0,0.1)";
-  const dividerColor  = isDark ? "rgba(255,255,255,0.06)"           : "rgba(0,0,0,0.07)";
-  const textPrimary   = isDark ? "#f1f5f9"                          : "#0f172a";
-  const textSecondary = isDark ? "rgba(255,255,255,0.72)"           : "rgba(0,0,0,0.60)";
-  const textMuted     = isDark ? "rgba(255,255,255,0.52)"           : "rgba(0,0,0,0.40)";
-  const surfaceBg     = isDark ? "rgba(255,255,255,0.04)"           : "rgba(0,0,0,0.04)";
+  const panelBg = isDark ? "rgba(8,11,20,0.99)" : "rgba(248,250,253,0.99)";
+  const panelBorder = isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)";
+  const dividerColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)";
+  const textPrimary = isDark ? "#f1f5f9" : "#0f172a";
+  const textSecondary = isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.60)";
+  const textMuted = isDark ? "rgba(255,255,255,0.52)" : "rgba(0,0,0,0.40)";
+  const surfaceBg = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)";
   const surfaceBorder = isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.07)";
-  const closeBg       = isDark ? "rgba(255,255,255,0.08)"           : "rgba(0,0,0,0.07)";
+  const closeBg = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)";
 
   return (
     <div
