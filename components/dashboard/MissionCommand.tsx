@@ -131,8 +131,8 @@ const OBJECTIVE_PRESETS: Record<BusinessObjective, Partial<SimParams>> = {
   "Maximize Revenue": { revenueWeight: 80, marginProtection: 30, incentiveAggression: 65, carModelMix: 40 },
   "Protect Margin": { marginProtection: 80, incentiveAggression: 20, revenueWeight: 55 },
   "Accelerate EV Adoption": { evFocus: 85, lifecycleBias: 55, carModelMix: 60 },
-  "Improve Retention": { lifecycleBias: 80, marginProtection: 60, incentiveAggression: 40 },
-  "Reduce Incentive Burn": { incentiveAggression: 15, marginProtection: 75, revenueWeight: 45 },
+  "Improve Customer Retention": { lifecycleBias: 80, marginProtection: 60, incentiveAggression: 40 },
+  "Reduce Incentive Spend": { incentiveAggression: 15, marginProtection: 75, revenueWeight: 45 },
 };
 
 // ─── Slider config ────────────────────────────────────────────────────────────
@@ -154,7 +154,7 @@ const SLIDERS: SliderDef[] = [
     leftLabel: "Volume",
     rightLabel: "Revenue",
     color: "#10b981",
-    relevantFor: ["Maximize Revenue", "Protect Margin", "Reduce Incentive Burn"],
+    relevantFor: ["Maximize Revenue", "Protect Margin", "Reduce Incentive Spend"],
     icon: DollarSign,
   },
   {
@@ -163,7 +163,7 @@ const SLIDERS: SliderDef[] = [
     leftLabel: "Flexible",
     rightLabel: "Protected",
     color: "#3b82f6",
-    relevantFor: ["Protect Margin", "Reduce Incentive Burn", "Maximize Revenue"],
+    relevantFor: ["Protect Margin", "Reduce Incentive Spend", "Maximize Revenue"],
     icon: Shield,
   },
   {
@@ -172,7 +172,7 @@ const SLIDERS: SliderDef[] = [
     leftLabel: "ICE Priority",
     rightLabel: "EV Priority",
     color: "#06b6d4",
-    relevantFor: ["Accelerate EV Adoption", "Maximize Revenue", "Improve Retention"],
+    relevantFor: ["Accelerate EV Adoption", "Maximize Revenue", "Improve Customer Retention"],
     icon: Leaf,
   },
   {
@@ -181,7 +181,7 @@ const SLIDERS: SliderDef[] = [
     leftLabel: "Range Rover Focus",
     rightLabel: "Balanced Mix",
     color: "#f97316",
-    relevantFor: ["Maximize Revenue", "Accelerate EV Adoption", "Improve Retention"],
+    relevantFor: ["Maximize Revenue", "Accelerate EV Adoption", "Improve Customer Retention"],
     icon: BarChart2,
   },
   {
@@ -190,7 +190,7 @@ const SLIDERS: SliderDef[] = [
     leftLabel: "Acquisition",
     rightLabel: "Retention",
     color: "#f59e0b",
-    relevantFor: ["Improve Retention", "Accelerate EV Adoption", "Protect Margin"],
+    relevantFor: ["Improve Customer Retention", "Accelerate EV Adoption", "Protect Margin"],
     icon: Heart,
   },
   {
@@ -199,7 +199,7 @@ const SLIDERS: SliderDef[] = [
     leftLabel: "Conservative",
     rightLabel: "Aggressive",
     color: "#8b5cf6",
-    relevantFor: ["Maximize Revenue", "Reduce Incentive Burn", "Protect Margin"],
+    relevantFor: ["Maximize Revenue", "Reduce Incentive Spend", "Protect Margin"],
     icon: Scissors,
   },
 ];
@@ -225,7 +225,7 @@ const MISSION_RULES: MissionRule[] = [
   {
     missionId: "loyalty-recovery",
     check: (p, obj) => {
-      if (p.lifecycleBias < 30 && obj !== "Improve Retention")
+      if (p.lifecycleBias < 30 && obj !== "Improve Customer Retention")
         return `Lifecycle target is acquisition-focused (${p.lifecycleBias}) — shift toward Retention to activate this mission`;
       if (p.incentiveAggression < 15)
         return "Incentive strategy too restricted to fund loyalty recovery programme";
@@ -237,7 +237,7 @@ const MISSION_RULES: MissionRule[] = [
     check: (p, obj) => {
       if (p.marginProtection > 80 && p.incentiveAggression < 25)
         return "Margin protection constraints prevent performance incentive deployment needed for this mission";
-      if (p.revenueWeight < 25 && obj === "Reduce Incentive Burn")
+      if (p.revenueWeight < 25 && obj === "Reduce Incentive Spend")
         return "Revenue weight is too low to justify the high-value Defender OCTA upsell investment";
       return null;
     },
@@ -336,7 +336,7 @@ const SUGGESTED_MISSIONS: SuggestedMission[] = [
     sourceModels: ["lead-scoring", "cancellation", "service-retention"],
     priority: "Strategic",
     color: "#8b5cf6",
-    condition: (p, obj) => p.incentiveAggression < 25 && obj === "Reduce Incentive Burn",
+    condition: (p, obj) => p.incentiveAggression < 25 && obj === "Reduce Incentive Spend",
   },
   {
     id: "suggest-ev-fleet",
