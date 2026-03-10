@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   Users, TrendingUp, RefreshCw, AlertTriangle, Wrench,
   ArrowUpRight, DollarSign, X, Database, Clock, CheckCircle,
-  ChevronRight, Activity, Shield, Layers, Lightbulb, Zap, Target, TrendingDown
+  ChevronRight, Activity, Shield, Layers, Lightbulb, Zap, Target, TrendingDown, Heart
 } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from "recharts";
 import { type ModelCardData, type Region, formatUtcDate, formatUtcDatePlus } from "@/lib/dashboard-data";
@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 const iconMap: Record<string, React.ElementType> = {
   Users, TrendingUp, RefreshCw, AlertTriangle,
-  Wrench, ArrowUpRight, DollarSign,
+  Wrench, ArrowUpRight, DollarSign, Heart,
 };
 
 interface ModelMosaicProps {
@@ -626,4 +626,5 @@ const lifecycleConfig: Record<string, { color: string; bg: string; border: strin
   Acquire: { color: "#3b82f6", bg: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.25)" },
   Renew:   { color: "#10b981", bg: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)" },
   Maintain: { color: "#8b5cf6", bg: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.25)" },
+  Own:     { color: "#ec4899", bg: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.25)" },
 };

@@ -32,7 +32,7 @@ export function closeDate(daysFromNow: number): string {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-export type Lifecycle = "Acquire" | "Renew" | "Maintain";
+export type Lifecycle = "Acquire" | "Renew" | "Maintain" | "Own";
 
 export interface ModelSignal {
   name: string;
@@ -81,7 +81,7 @@ export const modelCards: ModelCardData[] = [
     title: "Intelligent Lead Identification",
     shortTitle: "Intelligent Lead",
     lifecycle: "Acquire",
-    metric: "Active Lead Pipeline",
+    metric: "High Intent Leads",
     metricValue: { Global: "14,820", "North America": "6,340", Europe: "5,910", UK: "2,570" },
     metricDelta: { Global: "+12.4%", "North America": "+18.2%", Europe: "+7.6%", UK: "+14.1%" },
     metricTrend: { Global: "up", "North America": "up", Europe: "up", UK: "up" },
@@ -1101,6 +1101,155 @@ export const modelCards: ModelCardData[] = [
       ],
     },
   },
+  {
+    id: "customer-experience",
+    title: "Customer Experience Index (CEI)",
+    shortTitle: "Experience Index",
+    lifecycle: "Own",
+    metric: "Loyalty Potential Score",
+    metricValue: { Global: "78.6", "North America": "76.2", Europe: "81.4", UK: "82.1" },
+    metricDelta: { Global: "+3.8", "North America": "+2.4", Europe: "+5.1", UK: "+4.9" },
+    metricTrend: { Global: "up", "North America": "up", Europe: "up", UK: "up" },
+    insightSummary: {
+      Global: "Composite CEI score identifies 2,840 customers with high loyalty potential; 412 showing early churn indicators requiring intervention",
+      "North America": "App engagement down 18% for 1,120 NA owners — correlates with 2.3× higher defection probability within 6 months",
+      Europe: "Service touchpoint frequency highest in DACH; telematics data shows 94% positive vehicle health status driving loyalty uplift",
+      UK: "UK leads global CEI at 82.1; InControl app monthly active users at 89% — highest retailer NPS correlation observed",
+    },
+    dataSources: ["JLR InControl Telematics", "Mobile App Analytics", "Keyloop DMS", "Retailer Interaction Log", "NPS Survey Platform"],
+    lastRunOffsetHours: -4,
+    modelVersion: "v2.1.0",
+    accuracy: 89,
+    signals: [
+      { name: "Vehicle telemetry health index", strength: 94 },
+      { name: "InControl app engagement score", strength: 91 },
+      { name: "Service visit frequency & recency", strength: 88 },
+      { name: "Retailer touchpoint sentiment", strength: 85 },
+      { name: "NPS trajectory (6-month)", strength: 82 },
+      { name: "Digital channel responsiveness", strength: 78 },
+    ],
+    color: "#ec4899",
+    icon: "Heart",
+    regionalDistribution: {
+      Global: [
+        { label: "High Loyalty", value: 42, color: "#ec4899" },
+        { label: "Stable", value: 31, color: "#f472b6" },
+        { label: "At Risk", value: 18, color: "#f9a8d4" },
+        { label: "Churn Likely", value: 9, color: "#fbcfe8" },
+      ],
+      "North America": [
+        { label: "High Loyalty", value: 38, color: "#ec4899" },
+        { label: "Stable", value: 29, color: "#f472b6" },
+        { label: "At Risk", value: 22, color: "#f9a8d4" },
+        { label: "Churn Likely", value: 11, color: "#fbcfe8" },
+      ],
+      Europe: [
+        { label: "High Loyalty", value: 46, color: "#ec4899" },
+        { label: "Stable", value: 32, color: "#f472b6" },
+        { label: "At Risk", value: 15, color: "#f9a8d4" },
+        { label: "Churn Likely", value: 7, color: "#fbcfe8" },
+      ],
+      UK: [
+        { label: "High Loyalty", value: 48, color: "#ec4899" },
+        { label: "Stable", value: 33, color: "#f472b6" },
+        { label: "At Risk", value: 13, color: "#f9a8d4" },
+        { label: "Churn Likely", value: 6, color: "#fbcfe8" },
+      ],
+    },
+    pedigree: {
+      inputFeatures: ["Vehicle telematics (mileage, health alerts, driving patterns)", "App session frequency & duration", "Service history & satisfaction", "Retailer interaction logs", "NPS & CSAT scores"],
+      outputType: "Composite Loyalty Score (0–100) + Churn Risk Flag",
+      trainingDataSize: "2.8M customer journeys (84 months · 7 years)",
+      refreshCadence: "Daily at 05:00 UTC",
+      nextRunOffsetHours: 21,
+      slaCompliance: "99.6%",
+      modelType: "Ensemble (Random Forest + LSTM for temporal patterns)",
+    },
+    recommendations: {
+      Global: [
+        {
+          title: "Proactive Churn Intervention — 412 At-Risk Customers",
+          priority: "Immediate",
+          actions: [
+            "Deploy personalised retention outreach to 412 customers showing early churn indicators — app disengagement, delayed service visits, or NPS decline >15 points. Lead with a complimentary vehicle health check and InControl app re-onboarding.",
+            "Assign dedicated Relationship Managers to the top 50 at-risk customers by lifetime value — personal touch reduces churn probability by 34% in pilot data.",
+          ],
+        },
+        {
+          title: "Loyalty Champions Programme",
+          priority: "Short-term",
+          actions: [
+            "Identify the 2,840 high-loyalty customers and invite them to an exclusive 'JLR Insider' programme — early access to new models, factory tours, and driving experiences. High-loyalty customers generate 4.2× referral value.",
+          ],
+        },
+        {
+          title: "Telemetry-Driven Service Nudges",
+          priority: "Strategic",
+          actions: [
+            "Use vehicle telemetry health signals to trigger proactive service outreach before issues manifest — 'We noticed your brake pads are at 15% — would you like us to book a convenient replacement appointment?' Pilot shows 28% uplift in service revenue and 12-point NPS improvement.",
+          ],
+        },
+      ],
+      "North America": [
+        {
+          title: "App Re-Engagement Campaign",
+          priority: "Immediate",
+          actions: [
+            "1,120 NA owners with declining app engagement show 2.3× higher defection probability — launch an in-app reactivation campaign with exclusive content: vehicle tips, charging network updates for EV owners, and a 'reconnect' bonus of 3 months complimentary SiriusXM.",
+            "Push notification sequence over 7 days with escalating value propositions — culminating in a personal Relationship Manager outreach for non-responders.",
+          ],
+        },
+        {
+          title: "Service Experience Excellence",
+          priority: "Short-term",
+          actions: [
+            "NA CEI trails UK/EU by 5+ points — root cause analysis shows service wait times and communication gaps. Implement real-time service status updates via app and SMS for all NA retailers.",
+          ],
+        },
+      ],
+      Europe: [
+        {
+          title: "DACH Loyalty Leadership",
+          priority: "Immediate",
+          actions: [
+            "DACH region shows highest service touchpoint frequency and CEI scores — package this as a best-practice blueprint and roll out to Benelux and Nordics where scores lag by 4-6 points.",
+            "Leverage the 94% positive vehicle health status in marketing: 'JLR vehicles are designed to keep you moving — see how our owners experience near-perfect reliability.'",
+          ],
+        },
+        {
+          title: "EV Owner Experience Track",
+          priority: "Short-term",
+          actions: [
+            "Create a dedicated EV customer experience track within CEI — EV owners have unique needs (charging, range anxiety, software updates). Pilot an 'EV Concierge' service in Germany and France to drive loyalty in this strategically critical segment.",
+          ],
+        },
+      ],
+      UK: [
+        {
+          title: "Maximise UK Loyalty Leadership",
+          priority: "Immediate",
+          actions: [
+            "UK leads global CEI at 82.1 — capitalise by launching a referral programme targeting the 89% monthly active app users. Offer £500 referral credit for both parties when a referral converts to a sale.",
+            "89% app engagement is exceptional — use this channel for premium service offers, exclusive events, and Range Rover Electric pre-order priority.",
+          ],
+        },
+        {
+          title: "NPS-CEI Integration",
+          priority: "Short-term",
+          actions: [
+            "UK shows strongest NPS-CEI correlation — embed real-time NPS feedback into the CEI model to create a 'sentiment pulse' that triggers immediate follow-up for any detractor response within 2 hours.",
+          ],
+        },
+        {
+          title: "Retailer Experience Certification",
+          priority: "Strategic",
+          actions: [
+            "Certify UK retailers on a 'Customer Experience Excellence' standard based on CEI contribution metrics — top-performing retailers receive priority allocation on limited-edition models and marketing co-investment.",
+          ],
+        },
+      ],
+    },
+  },
 ];
 
 // ─── MISSIONS ────────────────────────────────────────────────────────────────
@@ -1173,15 +1322,11 @@ export const missions: Mission[] = [
     title: "The EV Equity-Swap Campaign",
     subtitle: "Convert high-equity PHEV/ICE owners to Range Rover Electric",
     priority: "Critical",
-    // targetCustomers per region = sum of retailer.targetCustomers in that region
-    // Princeton(3) + Manhattan(4) + Beverly Hills(3) = 10 (North America)
-    // Europe: 0 — no European retailers in this mission
-    // UK: Knightsbridge(3) + Edinburgh(2) = 5
-    // Global = 10 + 0 + 5 = 15
-    projectedRevenue: { Global: "$1.63M", "North America": "$1.09M", Europe: "$0M", UK: "£0.47M" },
-    targetCustomers: { Global: 15, "North America": 10, Europe: 0, UK: 5 },
-    conversionRate: { Global: "34%", "North America": "38%", Europe: "N/A", UK: "36%" },
-    sourceModels: ["buyback", "renewal", "upselling", "intelligent-lead"],
+    // Revenue and customers distributed across regions to sum to $38M / 280 customers
+    projectedRevenue: { Global: "$38.0M", "North America": "$18.2M", Europe: "$11.4M", UK: "£8.4M" },
+    targetCustomers: { Global: 280, "North America": 134, Europe: 84, UK: 62 },
+    conversionRate: { Global: "34%", "North America": "38%", Europe: "31%", UK: "36%" },
+    sourceModels: ["buyback", "renewal", "upselling", "intelligent-lead", "customer-experience"],
     color: "#3b82f6",
     tagline: "Turn equity into EV ownership — before the window closes",
     because: {
@@ -1189,6 +1334,7 @@ export const missions: Mission[] = [
       dataPoints: [
         { model: "Buyback Model (v6.0.1)", finding: "5,640 vehicles with avg. +$4.2k positive equity; Defender PHEV commands +€5.1k over CAP HPI", weight: "High" },
         { model: "Renewal Model (v5.1.0)", finding: "750 Range Rover leases ending Q2 2026 with >$8k equity — 90-day critical window open", weight: "High" },
+        { model: "Customer Experience Index (v2.1.0)", finding: "Target customers score 84+ on CEI with high app engagement — optimal for digital-first EV transition messaging", weight: "High" },
         { model: "Upselling Engine (v4.0.3)", finding: "I-Pace owners with >30k mi showing 0.86 propensity for Range Rover Electric pre-order", weight: "Medium" },
         { model: "Lead Scoring (v3.8.4)", finding: "62% of expiring-lease holders score ≥0.85 — top engagement percentile", weight: "Medium" },
       ],
@@ -1560,12 +1706,11 @@ export const missions: Mission[] = [
     title: "The Loyalty Recovery Mission",
     subtitle: "Re-engage high-value churned & at-risk owners before competitor conquest",
     priority: "High",
-    // Gold Coast(1) + Mayfair(2) + Birmingham(2) = 5 Global
-    // North America: 1 | Europe: 2 | UK: 2
-    projectedRevenue: { Global: "$0.52M", "North America": "$0.20M", Europe: "$0.18M", UK: "£0.14M" },
-    targetCustomers: { Global: 5, "North America": 1, Europe: 2, UK: 2 },
+    // Revenue and customers distributed across regions to sum to $18M / 170 customers
+    projectedRevenue: { Global: "$18.0M", "North America": "$7.2M", Europe: "$6.3M", UK: "£4.5M" },
+    targetCustomers: { Global: 170, "North America": 68, Europe: 60, UK: 42 },
     conversionRate: { Global: "28%", "North America": "32%", Europe: "25%", UK: "30%" },
-    sourceModels: ["cancellation", "lead-scoring", "service-retention", "renewal"],
+    sourceModels: ["cancellation", "lead-scoring", "service-retention", "renewal", "customer-experience"],
     color: "#f59e0b",
     tagline: "Recover the relationship before the competitor does",
     because: {
@@ -1573,6 +1718,7 @@ export const missions: Mission[] = [
       dataPoints: [
         { model: "Cancellation Model (v2.9.2)", finding: "412 high-risk orders; 68% linked to delivery delays >12 weeks — intervention window active", weight: "High" },
         { model: "Service Retention (v3.3.7)", finding: "1,240 post-warranty vehicles predicted to defect to independents in next 90 days", weight: "High" },
+        { model: "Customer Experience Index (v2.1.0)", finding: "Early churn indicators detected in 170 customers with CEI decline >12 points — app disengagement precedes defection by 45 days", weight: "High" },
         { model: "Lead Scoring (v3.8.4)", finding: "380 previously churned owners re-engaging on digital channels with score uplift of +0.22", weight: "Medium" },
         { model: "Renewal Model (v5.1.0)", finding: "EU lease holders showing -1.2% renewal trend, risk of Audi/BMW conquest intensifying", weight: "Medium" },
       ],
@@ -1730,12 +1876,11 @@ export const missions: Mission[] = [
     title: "Defender Performance Drive",
     subtitle: "Convert Defender Sport owners to Defender OCTA & 110 V8 Performance editions",
     priority: "Strategic",
-    // Dallas(2) + Munich(2) + Manchester(2) = 6 Global
-    // North America: 2 | Europe: 2 | UK: 2
-    projectedRevenue: { Global: "$0.63M", "North America": "$0.29M", Europe: "$0.22M", UK: "£0.12M" },
-    targetCustomers: { Global: 6, "North America": 2, Europe: 2, UK: 2 },
+    // Revenue and customers distributed across regions to sum to $16.2M / 148 customers
+    projectedRevenue: { Global: "$16.2M", "North America": "$6.8M", Europe: "$5.4M", UK: "£4.0M" },
+    targetCustomers: { Global: 148, "North America": 62, Europe: 50, UK: 36 },
     conversionRate: { Global: "31%", "North America": "36%", Europe: "27%", UK: "33%" },
-    sourceModels: ["upselling", "intelligent-lead", "lead-scoring", "buyback"],
+    sourceModels: ["upselling", "intelligent-lead", "lead-scoring", "buyback", "customer-experience"],
     color: "#8b5cf6",
     tagline: "From capability to conquest — the performance step-up",
     because: {
@@ -1743,6 +1888,7 @@ export const missions: Mission[] = [
       dataPoints: [
         { model: "Upselling Engine (v4.0.3)", finding: "Defender 90 owners showing 0.74 propensity for 110 MHEV upgrade; SUV demand at 6-yr high", weight: "High" },
         { model: "Intelligent Lead (v4.2.1)", finding: "BMW X5M & Mercedes AMG GLE owners displaying 0.68 conquest affinity toward Defender OCTA", weight: "High" },
+        { model: "Customer Experience Index (v2.1.0)", finding: "Performance-focused customers show 92+ CEI scores with highest retailer touchpoint frequency — ideal for exclusive event activation", weight: "High" },
         { model: "Buyback Model (v6.0.1)", finding: "Defender 90 2021/22 models at +$5.8k avg equity — optimal trade-in economics for OCTA step-up", weight: "Medium" },
         { model: "Lead Scoring (v3.8.4)", finding: "Performance-persona segment scoring ≥0.88 concentrated in TX, FL, CO, UAE & South Africa", weight: "Medium" },
       ],
@@ -1920,21 +2066,22 @@ export const missions: Mission[] = [
 
 export const reasoningSteps = [
   { id: 1, text: "Initialising Meridian Intelligence Engine v3.4...", delay: 0, models: [] },
-  { id: 2, text: "Querying Buyback Model (v6.0.1)... 5,640 positive-equity vehicles identified", delay: 800, models: ["buyback"] },
-  { id: 3, text: "Accessing Renewal Model (v5.1.0)... 8,912 high-equity leases flagged for Q2 2026", delay: 1600, models: ["buyback", "renewal"] },
-  { id: 4, text: "Cross-referencing Lead Scoring (v3.8.4)... 3,247 leads at ≥0.85 priority threshold", delay: 2400, models: ["buyback", "renewal", "lead-scoring"] },
-  { id: 5, text: "Correlating Upselling Engine (v4.0.3)... £12.8M / $84.2M revenue opportunity scoped", delay: 3200, models: ["buyback", "renewal", "lead-scoring", "upselling"] },
-  { id: 6, text: "Integrating Cancellation Risk (v2.9.2)... 412 high-risk orders flagged for intervention", delay: 4000, models: ["buyback", "renewal", "lead-scoring", "upselling", "cancellation"] },
-  { id: 7, text: "Factoring Service Retention signals (v3.3.7)... 1,840 retention opportunities mapped", delay: 4800, models: ["buyback", "renewal", "lead-scoring", "upselling", "cancellation", "service-retention"] },
-  { id: 8, text: "Layering Intelligent Lead personas (v4.2.1)... conquest affinity overlaid across UK, NA & EU", delay: 5600, models: ["buyback", "renewal", "lead-scoring", "upselling", "cancellation", "service-retention", "intelligent-lead"] },
-  { id: 9, text: "Running mission synthesis algorithm... pattern recognition active", delay: 6400, models: ["buyback", "renewal", "lead-scoring", "upselling", "cancellation", "service-retention", "intelligent-lead"] },
-  { id: 10, text: "Clustering customer segments by mission fit... 3 high-confidence missions identified", delay: 7200, models: ["buyback", "renewal", "lead-scoring", "upselling", "cancellation", "service-retention", "intelligent-lead"] },
-  { id: 11, text: "Validating revenue projections against historical conversion rates...", delay: 8000, models: [] },
-  { id: 12, text: "Mission synthesis complete. 3 actionable missions generated. Combined revenue: $3.07M across 29 qualified customers", delay: 8800, models: [] },
+  { id: 2, text: "Querying Buyback Model (v6.0.1)... 5,640 positive-equity vehicles identified", delay: 700, models: ["buyback"] },
+  { id: 3, text: "Accessing Renewal Model (v5.1.0)... 8,912 high-equity leases flagged for Q2 2026", delay: 1400, models: ["buyback", "renewal"] },
+  { id: 4, text: "Cross-referencing Lead Scoring (v3.8.4)... 3,247 leads at ≥0.85 priority threshold", delay: 2100, models: ["buyback", "renewal", "lead-scoring"] },
+  { id: 5, text: "Correlating Upselling Engine (v4.0.3)... £12.8M / $84.2M revenue opportunity scoped", delay: 2800, models: ["buyback", "renewal", "lead-scoring", "upselling"] },
+  { id: 6, text: "Integrating Cancellation Risk (v2.9.2)... 412 high-risk orders flagged for intervention", delay: 3500, models: ["buyback", "renewal", "lead-scoring", "upselling", "cancellation"] },
+  { id: 7, text: "Factoring Service Retention signals (v3.3.7)... 1,840 retention opportunities mapped", delay: 4200, models: ["buyback", "renewal", "lead-scoring", "upselling", "cancellation", "service-retention"] },
+  { id: 8, text: "Layering Intelligent Lead personas (v4.2.1)... conquest affinity overlaid across UK, NA & EU", delay: 4900, models: ["buyback", "renewal", "lead-scoring", "upselling", "cancellation", "service-retention", "intelligent-lead"] },
+  { id: 9, text: "Synthesising Customer Experience Index (v2.1.0)... 2,840 high-loyalty + 412 churn-risk customers scored", delay: 5600, models: ["buyback", "renewal", "lead-scoring", "upselling", "cancellation", "service-retention", "intelligent-lead", "customer-experience"] },
+  { id: 10, text: "Running mission synthesis algorithm... pattern recognition active", delay: 6300, models: ["buyback", "renewal", "lead-scoring", "upselling", "cancellation", "service-retention", "intelligent-lead", "customer-experience"] },
+  { id: 11, text: "Clustering customer segments by mission fit... 3 high-confidence missions identified", delay: 7000, models: ["buyback", "renewal", "lead-scoring", "upselling", "cancellation", "service-retention", "intelligent-lead", "customer-experience"] },
+  { id: 12, text: "Validating revenue projections against historical conversion rates...", delay: 7700, models: [] },
+  { id: 13, text: "Mission synthesis complete. 3 actionable missions generated. Combined revenue: $72.2M across 598 qualified customers", delay: 8400, models: [] },
 ];
 
 export const connectionMap: Record<string, string[]> = {
-  "ev-equity-pivot": ["buyback", "renewal", "upselling", "intelligent-lead"],
-  "loyalty-recovery": ["cancellation", "lead-scoring", "service-retention", "renewal"],
-  "defender-performance-drive": ["upselling", "intelligent-lead", "lead-scoring", "buyback"],
+  "ev-equity-pivot": ["buyback", "renewal", "upselling", "intelligent-lead", "customer-experience"],
+  "loyalty-recovery": ["cancellation", "lead-scoring", "service-retention", "renewal", "customer-experience"],
+  "defender-performance-drive": ["upselling", "intelligent-lead", "lead-scoring", "buyback", "customer-experience"],
 };

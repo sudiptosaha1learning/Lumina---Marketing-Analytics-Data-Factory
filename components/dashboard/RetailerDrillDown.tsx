@@ -232,25 +232,19 @@ export function RetailerDrillDown({ mission, region, simMultipliers, onBack }: R
 
                 {/* Expanded Customers */}
                 {isExpanded && (
-                  <div className="p-4" style={{ borderTop: `1px solid ${dividerColor}` }}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Users className="w-3.5 h-3.5" style={{ color: textSecondary }} />
-                      <span className="text-xs font-medium uppercase tracking-wider" style={{ color: textSecondary }}>
-                        {retailer.customers.length} Perfect-Fit Customers
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      {retailer.customers.map((customer) => (
-                        <CustomerRow
-                          key={customer.id}
-                          customer={customer}
-                          missionColor={mission.color}
-                          isDark={isDark}
-                          onClick={() => setSelectedCustomer(customer)}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                  <ExpandedCustomerList
+                    retailer={retailer}
+                    mission={mission}
+                    isDark={isDark}
+                    simMultipliers={simMultipliers}
+                    dividerColor={dividerColor}
+                    textSecondary={textSecondary}
+                    textMuted={textMuted}
+                    onSelectCustomer={(customer) => {
+                      setSelectedRetailer(retailer);
+                      setSelectedCustomer(customer);
+                    }}
+                  />
                 )}
               </div>
             );
@@ -270,6 +264,108 @@ export function RetailerDrillDown({ mission, region, simMultipliers, onBack }: R
           onGenerateScript={() => handleGenerateScript(selectedCustomer)}
           onClose={() => { setSelectedCustomer(null); setScriptGenerated(null); }}
         />
+      )}
+    </div>
+  );
+}
+
+// ─── Expanded Customer List with View All ────────────────────────────────────
+
+function ExpandedCustomerList({
+  retailer,
+  mission,
+  isDark,
+  simMultipliers,
+  dividerColor,
+  textSecondary,
+  textMuted,
+  onSelectCustomer,
+}: {
+  retailer: RetailerData;
+  mission: Mission;
+  isDark: boolean;
+  simMultipliers: { revenue: number; customers: number; conversion: number } | null;
+  dividerColor: string;
+  textSecondary: string;
+  textMuted: string;
+  onSelectCustomer: (customer: CustomerProfile) => void;
+}) {
+  const [showAll, setShowAll] = useState(false);
+  
+  // Calculate total customers (scaled by sim multiplier)
+  const totalCustomerCount = simMultipliers 
+    ? Math.round(retailer.customers.length * simMultipliers.customers)
+    : retailer.customers.length;
+  
+  // Show max 5 customers initially, or all if showAll is true
+  const displayLimit = 5;
+  const customersToShow = showAll ? retailer.customers : retailer.customers.slice(0, displayLimit);
+  const hasMore = retailer.customers.length > displayLimit || (simMultipliers && totalCustomerCount > displayLimit);
+  const remainingCount = totalCustomerCount - customersToShow.length;
+
+  return (
+    <div className="p-4" style={{ borderTop: `1px solid ${dividerColor}` }}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Users className="w-3.5 h-3.5" style={{ color: textSecondary }} />
+          <span className="text-xs font-medium uppercase tracking-wider" style={{ color: textSecondary }}>
+            {totalCustomerCount.toLocaleString()} Perfect-Fit Customers
+          </span>
+        </div>
+        {hasMore && !showAll && (
+          <span className="text-[10px]" style={{ color: textMuted }}>
+            Showing {customersToShow.length} of {totalCustomerCount.toLocaleString()}
+          </span>
+        )}
+      </div>
+      <div className="space-y-2">
+        {customersToShow.map((customer) => (
+          <CustomerRow
+            key={customer.id}
+            customer={customer}
+            missionColor={mission.color}
+            isDark={isDark}
+            onClick={() => onSelectCustomer(customer)}
+          />
+        ))}
+      </div>
+      
+      {/* View All CTA */}
+      {hasMore && !showAll && (
+        <button
+          onClick={() => setShowAll(true)}
+          className="w-full mt-3 py-2.5 px-4 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2"
+          style={{
+            background: isDark ? "rgba(59,130,246,0.12)" : "rgba(59,130,246,0.08)",
+            border: isDark ? "1px solid rgba(59,130,246,0.25)" : "1px solid rgba(59,130,246,0.2)",
+            color: "#3b82f6",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = isDark ? "rgba(59,130,246,0.18)" : "rgba(59,130,246,0.12)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = isDark ? "rgba(59,130,246,0.12)" : "rgba(59,130,246,0.08)";
+          }}
+        >
+          <Users className="w-3.5 h-3.5" />
+          View All {remainingCount > 0 ? `(${remainingCount.toLocaleString()} more)` : "Customers"}
+          <ChevronRight className="w-3.5 h-3.5" />
+        </button>
+      )}
+      
+      {/* Show less button when expanded */}
+      {showAll && retailer.customers.length > displayLimit && (
+        <button
+          onClick={() => setShowAll(false)}
+          className="w-full mt-3 py-2 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
+          style={{
+            background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
+            border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)",
+            color: textSecondary,
+          }}
+        >
+          Show Less
+        </button>
       )}
     </div>
   );

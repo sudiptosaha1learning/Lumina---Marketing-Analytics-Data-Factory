@@ -116,7 +116,7 @@ export function ReasoningEngine({ onComplete, onHighlightModels, region }: Reaso
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <div className="flex-1">
               <p className="text-sm leading-relaxed" style={{ color: textSecondary }}>
-                The Reasoning Engine synthesises all 7 intelligence models simultaneously, identifies cross-model patterns, and generates prioritised strategic missions with full explainability chains.
+                The Reasoning Engine synthesises all 8 intelligence models simultaneously, identifies cross-model patterns, and generates prioritised strategic missions with full explainability chains.
               </p>
             </div>
             <button
