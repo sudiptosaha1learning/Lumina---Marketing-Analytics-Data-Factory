@@ -6,8 +6,8 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" });
 
 export const metadata: Metadata = {
-  title: 'Meridian Intelligence | JLR Global Analytics',
-  description: 'AI-Powered Luxury Automotive Global Analytics Dashboard for Jaguar Land Rover',
+  title: 'Lumina Intelligence | Global Analytics',
+  description: 'AI-Powered Luxury Automotive Global Analytics Dashboard',
   generator: 'v0.app',
   icons: {
     icon: [

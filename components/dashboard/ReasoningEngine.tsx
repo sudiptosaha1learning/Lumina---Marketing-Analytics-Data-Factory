@@ -82,7 +82,7 @@ export function ReasoningEngine({ onComplete, onHighlightModels, region }: Reaso
           </div>
           <div>
             <h3 className="font-heading font-semibold text-sm" style={{ color: textPrimary }}>
-              Meridian Reasoning Engine
+              Lumina Reasoning Engine
             </h3>
             <p className="text-xs" style={{ color: textMuted }}>
               Cross-model synthesis &amp; mission generation

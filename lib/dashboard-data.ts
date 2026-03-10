@@ -2281,7 +2281,7 @@ export const missions: Mission[] = [
 // ─── REASONING ENGINE ─────────────────────────────────────────────────────────
 
 export const reasoningSteps = [
-  { id: 1, text: "Initialising Meridian Intelligence Engine v3.4...", delay: 0, models: [] },
+  { id: 1, text: "Initialising Lumina Intelligence Engine v3.4...", delay: 0, models: [] },
   { id: 2, text: "Querying Buyback Model (v6.0.1)... 5,640 positive-equity vehicles identified", delay: 700, models: ["buyback"] },
   { id: 3, text: "Accessing Renewal Model (v5.1.0)... 8,912 high-equity leases flagged for Q2 2026", delay: 1400, models: ["buyback", "renewal"] },
   { id: 4, text: "Cross-referencing Lead Scoring (v3.8.4)... 3,247 leads at ≥0.85 priority threshold", delay: 2100, models: ["buyback", "renewal", "lead-scoring"] },

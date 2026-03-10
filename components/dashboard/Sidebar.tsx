@@ -67,7 +67,7 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
           <Zap className="w-4 h-4 text-white" fill="currentColor" />
         </div>
         <div>
-          <div className={`font-heading font-semibold text-sm leading-tight tracking-wide ${isDark ? "text-white" : "text-slate-900"}`}>MERIDIAN</div>
+          <div className={`font-heading font-semibold text-sm leading-tight tracking-wide ${isDark ? "text-white" : "text-slate-900"}`}>Lumina</div>
           <div className={`text-[10px] tracking-widest uppercase ${isDark ? "text-white/55" : "text-slate-400"}`}>Intelligence Platform</div>
         </div>
       </div>
