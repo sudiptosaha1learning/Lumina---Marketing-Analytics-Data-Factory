@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   CheckCircle2, XCircle, RotateCcw, Loader2, ChevronDown,
   ChevronUp, ShieldAlert, Terminal, Sparkles, Brain, Zap,
-  Eye, EyeOff, ArrowRight, Clock, User,
+  Eye, EyeOff, ArrowRight, Clock, User, ArrowLeft,
 } from "lucide-react";
 
 import { OpportunityPanel }   from "./panels/OpportunityPanel";
@@ -35,8 +35,10 @@ interface Props {
   step: AgentStep;
   streamingText: string;
   isStreaming: boolean;
+  isViewingApproved?: boolean;
   onApprove: (stepId: AgentStepId, editedOutput?: Record<string, unknown>) => void;
   onReject: (stepId: AgentStepId, note?: string) => void;
+  onGoBack: (stepId: AgentStepId) => void;
 }
 
 interface ThoughtEntry {
@@ -232,12 +234,13 @@ function StreamBlock({
   );
 }
 
-// ── Approved step collapsed summary ───────────────────────────────────────
+// ── Approved step full panel ───────────────────────────────────────────────
 
-function ApprovedCollapsible({
-  stepId, step, isDark,
-}: { stepId: AgentStepId; step: AgentStep; isDark: boolean }) {
-  const [open, setOpen] = useState(false);
+function ApprovedPanel({
+  stepId, step, isDark, onGoBack,
+}: { stepId: AgentStepId; step: AgentStep; isDark: boolean; onGoBack: (id: AgentStepId) => void }) {
+  const [logOpen, setLogOpen] = useState(false);
+  const [streamOpen, setStreamOpen] = useState(false);
   const def = AGENT_STEP_DEFINITIONS[stepId];
   const approvedOutput = step.editedOutput ?? step.output;
   const confidenceColor =
@@ -252,40 +255,79 @@ function ApprovedCollapsible({
         border: "1px solid rgba(34,197,94,0.2)",
       }}
     >
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full px-5 py-3.5 flex items-center gap-3 text-left transition-colors"
-        style={{ background: "rgba(34,197,94,0.05)" }}
+      {/* Header */}
+      <div
+        className="px-6 py-4 flex flex-wrap items-center gap-3 border-b"
+        style={{ background: "rgba(34,197,94,0.05)", borderColor: "rgba(34,197,94,0.12)" }}
       >
         <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <div className={`text-sm font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>{def.label}</div>
-          <div className="text-xs text-green-400">
+          <div className={`font-semibold text-sm ${isDark ? "text-white" : "text-slate-900"}`}>{def.label}</div>
+          <div className="flex items-center gap-2 text-xs text-green-400 mt-0.5">
             Approved{step.editedOutput ? " with edits" : ""}
-            {step.interventions.length > 0 && <span className={`ml-2 ${isDark ? "text-white/35" : "text-slate-400"}`}>· {step.interventions.length} intervention{step.interventions.length > 1 ? "s" : ""}</span>}
+            {step.completedAt && (
+              <span className={`flex items-center gap-1 ${isDark ? "text-white/30" : "text-slate-400"}`}>
+                <Clock className="w-2.5 h-2.5" />
+                {new Date(step.completedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            )}
+            {step.interventions.length > 0 && (
+              <span className={isDark ? "text-white/30" : "text-slate-400"}>
+                · {step.interventions.length} intervention{step.interventions.length > 1 ? "s" : ""}
+              </span>
+            )}
           </div>
         </div>
         {step.confidence !== null && (
-          <span className="text-[10px] font-semibold" style={{ color: confidenceColor }}>{step.confidence}%</span>
+          <span
+            className="text-[10px] font-bold px-2.5 py-1 rounded-full"
+            style={{ background: `${confidenceColor}18`, border: `1px solid ${confidenceColor}30`, color: confidenceColor }}
+          >
+            {step.confidence}% confidence
+          </span>
         )}
-        {step.completedAt && (
-          <div className={`flex items-center gap-1 text-[9px] ${isDark ? "text-white/25" : "text-slate-400"}`}>
-            <Clock className="w-2.5 h-2.5" />
-            {new Date(step.completedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-          </div>
-        )}
-        {open ? <ChevronUp className="w-3.5 h-3.5 text-green-400/50 flex-shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 text-green-400/50 flex-shrink-0" />}
-      </button>
+        {/* Go back & edit button */}
+        <button
+          onClick={() => onGoBack(stepId)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+            isDark
+              ? "bg-white/[0.06] text-white/60 hover:bg-white/[0.1] hover:text-white/90 border border-white/[0.08]"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 border border-slate-200"
+          }`}
+        >
+          <ArrowLeft className="w-3 h-3" />
+          Go back &amp; edit
+        </button>
+      </div>
 
-      {open && (
-        <div className="px-5 py-4 space-y-5 border-t" style={{ borderColor: "rgba(34,197,94,0.1)" }}>
-          {approvedOutput && renderPanel(stepId, approvedOutput, () => {})}
+      {/* Output (read-only) */}
+      <div className="p-6 space-y-5">
+        {approvedOutput && renderPanel(stepId, approvedOutput, () => {})}
 
-          {/* Interventions log */}
-          {step.interventions.length > 0 && (
-            <div>
-              <div className={`text-[10px] uppercase tracking-wider font-semibold mb-2 ${isDark ? "text-white/30" : "text-slate-400"}`}>Intervention Log</div>
-              <div className="space-y-1.5">
+        {/* Intervention log (collapsible) */}
+        {step.interventions.length > 0 && (
+          <div
+            className="rounded-xl overflow-hidden"
+            style={{
+              background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)",
+              border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.07)",
+            }}
+          >
+            <button
+              onClick={() => setLogOpen(!logOpen)}
+              className={`w-full flex items-center gap-2 px-4 py-2.5 text-left transition-colors ${isDark ? "hover:bg-white/[0.03]" : "hover:bg-black/[0.02]"}`}
+            >
+              <User className={`w-3.5 h-3.5 flex-shrink-0 ${isDark ? "text-white/30" : "text-slate-400"}`} />
+              <span className={`flex-1 text-[11px] font-semibold ${isDark ? "text-white/40" : "text-slate-500"}`}>
+                Intervention Log
+              </span>
+              <span className={`text-[9px] px-1.5 py-0.5 rounded mr-2 ${isDark ? "bg-white/[0.06] text-white/35" : "bg-black/[0.05] text-slate-400"}`}>
+                {step.interventions.length}
+              </span>
+              {logOpen ? <ChevronUp className="w-3 h-3 opacity-40" /> : <ChevronDown className="w-3 h-3 opacity-40" />}
+            </button>
+            {logOpen && (
+              <div className="px-4 pb-4 pt-1 space-y-2 border-t" style={{ borderColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)" }}>
                 {step.interventions.map((iv) => (
                   <div key={iv.id} className="flex items-start gap-2 text-[10px]">
                     <User className={`w-3 h-3 flex-shrink-0 mt-0.5 ${isDark ? "text-white/30" : "text-slate-400"}`} />
@@ -302,15 +344,41 @@ function ApprovedCollapsible({
                         {iv.type}
                       </span>
                       {iv.note && <span className={isDark ? "text-white/45" : "text-slate-500"}>{iv.note}</span>}
-                      <span className={`ml-1.5 ${isDark ? "text-white/25" : "text-slate-400"}`}>{new Date(iv.timestamp).toLocaleTimeString()}</span>
+                      <span className={`ml-1.5 ${isDark ? "text-white/25" : "text-slate-400"}`}>
+                        {new Date(iv.timestamp).toLocaleTimeString()}
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
+            )}
+          </div>
+        )}
+
+        {/* Collapsible raw stream (if saved) */}
+        <div>
+          <button
+            onClick={() => setStreamOpen(!streamOpen)}
+            className={`flex items-center gap-1.5 text-[10px] transition-colors ${isDark ? "text-white/25 hover:text-white/50" : "text-slate-300 hover:text-slate-500"}`}
+          >
+            <Terminal className="w-3 h-3" />
+            {streamOpen ? <EyeOff className="w-2.5 h-2.5" /> : <Eye className="w-2.5 h-2.5" />}
+            {streamOpen ? "Collapse" : "Show"} raw agent output
+          </button>
+          {streamOpen && approvedOutput && (
+            <pre
+              className="mt-1.5 rounded-xl p-4 font-mono text-[10px] leading-relaxed overflow-auto max-h-48"
+              style={{
+                background: isDark ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.04)",
+                border: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)",
+                color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)",
+              }}
+            >
+              {JSON.stringify(approvedOutput, null, 2)}
+            </pre>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -318,7 +386,7 @@ function ApprovedCollapsible({
 // ── Main component ─────────────────────────────────────────────────────────
 
 export function AgentStepPanel({
-  stepId, step, streamingText, isStreaming, onApprove, onReject,
+  stepId, step, streamingText, isStreaming, isViewingApproved, onApprove, onReject, onGoBack,
 }: Props) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -350,9 +418,9 @@ export function AgentStepPanel({
     (step.confidence ?? 0) >= 85 ? "#22c55e" :
     (step.confidence ?? 0) >= 70 ? "#f59e0b" : "#ef4444";
 
-  // ── APPROVED: collapsible summary ────────────────────────────────────────
+  // ── APPROVED: full panel with go-back button ─────────────────────────────
   if (step.status === "approved") {
-    return <ApprovedCollapsible stepId={stepId} step={step} isDark={isDark} />;
+    return <ApprovedPanel stepId={stepId} step={step} isDark={isDark} onGoBack={onGoBack} />;
   }
 
   // ── RUNNING ───────────────────────────────────────────────────────────────

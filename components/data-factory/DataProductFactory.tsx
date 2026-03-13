@@ -24,7 +24,6 @@ import {
 
 type FactoryView = "request" | "factory" | "published";
 
-// ─── Parse streaming JSON safely ─────────────────────────────────────────────
 function tryParseJSON(text: string): Record<string, unknown> | null {
   const cleaned = text
     .replace(/^```json\s*/i, "")
@@ -34,7 +33,6 @@ function tryParseJSON(text: string): Record<string, unknown> | null {
   try {
     return JSON.parse(cleaned) as Record<string, unknown>;
   } catch {
-    // Find last complete JSON object
     const lastBrace = cleaned.lastIndexOf("}");
     if (lastBrace > 0) {
       try {
@@ -55,13 +53,14 @@ export function DataProductFactory() {
   const [project, setProject] = useState<DataProductProject | null>(null);
   const [streamingText, setStreamingText] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState(false);
+  // Which step is currently displayed in the right panel (may be an approved step when user clicks back)
+  const [viewingStepId, setViewingStepId] = useState<AgentStepId | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   // ─── Build context string for an agent ────────────────────────────────────
   const buildContext = useCallback(
     (stepId: AgentStepId, proj: DataProductProject): string => {
       const parts: string[] = [`Business Request: ${proj.requestText}`];
-
       const prevSteps: AgentStepId[] = [
         "opportunity", "persona", "discovery", "quality",
         "kpi", "model", "pipeline", "validation", "documentation", "governance",
@@ -74,11 +73,9 @@ export function DataProductFactory() {
           parts.push(`\n${AGENT_STEP_DEFINITIONS[sid].label} Output:\n${JSON.stringify(output, null, 2)}`);
         }
       }
-
       if (stepId === "discovery") {
         parts.push("\nAvailable Data Sources Catalog:\n" + JSON.stringify(MOCK_DATA_CATALOG, null, 2));
       }
-
       return parts.join("\n");
     },
     []
@@ -90,8 +87,8 @@ export function DataProductFactory() {
       abortRef.current = new AbortController();
       setStreamingText("");
       setIsStreaming(true);
+      setViewingStepId(stepId);
 
-      // Mark step as running
       const updatedProj: DataProductProject = {
         ...proj,
         currentStep: stepId,
@@ -147,15 +144,13 @@ export function DataProductFactory() {
                   setStreamingText(fullText);
                 }
               } catch {
-                // skip malformed chunks
+                // skip
               }
             }
           }
         }
       } catch (err: unknown) {
-        if (err instanceof Error && err.name === "AbortError") {
-          console.log("[v0] Agent step aborted:", stepId);
-        } else {
+        if (!(err instanceof Error && err.name === "AbortError")) {
           console.log("[v0] Agent step error:", err);
         }
       } finally {
@@ -165,7 +160,6 @@ export function DataProductFactory() {
       const parsed = tryParseJSON(fullText);
       const confidence = parsed ? Math.round(75 + Math.random() * 20) : null;
 
-      // For discovery, hydrate selected sources from catalog
       let finalOutput = parsed;
       if (stepId === "discovery" && parsed) {
         const selectedIds = (parsed.selectedSourceIds as string[] | undefined) ?? [];
@@ -194,7 +188,7 @@ export function DataProductFactory() {
     [buildContext]
   );
 
-  // ─── Approve a step and run next ──────────────────────────────────────────
+  // ─── Approve a step ────────────────────────────────────────────────────────
   const handleApproveStep = useCallback(
     async (stepId: AgentStepId, editedOutput?: Record<string, unknown>) => {
       if (!project) return;
@@ -224,7 +218,6 @@ export function DataProductFactory() {
       const nextStepId = STEP_ORDER[stepIndex + 1] as AgentStepId | undefined;
 
       if (!nextStepId) {
-        // All done — publishing
         const finalProj: DataProductProject = {
           ...approvedProj,
           status: "published",
@@ -273,7 +266,68 @@ export function DataProductFactory() {
     [project, runAgentStep]
   );
 
-  // ─── Start the factory from a request ────────────────────────────────────
+  // ─── Go back to a previous approved step ─────────────────────────────────
+  // Resets this step back to awaiting_review and all downstream steps to pending
+  const handleGoBackToStep = useCallback(
+    (stepId: AgentStepId) => {
+      if (!project) return;
+      abortRef.current?.abort();
+      setIsStreaming(false);
+
+      const stepIndex = STEP_ORDER.indexOf(stepId);
+
+      // Preserve the existing output but put the step back into awaiting_review
+      // so the user can make edits and re-approve. Reset all downstream to pending.
+      const updatedSteps = { ...project.steps };
+      STEP_ORDER.forEach((sid, idx) => {
+        if (idx === stepIndex) {
+          updatedSteps[sid] = {
+            ...updatedSteps[sid],
+            status: "awaiting_review",
+            editedOutput: null,
+          };
+        } else if (idx > stepIndex) {
+          updatedSteps[sid] = {
+            ...updatedSteps[sid],
+            status: "pending",
+            output: null,
+            editedOutput: null,
+            confidence: null,
+            startedAt: null,
+            completedAt: null,
+            interventions: [],
+          };
+        }
+      });
+
+      const revertedProj: DataProductProject = {
+        ...project,
+        currentStep: stepId,
+        status: "in_progress",
+        steps: updatedSteps,
+      };
+
+      setProject(revertedProj);
+      setViewingStepId(stepId);
+      setStreamingText(project.steps[stepId].output ? JSON.stringify(project.steps[stepId].output, null, 2) : "");
+    },
+    [project]
+  );
+
+  // ─── Click a step in the stepper ─────────────────────────────────────────
+  // Approved steps: navigate to view (read-only), Active step: already shown
+  const handleStepClick = useCallback(
+    (stepId: AgentStepId) => {
+      if (!project) return;
+      const step = project.steps[stepId];
+      if (step.status === "approved" || step.status === "awaiting_review" || step.status === "running") {
+        setViewingStepId(stepId);
+      }
+    },
+    [project]
+  );
+
+  // ─── Start the factory ────────────────────────────────────────────────────
   const handleStartFactory = useCallback(
     async (requestText: string) => {
       const id = crypto.randomUUID();
@@ -285,16 +339,17 @@ export function DataProductFactory() {
     [runAgentStep]
   );
 
-  // ─── Reset to start fresh ─────────────────────────────────────────────────
+  // ─── Reset ─────────────────────────────────────────────────────────────────
   const handleReset = () => {
     abortRef.current?.abort();
     setProject(null);
     setStreamingText("");
     setIsStreaming(false);
+    setViewingStepId(null);
     setView("request");
   };
 
-  // ─── Determine which step to display ─────────────────────────────────────
+  // ─── Determine which step is "active" (running / awaiting) ───────────────
   const activeStepId: AgentStepId | null = project?.currentStep ?? (
     project
       ? (STEP_ORDER.find((sid) => {
@@ -304,7 +359,9 @@ export function DataProductFactory() {
       : null
   );
 
-  const activeStep: AgentStep | null = activeStepId ? (project?.steps[activeStepId] ?? null) : null;
+  // What to show in the right panel — user may be viewing a different step than the active one
+  const displayedStepId: AgentStepId | null = viewingStepId ?? activeStepId;
+  const displayedStep: AgentStep | null = displayedStepId ? (project?.steps[displayedStepId] ?? null) : null;
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
@@ -333,7 +390,7 @@ export function DataProductFactory() {
           </div>
           <div className="flex items-center gap-3">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center cobalt-glow-sm flex-shrink-0"
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{ background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)" }}
             >
               <Sparkles className="w-5 h-5 text-white" />
@@ -351,7 +408,6 @@ export function DataProductFactory() {
 
         {view === "factory" && project && (
           <div className="flex items-center gap-3">
-            {/* Live status badge */}
             {isStreaming && (
               <div
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
@@ -390,19 +446,26 @@ export function DataProductFactory() {
       {view === "factory" && project && (
         <div className="grid grid-cols-[280px_1fr] gap-6">
           {/* Stepper sidebar */}
-          <FactoryStepper project={project} activeStepId={activeStepId} />
+          <FactoryStepper
+            project={project}
+            activeStepId={activeStepId}
+            viewingStepId={displayedStepId}
+            onStepClick={handleStepClick}
+          />
 
-          {/* Active step panel */}
+          {/* Right panel — shows the viewed step */}
           <div className="min-w-0">
-            {activeStepId && activeStep ? (
+            {displayedStepId && displayedStep ? (
               <AgentStepPanel
-                key={activeStepId}
-                stepId={activeStepId}
-                step={activeStep}
-                streamingText={streamingText}
-                isStreaming={isStreaming}
+                key={displayedStepId}
+                stepId={displayedStepId}
+                step={displayedStep}
+                streamingText={displayedStepId === activeStepId ? streamingText : ""}
+                isStreaming={displayedStepId === activeStepId ? isStreaming : false}
+                isViewingApproved={displayedStep.status === "approved"}
                 onApprove={handleApproveStep}
                 onReject={handleRejectStep}
+                onGoBack={handleGoBackToStep}
               />
             ) : (
               <div

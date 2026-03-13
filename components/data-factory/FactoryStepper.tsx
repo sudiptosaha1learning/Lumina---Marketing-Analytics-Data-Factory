@@ -43,6 +43,8 @@ const STEP_ICONS = {
 interface Props {
   project: DataProductProject;
   activeStepId: AgentStepId | null;
+  viewingStepId: AgentStepId | null;
+  onStepClick: (stepId: AgentStepId) => void;
 }
 
 function getStatusColor(status: string, isDark: boolean): string {
@@ -56,7 +58,7 @@ function getStatusColor(status: string, isDark: boolean): string {
   }
 }
 
-export function FactoryStepper({ project, activeStepId }: Props) {
+export function FactoryStepper({ project, activeStepId, viewingStepId, onStepClick }: Props) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
@@ -101,6 +103,8 @@ export function FactoryStepper({ project, activeStepId }: Props) {
         const def = AGENT_STEP_DEFINITIONS[stepId];
         const Icon = STEP_ICONS[stepId] ?? Circle;
         const isActive = activeStepId === stepId;
+        const isViewing = viewingStepId === stepId;
+        const isClickable = step.status === "approved" || step.status === "awaiting_review" || step.status === "running";
         const statusColor = getStatusColor(step.status, isDark);
 
         return (
@@ -121,15 +125,23 @@ export function FactoryStepper({ project, activeStepId }: Props) {
             )}
 
             <div
-              className={`relative z-10 flex items-center gap-2.5 px-2 py-2 rounded-xl transition-all duration-200 cursor-default ${
-                isActive
+              className={`relative z-10 flex items-center gap-2.5 px-2 py-2 rounded-xl transition-all duration-200 ${
+                isClickable ? "cursor-pointer" : "cursor-default"
+              } ${
+                isViewing
                   ? ""
-                  : isDark ? "hover:bg-white/[0.03]" : "hover:bg-black/[0.02]"
+                  : isClickable
+                    ? isDark ? "hover:bg-white/[0.04]" : "hover:bg-black/[0.03]"
+                    : ""
               }`}
-              style={isActive ? {
-                background: "rgba(59,130,246,0.1)",
-                border: "1px solid rgba(59,130,246,0.2)",
+              style={isViewing ? {
+                background: isActive ? "rgba(59,130,246,0.1)" : "rgba(99,102,241,0.08)",
+                border: isActive ? "1px solid rgba(59,130,246,0.2)" : "1px solid rgba(99,102,241,0.15)",
               } : {}}
+              onClick={() => isClickable && onStepClick(stepId)}
+              role={isClickable ? "button" : undefined}
+              tabIndex={isClickable ? 0 : undefined}
+              onKeyDown={(e) => { if (isClickable && (e.key === "Enter" || e.key === " ")) onStepClick(stepId); }}
             >
               {/* Icon circle */}
               <div
@@ -182,7 +194,7 @@ export function FactoryStepper({ project, activeStepId }: Props) {
                 )}
               </div>
 
-              {isActive && <ChevronRight className="w-3 h-3 text-blue-400 flex-shrink-0" />}
+              {(isActive || isViewing) && <ChevronRight className={`w-3 h-3 flex-shrink-0 ${isActive ? "text-blue-400" : "text-indigo-400/60"}`} />}
             </div>
           </div>
         );
