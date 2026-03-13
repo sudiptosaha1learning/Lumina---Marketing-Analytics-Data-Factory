@@ -15,14 +15,11 @@ import { FactoryRequestCapture } from "./FactoryRequestCapture";
 import { FactoryStepper } from "./FactoryStepper";
 import { AgentStepPanel } from "./AgentStepPanel";
 import { FactoryPublishSuccess } from "./FactoryPublishSuccess";
-import {
-  Sparkles,
-  ChevronLeft,
-  RotateCcw,
-  Activity,
-} from "lucide-react";
+import { Sparkles, ChevronLeft, RotateCcw, Activity } from "lucide-react";
 
 type FactoryView = "request" | "factory" | "published";
+
+// ── Helpers ────────────────────────────────────────────────────────────────
 
 function tryParseJSON(text: string): Record<string, unknown> | null {
   const cleaned = text
@@ -45,8 +42,10 @@ function tryParseJSON(text: string): Record<string, unknown> | null {
   }
 }
 
-// Slim down an output object so it doesn't blow up context for later agents
-function summariseOutput(stepId: AgentStepId, output: Record<string, unknown>): Record<string, unknown> {
+function summariseOutput(
+  stepId: AgentStepId,
+  output: Record<string, unknown>
+): Record<string, unknown> {
   switch (stepId) {
     case "opportunity":
       return {
@@ -57,8 +56,12 @@ function summariseOutput(stepId: AgentStepId, output: Record<string, unknown>): 
       };
     case "persona":
       return {
-        personas: (output.personas as Array<{ role: string }> | undefined)?.map((p) => p.role) ?? [],
-        userStories: (output.userStories as string[] | undefined)?.slice(0, 3) ?? [],
+        personas:
+          (output.personas as Array<{ role: string }> | undefined)?.map(
+            (p) => p.role
+          ) ?? [],
+        userStories:
+          (output.userStories as string[] | undefined)?.slice(0, 3) ?? [],
       };
     case "discovery":
       return {
@@ -70,19 +73,22 @@ function summariseOutput(stepId: AgentStepId, output: Record<string, unknown>): 
       return {
         overallScore: output.overallScore,
         readinessAssessment: output.readinessAssessment,
-        remediations: (output.remediations as string[] | undefined)?.slice(0, 3) ?? [],
+        remediations:
+          (output.remediations as string[] | undefined)?.slice(0, 3) ?? [],
       };
     case "kpi":
       return {
-        kpis: (output.kpis as Array<{ name: string; formula: string }> | undefined)?.map((k) => ({
-          name: k.name,
-          formula: k.formula,
-        })) ?? [],
+        kpis:
+          (
+            output.kpis as Array<{ name: string; formula: string }> | undefined
+          )?.map((k) => ({ name: k.name, formula: k.formula })) ?? [],
       };
     default:
       return output;
   }
 }
+
+// ── Component ──────────────────────────────────────────────────────────────
 
 export function DataProductFactory() {
   const { theme } = useTheme();
@@ -92,43 +98,49 @@ export function DataProductFactory() {
   const [project, setProject] = useState<DataProductProject | null>(null);
   const [streamingText, setStreamingText] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState(false);
-  // Which step is currently displayed in the right panel (may be an approved step when user clicks back)
   const [viewingStepId, setViewingStepId] = useState<AgentStepId | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // ─── Build context string for an agent ────────────────────────────────────
+  // ── Build slim context for the agent ──────────────────────────────────────
   const buildContext = useCallback(
     (stepId: AgentStepId, proj: DataProductProject): string => {
       const parts: string[] = [`Business Request: ${proj.requestText}`];
-      const prevSteps: AgentStepId[] = [
+      const allPrev: AgentStepId[] = [
         "opportunity", "persona", "discovery", "quality",
         "kpi", "model", "pipeline", "validation", "documentation", "governance",
       ];
-      for (const sid of prevSteps) {
+      for (const sid of allPrev) {
         if (sid === stepId) break;
-        const step = proj.steps[sid];
-        const raw = step.editedOutput ?? step.output;
+        const s = proj.steps[sid];
+        const raw = s.editedOutput ?? s.output;
         if (raw) {
-          // Slim down early outputs to avoid context bloat for later steps
           const slim = summariseOutput(sid as AgentStepId, raw);
-          parts.push(`\n${AGENT_STEP_DEFINITIONS[sid].label} Summary:\n${JSON.stringify(slim)}`);
+          parts.push(
+            `\n${AGENT_STEP_DEFINITIONS[sid].label} Summary:\n${JSON.stringify(slim)}`
+          );
         }
       }
       if (stepId === "discovery") {
-        // Only pass id, name, and fields for the catalog — not the full nested objects
         const catalogSummary = MOCK_DATA_CATALOG.map((s) => ({
-          id: s.id, name: s.name, fields: s.fields.slice(0, 6),
+          id: s.id,
+          name: s.name,
+          fields: s.fields.slice(0, 6),
         }));
-        parts.push("\nAvailable Data Sources:\n" + JSON.stringify(catalogSummary));
+        parts.push(
+          "\nAvailable Data Sources:\n" + JSON.stringify(catalogSummary)
+        );
       }
       return parts.join("\n");
     },
     []
   );
 
-  // ─── Run a single agent step ───────────────────────────────────────────────
+  // ── Run a single agent step ────────────────────────────────────────────────
   const runAgentStep = useCallback(
-    async (stepId: AgentStepId, proj: DataProductProject): Promise<DataProductProject> => {
+    async (
+      stepId: AgentStepId,
+      proj: DataProductProject
+    ): Promise<DataProductProject> => {
       abortRef.current = new AbortController();
       setStreamingText("");
       setIsStreaming(true);
@@ -169,18 +181,20 @@ export function DataProductFactory() {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split("\n");
           buffer = lines.pop() ?? "";
-
           for (const line of lines) {
             const trimmed = line.trim();
             if (trimmed.startsWith("data:")) {
               const data = trimmed.slice(5).trim();
               if (data === "[DONE]") continue;
               try {
-                const chunk = JSON.parse(data) as { type?: string; delta?: string; text?: string };
+                const chunk = JSON.parse(data) as {
+                  type?: string;
+                  delta?: string;
+                  text?: string;
+                };
                 if (chunk.type === "text-delta" && chunk.delta) {
                   fullText += chunk.delta;
                   setStreamingText(fullText);
@@ -189,14 +203,14 @@ export function DataProductFactory() {
                   setStreamingText(fullText);
                 }
               } catch {
-                // skip
+                // skip malformed chunk
               }
             }
           }
         }
       } catch (err: unknown) {
         if (!(err instanceof Error && err.name === "AbortError")) {
-          console.log("[v0] Agent step error:", err);
+          console.error("[v0] Agent step error:", err);
         }
       } finally {
         setIsStreaming(false);
@@ -207,8 +221,12 @@ export function DataProductFactory() {
 
       let finalOutput = parsed;
       if (stepId === "discovery" && parsed) {
-        const selectedIds = (parsed.selectedSourceIds as string[] | undefined) ?? [];
-        const sources = MOCK_DATA_CATALOG.map((s) => ({ ...s, selected: selectedIds.includes(s.id) }));
+        const selectedIds =
+          (parsed.selectedSourceIds as string[] | undefined) ?? [];
+        const sources = MOCK_DATA_CATALOG.map((s) => ({
+          ...s,
+          selected: selectedIds.includes(s.id),
+        }));
         finalOutput = { ...parsed, candidateSources: sources };
       }
 
@@ -233,7 +251,7 @@ export function DataProductFactory() {
     [buildContext]
   );
 
-  // ─── Approve a step ────────────────────────────────────────────────────────
+  // ── Approve a step ─────────────────────────────────────────────────────────
   const handleApproveStep = useCallback(
     async (stepId: AgentStepId, editedOutput?: Record<string, unknown>) => {
       if (!project) return;
@@ -254,7 +272,10 @@ export function DataProductFactory() {
             ...project.steps[stepId],
             status: "approved",
             editedOutput: editedOutput ?? null,
-            interventions: [...project.steps[stepId].interventions, intervention],
+            interventions: [
+              ...project.steps[stepId].interventions,
+              intervention,
+            ],
           },
         },
       };
@@ -280,7 +301,7 @@ export function DataProductFactory() {
     [project, runAgentStep]
   );
 
-  // ─── Reject & re-run a step ────────────────────────────────────────────────
+  // ── Reject & re-run a step ─────────────────────────────────────────────────
   const handleRejectStep = useCallback(
     async (stepId: AgentStepId, note?: string) => {
       if (!project) return;
@@ -300,7 +321,10 @@ export function DataProductFactory() {
           [stepId]: {
             ...project.steps[stepId],
             status: "rejected",
-            interventions: [...project.steps[stepId].interventions, intervention],
+            interventions: [
+              ...project.steps[stepId].interventions,
+              intervention,
+            ],
           },
         },
       };
@@ -311,8 +335,7 @@ export function DataProductFactory() {
     [project, runAgentStep]
   );
 
-  // ─── Go back to a previous approved step ─────────────────────────────────
-  // Resets this step back to awaiting_review and all downstream steps to pending
+  // ── Go back to a previous step ─────────────────────────────────────────────
   const handleGoBackToStep = useCallback(
     (stepId: AgentStepId) => {
       if (!project) return;
@@ -320,10 +343,8 @@ export function DataProductFactory() {
       setIsStreaming(false);
 
       const stepIndex = STEP_ORDER.indexOf(stepId);
-
-      // Preserve the existing output but put the step back into awaiting_review
-      // so the user can make edits and re-approve. Reset all downstream to pending.
       const updatedSteps = { ...project.steps };
+
       STEP_ORDER.forEach((sid, idx) => {
         if (idx === stepIndex) {
           updatedSteps[sid] = {
@@ -354,25 +375,32 @@ export function DataProductFactory() {
 
       setProject(revertedProj);
       setViewingStepId(stepId);
-      setStreamingText(project.steps[stepId].output ? JSON.stringify(project.steps[stepId].output, null, 2) : "");
+      setStreamingText(
+        project.steps[stepId].output
+          ? JSON.stringify(project.steps[stepId].output, null, 2)
+          : ""
+      );
     },
     [project]
   );
 
-  // ─── Click a step in the stepper ─────────────────────────────────────────
-  // Approved steps: navigate to view (read-only), Active step: already shown
+  // ── Click a step in the stepper ────────────────────────────────────────────
   const handleStepClick = useCallback(
     (stepId: AgentStepId) => {
       if (!project) return;
       const step = project.steps[stepId];
-      if (step.status === "approved" || step.status === "awaiting_review" || step.status === "running") {
+      if (
+        step.status === "approved" ||
+        step.status === "awaiting_review" ||
+        step.status === "running"
+      ) {
         setViewingStepId(stepId);
       }
     },
     [project]
   );
 
-  // ─── Start the factory ────────────────────────────────────────────────────
+  // ── Start the factory ──────────────────────────────────────────────────────
   const handleStartFactory = useCallback(
     async (requestText: string) => {
       const id = crypto.randomUUID();
@@ -384,7 +412,7 @@ export function DataProductFactory() {
     [runAgentStep]
   );
 
-  // ─── Reset ─────────────────────────────────────────────────────────────────
+  // ── Reset ──────────────────────────────────────────────────────────────────
   const handleReset = () => {
     abortRef.current?.abort();
     setProject(null);
@@ -394,21 +422,22 @@ export function DataProductFactory() {
     setView("request");
   };
 
-  // ─── Determine which step is "active" (running / awaiting) ───────────────
-  const activeStepId: AgentStepId | null = project?.currentStep ?? (
-    project
+  // ── Derived state ──────────────────────────────────────────────────────────
+  const activeStepId: AgentStepId | null =
+    project?.currentStep ??
+    (project
       ? (STEP_ORDER.find((sid) => {
           const s = project.steps[sid];
           return s.status === "running" || s.status === "awaiting_review";
         }) ?? null)
-      : null
-  );
+      : null);
 
-  // What to show in the right panel — user may be viewing a different step than the active one
   const displayedStepId: AgentStepId | null = viewingStepId ?? activeStepId;
-  const displayedStep: AgentStep | null = displayedStepId ? (project?.steps[displayedStepId] ?? null) : null;
+  const displayedStep: AgentStep | null = displayedStepId
+    ? (project?.steps[displayedStepId] ?? null)
+    : null;
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -418,13 +447,21 @@ export function DataProductFactory() {
             {view !== "request" && (
               <button
                 onClick={handleReset}
-                className={`flex items-center gap-2 text-sm transition-colors ${isDark ? "text-white/40 hover:text-white/70" : "text-slate-400 hover:text-slate-700"}`}
+                className={`flex items-center gap-2 text-sm transition-colors ${
+                  isDark
+                    ? "text-white/40 hover:text-white/70"
+                    : "text-slate-400 hover:text-slate-700"
+                }`}
               >
                 <div
                   className="w-5 h-5 rounded-lg flex items-center justify-center"
                   style={{
-                    background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
-                    border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)",
+                    background: isDark
+                      ? "rgba(255,255,255,0.06)"
+                      : "rgba(0,0,0,0.06)",
+                    border: isDark
+                      ? "1px solid rgba(255,255,255,0.1)"
+                      : "1px solid rgba(0,0,0,0.1)",
                   }}
                 >
                   <ChevronLeft className="w-3 h-3" />
@@ -436,15 +473,25 @@ export function DataProductFactory() {
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)" }}
+              style={{
+                background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)",
+              }}
             >
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className={`font-heading text-xl font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>
+              <h1
+                className={`font-heading text-xl font-semibold ${
+                  isDark ? "text-white" : "text-slate-900"
+                }`}
+              >
                 Agentic AI Data Product Factory
               </h1>
-              <p className={`text-xs mt-0.5 ${isDark ? "text-white/45" : "text-slate-500"}`}>
+              <p
+                className={`text-xs mt-0.5 ${
+                  isDark ? "text-white/45" : "text-slate-500"
+                }`}
+              >
                 Governed workflow platform — discover, design, build, validate &amp; publish trusted data products
               </p>
             </div>
@@ -456,15 +503,24 @@ export function DataProductFactory() {
             {isStreaming && (
               <div
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
-                style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.25)" }}
+                style={{
+                  background: "rgba(59,130,246,0.1)",
+                  border: "1px solid rgba(59,130,246,0.25)",
+                }}
               >
                 <Activity className="w-3 h-3 text-blue-400 animate-pulse" />
-                <span className="text-xs text-blue-400 font-medium">Agent running</span>
+                <span className="text-xs text-blue-400 font-medium">
+                  Agent running
+                </span>
               </div>
             )}
             <button
               onClick={handleReset}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${isDark ? "text-white/50 hover:text-white/80 hover:bg-white/[0.06]" : "text-slate-500 hover:text-slate-700 hover:bg-black/[0.05]"}`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                isDark
+                  ? "text-white/50 hover:text-white/80 hover:bg-white/[0.06]"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-black/[0.05]"
+              }`}
             >
               <RotateCcw className="w-3 h-3" />
               Reset
@@ -475,11 +531,33 @@ export function DataProductFactory() {
 
       {/* Divider */}
       <div className="flex items-center gap-3">
-        <div className="h-px flex-1" style={{ background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)" }} />
-        <span className={`text-[10px] uppercase tracking-widest px-3 ${isDark ? "text-white/30" : "text-slate-400"}`}>
-          {view === "request" ? "Start a new data product" : view === "published" ? "Product published" : "Factory workflow"}
+        <div
+          className="h-px flex-1"
+          style={{
+            background: isDark
+              ? "rgba(255,255,255,0.07)"
+              : "rgba(0,0,0,0.08)",
+          }}
+        />
+        <span
+          className={`text-[10px] uppercase tracking-widest px-3 ${
+            isDark ? "text-white/30" : "text-slate-400"
+          }`}
+        >
+          {view === "request"
+            ? "Start a new data product"
+            : view === "published"
+            ? "Product published"
+            : "Factory workflow"}
         </span>
-        <div className="h-px flex-1" style={{ background: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)" }} />
+        <div
+          className="h-px flex-1"
+          style={{
+            background: isDark
+              ? "rgba(255,255,255,0.07)"
+              : "rgba(0,0,0,0.08)",
+          }}
+        />
       </div>
 
       {/* REQUEST CAPTURE */}
@@ -490,7 +568,6 @@ export function DataProductFactory() {
       {/* FACTORY WORKFLOW */}
       {view === "factory" && project && (
         <div className="grid grid-cols-[280px_1fr] gap-6">
-          {/* Stepper sidebar */}
           <FactoryStepper
             project={project}
             activeStepId={activeStepId}
@@ -498,15 +575,18 @@ export function DataProductFactory() {
             onStepClick={handleStepClick}
           />
 
-          {/* Right panel — shows the viewed step */}
           <div className="min-w-0">
             {displayedStepId && displayedStep ? (
               <AgentStepPanel
                 key={displayedStepId}
                 stepId={displayedStepId}
                 step={displayedStep}
-                streamingText={displayedStepId === activeStepId ? streamingText : ""}
-                isStreaming={displayedStepId === activeStepId ? isStreaming : false}
+                streamingText={
+                  displayedStepId === activeStepId ? streamingText : ""
+                }
+                isStreaming={
+                  displayedStepId === activeStepId ? isStreaming : false
+                }
                 isViewingApproved={displayedStep.status === "approved"}
                 onApprove={handleApproveStep}
                 onReject={handleRejectStep}
@@ -516,11 +596,19 @@ export function DataProductFactory() {
               <div
                 className="rounded-2xl p-8 flex items-center justify-center"
                 style={{
-                  background: isDark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.8)",
-                  border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.07)",
+                  background: isDark
+                    ? "rgba(255,255,255,0.03)"
+                    : "rgba(255,255,255,0.8)",
+                  border: isDark
+                    ? "1px solid rgba(255,255,255,0.07)"
+                    : "1px solid rgba(0,0,0,0.07)",
                 }}
               >
-                <span className={`text-sm ${isDark ? "text-white/40" : "text-slate-400"}`}>
+                <span
+                  className={`text-sm ${
+                    isDark ? "text-white/40" : "text-slate-400"
+                  }`}
+                >
                   Select a step from the workflow to review outputs.
                 </span>
               </div>
