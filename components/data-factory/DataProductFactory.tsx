@@ -45,7 +45,44 @@ function tryParseJSON(text: string): Record<string, unknown> | null {
   }
 }
 
-export function DataProductFactory() {
+// Slim down an output object so it doesn't blow up context for later agents
+function summariseOutput(stepId: AgentStepId, output: Record<string, unknown>): Record<string, unknown> {
+  switch (stepId) {
+    case "opportunity":
+      return {
+        problemStatement: output.problemStatement,
+        purpose: output.purpose,
+        scope: output.scope,
+        initialKPIs: output.initialKPIs,
+      };
+    case "persona":
+      return {
+        personas: (output.personas as Array<{ role: string }> | undefined)?.map((p) => p.role) ?? [],
+        userStories: (output.userStories as string[] | undefined)?.slice(0, 3) ?? [],
+      };
+    case "discovery":
+      return {
+        selectedSourceIds: output.selectedSourceIds,
+        joinHypotheses: output.joinHypotheses,
+        gaps: output.gaps,
+      };
+    case "quality":
+      return {
+        overallScore: output.overallScore,
+        readinessAssessment: output.readinessAssessment,
+        remediations: (output.remediations as string[] | undefined)?.slice(0, 3) ?? [],
+      };
+    case "kpi":
+      return {
+        kpis: (output.kpis as Array<{ name: string; formula: string }> | undefined)?.map((k) => ({
+          name: k.name,
+          formula: k.formula,
+        })) ?? [],
+      };
+    default:
+      return output;
+  }
+}
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
@@ -68,13 +105,19 @@ export function DataProductFactory() {
       for (const sid of prevSteps) {
         if (sid === stepId) break;
         const step = proj.steps[sid];
-        const output = step.editedOutput ?? step.output;
-        if (output) {
-          parts.push(`\n${AGENT_STEP_DEFINITIONS[sid].label} Output:\n${JSON.stringify(output, null, 2)}`);
+        const raw = step.editedOutput ?? step.output;
+        if (raw) {
+          // Slim down early outputs to avoid context bloat for later steps
+          const slim = summariseOutput(sid as AgentStepId, raw);
+          parts.push(`\n${AGENT_STEP_DEFINITIONS[sid].label} Summary:\n${JSON.stringify(slim)}`);
         }
       }
       if (stepId === "discovery") {
-        parts.push("\nAvailable Data Sources Catalog:\n" + JSON.stringify(MOCK_DATA_CATALOG, null, 2));
+        // Only pass id, name, and fields for the catalog — not the full nested objects
+        const catalogSummary = MOCK_DATA_CATALOG.map((s) => ({
+          id: s.id, name: s.name, fields: s.fields.slice(0, 6),
+        }));
+        parts.push("\nAvailable Data Sources:\n" + JSON.stringify(catalogSummary));
       }
       return parts.join("\n");
     },

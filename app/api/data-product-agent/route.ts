@@ -1,7 +1,7 @@
 import { streamText } from "ai";
 import { NextRequest } from "next/server";
 
-export const maxDuration = 60;
+export const maxDuration = 90;
 
 const AGENT_SYSTEM_PROMPTS: Record<string, string> = {
   opportunity: `You are the Opportunity Discovery Agent for the Agentic AI Data Product Factory at JLR (Jaguar Land Rover).
@@ -59,12 +59,13 @@ Focus on automotive customer marketing KPIs (engagement score, propensity to buy
   model: `You are the Data Model Design Agent for the Agentic AI Data Product Factory at JLR.
 Design the target data schema (fact/dimension model) for this data product.
 Always respond with valid JSON only (no markdown, no code fences).
-The JSON must match: {
+Keep the response concise: maximum 3 tables, maximum 8 fields per table.
+The JSON must match exactly: {
   "grain": string,
-  "tables": [{ "name": string, "grain": string, "type": "fact"|"dimension"|"bridge", "fields": [{ "name": string, "type": string, "description": string, "sourceTable": string, "isPII": boolean, "nullable": boolean }] }],
+  "tables": [{ "name": string, "grain": string, "type": "fact"|"dimension"|"bridge", "fields": [{ "name": string, "type": string, "description": string, "sourceTable": string, "isPII": boolean }] }],
   "relationships": string[]
 }
-Use snake_case for table/field names. Model should be optimised for marketing analytics consumption.`,
+Use snake_case for table/field names. Model should be optimised for marketing analytics consumption. Limit to 3 tables max and 8 fields per table max to keep the response small.`,
 
   pipeline: `You are the Pipeline Generation Agent for the Agentic AI Data Product Factory at JLR.
 Generate the transformation pipeline steps and representative dbt/SQL code for this data product.
@@ -150,7 +151,7 @@ export async function POST(req: NextRequest) {
         content: `Context:\n${context}\n\nGenerate the structured output for this step. Respond with JSON only.`,
       },
     ],
-    maxOutputTokens: 2000,
+    maxOutputTokens: 3000,
   });
 
   return result.toUIMessageStreamResponse();
