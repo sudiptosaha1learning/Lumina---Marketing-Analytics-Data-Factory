@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useTheme } from "@/components/dashboard/ThemeProvider";
 import type { ModelOutput, ModelTable, FieldDefinition } from "@/lib/data-product-types";
 import { Table, KeyRound, Link } from "lucide-react";
@@ -78,16 +79,16 @@ export function ModelPanel({ output, onChange }: Props) {
                     <div className={`text-[9px] uppercase tracking-wider font-semibold ${isDark ? "text-white/30" : "text-slate-400"}`}>PII</div>
 
                     {(table.fields ?? []).map((field: FieldDefinition, fi: number) => (
-                      <>
-                        <div key={`name-${fi}`} className={`text-xs font-mono py-0.5 ${isDark ? "text-white/80" : "text-slate-800"}`}>{field.name}</div>
-                        <div key={`type-${fi}`} className={`text-[10px] py-0.5 ${isDark ? "text-white/45" : "text-slate-500"}`}>{field.type}</div>
-                        <div key={`src-${fi}`} className={`text-[10px] py-0.5 truncate ${isDark ? "text-white/35" : "text-slate-400"}`}>{field.sourceTable}</div>
-                        <div key={`pii-${fi}`} className="py-0.5">
+                      <React.Fragment key={fi}>
+                        <div className={`text-xs font-mono py-0.5 ${isDark ? "text-white/80" : "text-slate-800"}`}>{field.name}</div>
+                        <div className={`text-[10px] py-0.5 ${isDark ? "text-white/45" : "text-slate-500"}`}>{field.type}</div>
+                        <div className={`text-[10px] py-0.5 truncate ${isDark ? "text-white/35" : "text-slate-400"}`}>{field.sourceTable}</div>
+                        <div className="py-0.5">
                           {field.isPII && (
                             <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: "rgba(239,68,68,0.1)", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)" }}>PII</span>
                           )}
                         </div>
-                      </>
+                      </React.Fragment>
                     ))}
                   </div>
                 </div>
