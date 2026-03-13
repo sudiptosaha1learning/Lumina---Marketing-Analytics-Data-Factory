@@ -13,7 +13,7 @@ export type AgentStepId =
   | "governance"
   | "publishing";
 
-export type AgentStepStatus = "pending" | "running" | "awaiting_review" | "approved" | "rejected" | "skipped";
+export type AgentStepStatus = "pending" | "running" | "awaiting_review" | "approved" | "rejected" | "skipped" | "stale";
 
 export interface AgentStep {
   id: AgentStepId;
@@ -52,6 +52,7 @@ export interface DataProductProject {
   steps: Record<AgentStepId, AgentStep>;
   publishedAt: string | null;
   owner: string;
+  qualityThreshold: number; // default 80 — steps blocked below this
 }
 
 // ─── Agent Outputs ──────────────────────────────────────────────────────────
@@ -826,5 +827,6 @@ export function createInitialProject(id: string, requestText: string): DataProdu
     steps,
     publishedAt: null,
     owner: "John Doe",
+    qualityThreshold: 80,
   };
 }

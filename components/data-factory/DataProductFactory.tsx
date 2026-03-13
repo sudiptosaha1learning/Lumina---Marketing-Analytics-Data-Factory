@@ -15,9 +15,28 @@ import { FactoryRequestCapture } from "./FactoryRequestCapture";
 import { FactoryStepper } from "./FactoryStepper";
 import { AgentStepPanel } from "./AgentStepPanel";
 import { FactoryPublishSuccess } from "./FactoryPublishSuccess";
-import { Sparkles, ChevronLeft, RotateCcw, Activity } from "lucide-react";
+import { Sparkles, ChevronLeft, RotateCcw, Activity, Settings2 } from "lucide-react";
 
 type FactoryView = "request" | "factory" | "published";
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+// Steps that gate progression when their score/pass-rate is too low
+const GATED_STEPS: AgentStepId[] = ["quality", "validation"];
+
+// Mark all approved downstream steps as stale
+function markDownstreamStale(
+  proj: DataProductProject,
+  fromIndex: number
+): DataProductProject {
+  const updatedSteps = { ...proj.steps };
+  STEP_ORDER.forEach((sid, idx) => {
+    if (idx > fromIndex && updatedSteps[sid].status === "approved") {
+      updatedSteps[sid] = { ...updatedSteps[sid], status: "stale" };
+    }
+  });
+  return { ...proj, steps: updatedSteps };
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -99,6 +118,7 @@ export function DataProductFactory() {
   const [streamingText, setStreamingText] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [viewingStepId, setViewingStepId] = useState<AgentStepId | null>(null);
+  const [showThresholdConfig, setShowThresholdConfig] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   // ── Build slim context for the agent ──────────────────────────────────────
@@ -256,6 +276,30 @@ export function DataProductFactory() {
     async (stepId: AgentStepId, editedOutput?: Record<string, unknown>) => {
       if (!project) return;
 
+      // ── Quality gate ──────────────────────────────────────────────────────
+      if (stepId === "quality") {
+        const output = editedOutput ?? project.steps.quality.output;
+        const score = (output?.overallScore as number) ?? 0;
+        const threshold = project.qualityThreshold ?? 80;
+        const issues = (output?.issues as Array<{ overridden: boolean; severity: string }>) ?? [];
+        const nonOverriddenHigh = issues.filter((i) => !i.overridden && i.severity === "high");
+        if (score < threshold && nonOverriddenHigh.length > 0) {
+          // Don't advance — QualityPanel will show the blocked state
+          return;
+        }
+      }
+
+      // ── Validation gate ───────────────────────────────────────────────────
+      if (stepId === "validation") {
+        const output = editedOutput ?? project.steps.validation.output;
+        const tests = (output?.testSuite as Array<{ status: string }>) ?? [];
+        const failCount = tests.filter((t) => t.status === "fail").length;
+        if (failCount > 0) {
+          // Don't advance — ValidationPanel will show the blocked state
+          return;
+        }
+      }
+
       const intervention = {
         id: crypto.randomUUID(),
         timestamp: new Date().toISOString(),
@@ -264,7 +308,7 @@ export function DataProductFactory() {
         note: editedOutput ? "Output edited before approval" : undefined,
       };
 
-      const approvedProj: DataProductProject = {
+      let approvedProj: DataProductProject = {
         ...project,
         steps: {
           ...project.steps,
@@ -279,6 +323,12 @@ export function DataProductFactory() {
           },
         },
       };
+
+      // ── Mark downstream stale when edits were made ────────────────────────
+      if (editedOutput) {
+        const stepIndex = STEP_ORDER.indexOf(stepId);
+        approvedProj = markDownstreamStale(approvedProj, stepIndex);
+      }
 
       const stepIndex = STEP_ORDER.indexOf(stepId);
       const nextStepId = STEP_ORDER[stepIndex + 1] as AgentStepId | undefined;
@@ -331,6 +381,21 @@ export function DataProductFactory() {
 
       setProject(rejectedProj);
       await runAgentStep(stepId, rejectedProj);
+    },
+    [project, runAgentStep]
+  );
+
+  // ── Update quality threshold ───────────────────────────────────────────────
+  const handleSetThreshold = useCallback((value: number) => {
+    if (!project) return;
+    setProject({ ...project, qualityThreshold: value });
+  }, [project]);
+
+  // ── Re-run a stale step ────────────────────────────────────────────────────
+  const handleRerunStaleStep = useCallback(
+    async (stepId: AgentStepId) => {
+      if (!project) return;
+      await runAgentStep(stepId, project);
     },
     [project, runAgentStep]
   );
@@ -514,6 +579,57 @@ export function DataProductFactory() {
                 </span>
               </div>
             )}
+            {/* Quality threshold config toggle */}
+            <div className="relative">
+              <button
+                onClick={() => setShowThresholdConfig((v) => !v)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  isDark
+                    ? "text-white/50 hover:text-white/80 hover:bg-white/[0.06]"
+                    : "text-slate-500 hover:text-slate-700 hover:bg-black/[0.05]"
+                }`}
+                title="Configure quality threshold"
+              >
+                <Settings2 className="w-3 h-3" />
+                <span>QT: {project.qualityThreshold}</span>
+              </button>
+              {showThresholdConfig && (
+                <div
+                  className="absolute right-0 top-9 z-50 rounded-xl p-4 w-60 space-y-3 shadow-xl"
+                  style={{
+                    background: isDark ? "#1e2130" : "#ffffff",
+                    border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)",
+                  }}
+                >
+                  <p className={`text-xs font-semibold ${isDark ? "text-white/80" : "text-slate-800"}`}>
+                    Quality Gate Threshold
+                  </p>
+                  <p className={`text-[11px] leading-relaxed ${isDark ? "text-white/45" : "text-slate-500"}`}>
+                    Workflow will be blocked at the Quality Profiling step if the overall score is below this value (unless all high-severity issues are overridden).
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={5}
+                      value={project.qualityThreshold}
+                      onChange={(e) => handleSetThreshold(Number(e.target.value))}
+                      className="flex-1 accent-blue-500"
+                    />
+                    <span className={`text-sm font-bold w-8 text-right ${isDark ? "text-white" : "text-slate-900"}`}>
+                      {project.qualityThreshold}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setShowThresholdConfig(false)}
+                    className="text-[10px] text-blue-400 hover:text-blue-300"
+                  >
+                    Done
+                  </button>
+                </div>
+              )}
+            </div>
             <button
               onClick={handleReset}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
@@ -588,9 +704,11 @@ export function DataProductFactory() {
                   displayedStepId === activeStepId ? isStreaming : false
                 }
                 isViewingApproved={displayedStep.status === "approved"}
+                qualityThreshold={project.qualityThreshold}
                 onApprove={handleApproveStep}
                 onReject={handleRejectStep}
                 onGoBack={handleGoBackToStep}
+                onRerunStale={handleRerunStaleStep}
               />
             ) : (
               <div

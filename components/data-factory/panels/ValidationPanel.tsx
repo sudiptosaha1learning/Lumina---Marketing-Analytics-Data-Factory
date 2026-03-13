@@ -1,24 +1,30 @@
 "use client";
 
+import { useState } from "react";
 import { useTheme } from "@/components/dashboard/ThemeProvider";
 import type { ValidationOutput, TestCase } from "@/lib/data-product-types";
-import { CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
+import {
+  CheckCircle2, XCircle, Clock, AlertTriangle,
+  ShieldAlert, Sparkles, Loader2, ChevronDown, ChevronUp, Wrench,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   output: Record<string, unknown>;
   onChange: (updated: Record<string, unknown>) => void;
+  onRequestFix?: (instruction: string) => void;
 }
 
 const TEST_TYPE_LABEL: Record<string, string> = {
-  null_check:   "Null Check",
-  range_check:  "Range Check",
-  referential:  "Referential",
-  uniqueness:   "Uniqueness",
-  freshness:    "Freshness",
-  custom:       "Custom",
+  null_check:  "Null Check",
+  range_check: "Range Check",
+  referential: "Referential",
+  uniqueness:  "Uniqueness",
+  freshness:   "Freshness",
+  custom:      "Custom",
 };
 
-export function ValidationPanel({ output }: Props) {
+export function ValidationPanel({ output, onRequestFix }: Props) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const data = output as Partial<ValidationOutput>;
@@ -28,16 +34,44 @@ export function ValidationPanel({ output }: Props) {
   const anomalies = (data.anomalies as string[]) ?? [];
   const summary = (data.summary as string) ?? "";
 
-  const passCount = tests.filter((t) => t.status === "pass").length;
-  const failCount = tests.filter((t) => t.status === "fail").length;
+  const [fixingAll, setFixingAll] = useState(false);
+  const [fixingIdx, setFixingIdx] = useState<number | null>(null);
+  const [showAnomalies, setShowAnomalies] = useState(true);
+
+  const passCount   = tests.filter((t) => t.status === "pass").length;
+  const failCount   = tests.filter((t) => t.status === "fail").length;
   const pendingCount = tests.filter((t) => t.status === "pending").length;
+  const isBlocked   = failCount > 0;
 
   const rateColor = passRate >= 90 ? "#22c55e" : passRate >= 75 ? "#f59e0b" : "#ef4444";
 
   const labelClass = `text-[10px] uppercase tracking-wider font-semibold mb-2 block ${isDark ? "text-white/40" : "text-slate-400"}`;
-  const cardStyle = {
+  const cardBase = {
     background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
     border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)",
+  };
+
+  const handleFixAll = () => {
+    if (!onRequestFix) return;
+    setFixingAll(true);
+    const failedTests = tests
+      .filter((t) => t.status === "fail")
+      .map((t) => `'${t.name}' (${TEST_TYPE_LABEL[t.type] ?? t.type}) on ${t.target}: ${t.detail}`)
+      .join("; ");
+    onRequestFix(
+      `The following validation tests are failing and blocking progression: ${failedTests}. ` +
+      `Please diagnose each failure, apply the appropriate data pipeline fixes or schema corrections, ` +
+      `and re-run the full test suite to achieve a 100% pass rate.`
+    );
+  };
+
+  const handleFixOne = (test: TestCase, idx: number) => {
+    if (!onRequestFix) return;
+    setFixingIdx(idx);
+    onRequestFix(
+      `The validation test '${test.name}' (${TEST_TYPE_LABEL[test.type] ?? test.type}) on target '${test.target}' is failing: ${test.detail}. ` +
+      `Please diagnose the root cause, apply the appropriate fix, and confirm the test passes.`
+    );
   };
 
   return (
@@ -55,15 +89,17 @@ export function ValidationPanel({ output }: Props) {
         </div>
         <div className="flex-1 space-y-2">
           <p className={`text-xs leading-relaxed ${isDark ? "text-white/65" : "text-slate-700"}`}>{summary}</p>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3 h-3 text-green-400" />
               <span className={`text-xs font-medium ${isDark ? "text-white/70" : "text-slate-700"}`}>{passCount} passed</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <XCircle className="w-3 h-3 text-red-400" />
-              <span className={`text-xs font-medium ${isDark ? "text-white/70" : "text-slate-700"}`}>{failCount} failed</span>
-            </div>
+            {failCount > 0 && (
+              <div className="flex items-center gap-1.5">
+                <XCircle className="w-3 h-3 text-red-400" />
+                <span className="text-xs font-medium text-red-400">{failCount} failed</span>
+              </div>
+            )}
             {pendingCount > 0 && (
               <div className="flex items-center gap-1.5">
                 <Clock className="w-3 h-3 text-amber-400" />
@@ -74,6 +110,37 @@ export function ValidationPanel({ output }: Props) {
         </div>
       </div>
 
+      {/* Blocked banner + Fix all CTA */}
+      {isBlocked && (
+        <div
+          className="rounded-xl p-4 space-y-3"
+          style={{ background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.25)" }}
+        >
+          <div className="flex items-start gap-3">
+            <ShieldAlert className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-xs font-semibold text-red-400 mb-1">Validation gate blocked — cannot advance</p>
+              <p className={`text-xs leading-relaxed ${isDark ? "text-white/55" : "text-slate-600"}`}>
+                <strong className="text-red-400">{failCount} test{failCount > 1 ? "s" : ""}</strong> are failing.
+                All validation tests must pass before the workflow can proceed to Documentation.
+                Use the AI agent to diagnose and fix each failure, or fix individual tests using the actions below.
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={handleFixAll}
+            disabled={fixingAll || !onRequestFix}
+            className="text-xs gap-1.5 bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {fixingAll
+              ? <><Loader2 className="w-3 h-3 animate-spin" /> Diagnosing &amp; fixing...</>
+              : <><Sparkles className="w-3 h-3" /> Fix all failures with AI</>
+            }
+          </Button>
+        </div>
+      )}
+
       {/* Test Suite */}
       <div>
         <label className={labelClass}>Test Suite ({tests.length} tests)</label>
@@ -81,41 +148,64 @@ export function ValidationPanel({ output }: Props) {
           {tests.map((test, i) => (
             <div
               key={i}
-              className="flex items-start gap-3 rounded-xl px-3 py-2.5"
+              className="rounded-xl px-3 py-2.5"
               style={{
-                ...cardStyle,
-                borderColor: test.status === "fail"
-                  ? "rgba(239,68,68,0.25)"
-                  : test.status === "pass"
-                    ? isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"
-                    : "rgba(245,158,11,0.2)",
                 background: test.status === "fail"
                   ? "rgba(239,68,68,0.05)"
-                  : cardStyle.background,
+                  : cardBase.background,
+                border: test.status === "fail"
+                  ? "1px solid rgba(239,68,68,0.25)"
+                  : test.status === "pass"
+                    ? isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.06)"
+                    : "1px solid rgba(245,158,11,0.2)",
               }}
             >
-              <div className="mt-0.5 flex-shrink-0">
-                {test.status === "pass"
-                  ? <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
-                  : test.status === "fail"
-                    ? <XCircle className="w-3.5 h-3.5 text-red-400" />
-                    : <Clock className="w-3.5 h-3.5 text-amber-400" />
-                }
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`text-xs font-medium ${isDark ? "text-white/85" : "text-slate-800"}`}>{test.name}</span>
-                  <span
-                    className="text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold"
-                    style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)", color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)" }}
-                  >
-                    {TEST_TYPE_LABEL[test.type] ?? test.type}
-                  </span>
-                  <span className={`text-[10px] font-mono ${isDark ? "text-white/40" : "text-slate-500"}`}>{test.target}</span>
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex-shrink-0">
+                  {test.status === "pass"
+                    ? <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                    : test.status === "fail"
+                      ? <XCircle className="w-3.5 h-3.5 text-red-400" />
+                      : <Clock className="w-3.5 h-3.5 text-amber-400" />
+                  }
                 </div>
-                <p className={`text-xs mt-0.5 ${test.status === "fail" ? "text-red-400" : isDark ? "text-white/50" : "text-slate-600"}`}>
-                  {test.detail}
-                </p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`text-xs font-medium ${isDark ? "text-white/85" : "text-slate-800"}`}>{test.name}</span>
+                    <span
+                      className="text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold"
+                      style={{
+                        background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+                        color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)",
+                      }}
+                    >
+                      {TEST_TYPE_LABEL[test.type] ?? test.type}
+                    </span>
+                    <span className={`text-[10px] font-mono ${isDark ? "text-white/40" : "text-slate-500"}`}>{test.target}</span>
+                  </div>
+                  <p className={`text-xs mt-0.5 ${test.status === "fail" ? "text-red-400" : isDark ? "text-white/50" : "text-slate-600"}`}>
+                    {test.detail}
+                  </p>
+                </div>
+                {/* Per-test AI fix for failures */}
+                {test.status === "fail" && onRequestFix && (
+                  <button
+                    onClick={() => handleFixOne(test, i)}
+                    disabled={fixingIdx === i}
+                    className={`flex items-center gap-1 flex-shrink-0 px-2 py-1 rounded-lg text-[10px] font-medium transition-colors ${
+                      isDark
+                        ? "text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                        : "text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    }`}
+                    title="Ask AI to fix this test"
+                  >
+                    {fixingIdx === i
+                      ? <Loader2 className="w-3 h-3 animate-spin" />
+                      : <Wrench className="w-3 h-3" />
+                    }
+                    <span>Fix</span>
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -125,19 +215,27 @@ export function ValidationPanel({ output }: Props) {
       {/* Anomalies */}
       {anomalies.length > 0 && (
         <div>
-          <label className={labelClass}>Anomalies Detected</label>
-          <div className="space-y-1.5">
-            {anomalies.map((anomaly, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-2 rounded-xl px-3 py-2.5"
-                style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)" }}
-              >
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
-                <p className={`text-xs ${isDark ? "text-white/65" : "text-slate-700"}`}>{anomaly}</p>
-              </div>
-            ))}
-          </div>
+          <button
+            className={`flex items-center gap-1.5 ${labelClass}`}
+            onClick={() => setShowAnomalies((v) => !v)}
+          >
+            Anomalies Detected ({anomalies.length})
+            {showAnomalies ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
+          {showAnomalies && (
+            <div className="space-y-1.5">
+              {anomalies.map((anomaly, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-2 rounded-xl px-3 py-2.5"
+                  style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)" }}
+                >
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <p className={`text-xs ${isDark ? "text-white/65" : "text-slate-700"}`}>{anomaly}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

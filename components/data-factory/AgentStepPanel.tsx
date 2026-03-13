@@ -15,7 +15,7 @@ import {
   ChevronUp, ShieldAlert, Terminal, Sparkles, Brain, Zap,
   Eye, EyeOff, ArrowRight, Clock, User, ArrowLeft, Send,
   Search, Database, BarChart3, Shield, FileText, Cpu, GitBranch,
-  FlaskConical, BookOpen, Lock, Upload,
+  FlaskConical, BookOpen, Lock, Upload, AlertTriangle,
 } from "lucide-react";
 
 import { OpportunityPanel }   from "./panels/OpportunityPanel";
@@ -38,9 +38,11 @@ interface Props {
   streamingText: string;
   isStreaming: boolean;
   isViewingApproved?: boolean;
+  qualityThreshold?: number;
   onApprove: (stepId: AgentStepId, editedOutput?: Record<string, unknown>) => void;
   onReject: (stepId: AgentStepId, note?: string) => void;
   onGoBack: (stepId: AgentStepId) => void;
+  onRerunStale?: (stepId: AgentStepId) => void;
 }
 
 interface ThoughtEntry {
@@ -145,16 +147,21 @@ function renderPanel(
   stepId: AgentStepId,
   output: Record<string, unknown>,
   onChange: (updated: Record<string, unknown>) => void,
+  extra?: {
+    qualityThreshold?: number;
+    onRequestRemediation?: (instruction: string) => void;
+    onRequestFix?: (instruction: string) => void;
+  }
 ) {
   switch (stepId) {
     case "opportunity":   return <OpportunityPanel   output={output} onChange={onChange} />;
     case "persona":       return <PersonaPanel       output={output} onChange={onChange} />;
     case "discovery":     return <DiscoveryPanel     output={output} onChange={onChange} />;
-    case "quality":       return <QualityPanel       output={output} onChange={onChange} />;
+    case "quality":       return <QualityPanel       output={output} onChange={onChange} qualityThreshold={extra?.qualityThreshold} onRequestRemediation={extra?.onRequestRemediation} />;
     case "kpi":           return <KPIPanel           output={output} onChange={onChange} />;
     case "model":         return <ModelPanel         output={output} onChange={onChange} />;
     case "pipeline":      return <PipelinePanel      output={output} onChange={onChange} />;
-    case "validation":    return <ValidationPanel    output={output} onChange={onChange} />;
+    case "validation":    return <ValidationPanel    output={output} onChange={onChange} onRequestFix={extra?.onRequestFix} />;
     case "documentation": return <DocumentationPanel output={output} onChange={onChange} />;
     case "governance":    return <GovernancePanel    output={output} onChange={onChange} />;
     case "publishing":    return <PublishingPanel    output={output} onChange={onChange} />;
@@ -608,7 +615,8 @@ function ApprovedPanel({
 // ── Main component ─────────────────────────────────────────────────────────
 
 export function AgentStepPanel({
-  stepId, step, streamingText, isStreaming, isViewingApproved, onApprove, onReject, onGoBack,
+  stepId, step, streamingText, isStreaming, isViewingApproved,
+  qualityThreshold, onApprove, onReject, onGoBack, onRerunStale,
 }: Props) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -651,20 +659,88 @@ export function AgentStepPanel({
     setHasEdits(true);
   };
 
-  const handleRefinementSubmit = (note: string) => {
-    onReject(stepId, note);
+  // Callbacks forwarded to quality/validation panels for AI-driven remediation
+  const handleRequestRemediation = (instruction: string) => {
+    onReject(stepId, instruction);
+  };
+
+  const handleRefinementSubmit = (note: string) => {    onReject(stepId, note);
   };
 
   const confidenceColor =
     (step.confidence ?? 0) >= 85 ? "#22c55e" :
     (step.confidence ?? 0) >= 70 ? "#f59e0b" : "#ef4444";
 
+  // ── STALE (approved but upstream was edited) ──────────────────────────────
+  if (step.status === "stale") {
+    return (
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{
+          background: isDark ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.85)",
+          border: "1px solid rgba(245,158,11,0.3)",
+        }}
+      >
+        <div
+          className="px-6 py-4 flex flex-wrap items-center gap-3 border-b"
+          style={{ background: "rgba(245,158,11,0.07)", borderColor: "rgba(245,158,11,0.2)" }}
+        >
+          <div className="flex items-center gap-2 flex-1">
+            <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+            <div>
+              <p className={`text-sm font-semibold ${isDark ? "text-white/90" : "text-slate-900"}`}>
+                {AGENT_STEP_DEFINITIONS[stepId].label}
+              </p>
+              <p className="text-xs text-amber-400 font-medium mt-0.5">
+                Stale — an upstream step was edited after this was approved
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span
+              className="text-[10px] px-2 py-1 rounded-full font-semibold"
+              style={{ background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.3)", color: "#fbbf24" }}
+            >
+              Stale
+            </span>
+            <Button
+              size="sm"
+              onClick={() => onRerunStale?.(stepId)}
+              className="text-xs gap-1.5 bg-amber-500 hover:bg-amber-600 text-white"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Re-run with updated context
+            </Button>
+            <button
+              onClick={() => onGoBack(stepId)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                isDark
+                  ? "bg-white/[0.06] text-white/60 hover:bg-white/[0.1] hover:text-white/90 border border-white/[0.08]"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 border border-slate-200"
+              }`}
+            >
+              <ArrowLeft className="w-3 h-3" />
+              Review previous output
+            </button>
+          </div>
+        </div>
+        {/* Show the stale output read-only */}
+        <div className="p-6 opacity-60">
+          <p className={`text-xs mb-3 font-medium ${isDark ? "text-white/40" : "text-slate-400"}`}>
+            Last approved output (may be outdated):
+          </p>
+          {approvedOutput && renderPanel(stepId, approvedOutput as Record<string, unknown>, () => {})}
+        </div>
+      </div>
+    );
+  }
+
   // ── APPROVED ──────────────────────────────────────────────────────────────
   if (step.status === "approved") {
     return <ApprovedPanel stepId={stepId} step={step} isDark={isDark} onGoBack={onGoBack} />;
   }
 
-  // ── RUNNING ──────────────────────────────────────────────��────────────────
+  // ── RUNNING ───────────────────────────��──────────────────��────────────────
   if (step.status === "running") {
     return (
       <div
@@ -744,7 +820,11 @@ export function AgentStepPanel({
           <ChainOfThought stepId={stepId} isStreaming={false} isDark={isDark} visibleCount={totalCotEntries} defaultOpen={false} />
 
           {/* Output panel */}
-          {renderPanel(stepId, displayOutput, handleOutputChange)}
+          {renderPanel(stepId, displayOutput, handleOutputChange, {
+            qualityThreshold,
+            onRequestRemediation: handleRequestRemediation,
+            onRequestFix: handleRequestRemediation,
+          })}
 
           {/* Raw stream */}
           <RawStreamBlock rawText={streamingText} isStreaming={false} isDark={isDark} />

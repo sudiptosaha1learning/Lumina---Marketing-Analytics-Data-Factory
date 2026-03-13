@@ -24,6 +24,7 @@ import {
   FileText,
   Lock,
   Rocket,
+  AlertTriangle,
 } from "lucide-react";
 
 const STEP_ICONS = {
@@ -53,6 +54,7 @@ function getStatusColor(status: string, isDark: boolean): string {
     case "running": return "#3b82f6";
     case "awaiting_review": return "#f59e0b";
     case "rejected": return "#ef4444";
+    case "stale": return "#f59e0b";
     case "pending": return isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)";
     default: return isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)";
   }
@@ -104,7 +106,7 @@ export function FactoryStepper({ project, activeStepId, viewingStepId, onStepCli
         const Icon = STEP_ICONS[stepId] ?? Circle;
         const isActive = activeStepId === stepId;
         const isViewing = viewingStepId === stepId;
-        const isClickable = step.status === "approved" || step.status === "awaiting_review" || step.status === "running";
+        const isClickable = step.status === "approved" || step.status === "awaiting_review" || step.status === "running" || step.status === "stale";
         const statusColor = getStatusColor(step.status, isDark);
 
         return (
@@ -149,7 +151,9 @@ export function FactoryStepper({ project, activeStepId, viewingStepId, onStepCli
                 style={{
                   background: step.status === "approved"
                     ? "rgba(34,197,94,0.15)"
-                    : step.status === "running"
+                    : step.status === "stale"
+                      ? "rgba(245,158,11,0.12)"
+                      : step.status === "running"
                       ? "rgba(59,130,246,0.15)"
                       : step.status === "awaiting_review"
                         ? "rgba(245,158,11,0.15)"
@@ -161,6 +165,8 @@ export function FactoryStepper({ project, activeStepId, viewingStepId, onStepCli
               >
                 {step.status === "running" ? (
                   <Loader2 className="w-3 h-3 text-blue-400 animate-spin" />
+                ) : step.status === "stale" ? (
+                  <AlertTriangle className="w-3 h-3" style={{ color: "#f59e0b" }} />
                 ) : step.status === "approved" ? (
                   <CheckCircle2 className="w-3 h-3" style={{ color: "#22c55e" }} />
                 ) : step.status === "awaiting_review" ? (
@@ -182,9 +188,14 @@ export function FactoryStepper({ project, activeStepId, viewingStepId, onStepCli
                 }`}>
                   {def.label}
                 </div>
-                {step.confidence !== null && (
+                {step.confidence !== null && step.status !== "stale" && (
                   <div className={`text-[9px] mt-0.5 ${isDark ? "text-white/35" : "text-slate-400"}`}>
                     {step.confidence}% confidence
+                  </div>
+                )}
+                {step.status === "stale" && (
+                  <div className="text-[9px] mt-0.5 text-amber-400/80 font-medium">
+                    Stale — re-run needed
                   </div>
                 )}
                 {step.status === "pending" && (
