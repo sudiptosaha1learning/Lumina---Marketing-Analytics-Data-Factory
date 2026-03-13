@@ -83,6 +83,8 @@ function summariseOutput(stepId: AgentStepId, output: Record<string, unknown>): 
       return output;
   }
 }
+
+export function DataProductFactory() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
