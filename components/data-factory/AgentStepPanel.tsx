@@ -169,13 +169,15 @@ function ChainOfThought({
   isStreaming,
   isDark,
   visibleCount,
+  defaultOpen = false,
 }: {
   stepId: AgentStepId;
   isStreaming: boolean;
   isDark: boolean;
   visibleCount: number;
+  defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(defaultOpen);
   const entries = STEP_COT[stepId] ?? [];
   const shown = entries.slice(0, Math.max(1, visibleCount));
 
@@ -662,7 +664,7 @@ export function AgentStepPanel({
     return <ApprovedPanel stepId={stepId} step={step} isDark={isDark} onGoBack={onGoBack} />;
   }
 
-  // ── RUNNING ───────────────────────────────────────────────────────────────
+  // ── RUNNING ──────────────────────────────────────────────��────────────────
   if (step.status === "running") {
     return (
       <div
@@ -738,11 +740,8 @@ export function AgentStepPanel({
         </div>
 
         <div className="p-6 space-y-5">
-          {/* Chain-of-thought — always shown, open by default */}
-          <ChainOfThought stepId={stepId} isStreaming={false} isDark={isDark} visibleCount={totalCotEntries} />
-
-          {/* Human-guided refinement prompt */}
-          <RefinementPrompt stepId={stepId} isDark={isDark} onSubmit={handleRefinementSubmit} />
+          {/* Chain-of-thought — collapsed by default */}
+          <ChainOfThought stepId={stepId} isStreaming={false} isDark={isDark} visibleCount={totalCotEntries} defaultOpen={false} />
 
           {/* Output panel */}
           {renderPanel(stepId, displayOutput, handleOutputChange)}
@@ -773,6 +772,16 @@ export function AgentStepPanel({
             )}
           </div>
 
+        </div>
+
+        {/* Footer */}
+        <div
+          className="px-6 py-4 space-y-3 border-t"
+          style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", borderColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)" }}
+        >
+          {/* Human-guided refinement — inline above action buttons */}
+          <RefinementPrompt stepId={stepId} isDark={isDark} onSubmit={handleRefinementSubmit} />
+
           {/* Reject form */}
           {showRejectForm && (
             <div className="rounded-xl p-4 space-y-3" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)" }}>
@@ -795,37 +804,34 @@ export function AgentStepPanel({
               </div>
             </div>
           )}
-        </div>
 
-        {/* Footer */}
-        <div
-          className="px-6 py-4 flex items-center justify-between border-t"
-          style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", borderColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)" }}
-        >
-          <div className="flex items-center gap-2 text-[10px]" style={{ color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.35)" }}>
-            {step.interventions.length > 0 && (
-              <span>{step.interventions.length} intervention{step.interventions.length > 1 ? "s" : ""} recorded</span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {!showRejectForm && (
+          {/* Approve / Reject row */}
+          <div className="flex items-center justify-between">
+            <div className={`text-[10px] ${isDark ? "text-white/30" : "text-slate-400"}`}>
+              {step.interventions.length > 0 && (
+                <span>{step.interventions.length} intervention{step.interventions.length > 1 ? "s" : ""} recorded</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {!showRejectForm && (
+                <Button
+                  size="sm" variant="outline"
+                  onClick={() => setShowRejectForm(true)}
+                  className={`text-xs gap-1.5 ${isDark ? "border-white/10 text-white/60 hover:text-white/90 hover:bg-white/[0.06]" : "border-slate-200 text-slate-600 hover:text-slate-900"}`}
+                >
+                  <XCircle className="w-3.5 h-3.5 text-red-400" />
+                  Reject &amp; re-run
+                </Button>
+              )}
               <Button
-                size="sm" variant="outline"
-                onClick={() => setShowRejectForm(true)}
-                className={`text-xs gap-1.5 ${isDark ? "border-white/10 text-white/60 hover:text-white/90 hover:bg-white/[0.06]" : "border-slate-200 text-slate-600 hover:text-slate-900"}`}
+                size="sm"
+                onClick={() => onApprove(stepId, hasEdits ? (editedOutput ?? undefined) : undefined)}
+                className="text-xs gap-1.5 bg-blue-600 hover:bg-blue-700 text-white"
               >
-                <XCircle className="w-3.5 h-3.5 text-red-400" />
-                Reject &amp; re-run
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                {hasEdits ? "Approve with edits" : "Approve & continue"}
               </Button>
-            )}
-            <Button
-              size="sm"
-              onClick={() => onApprove(stepId, hasEdits ? (editedOutput ?? undefined) : undefined)}
-              className="text-xs gap-1.5 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              {hasEdits ? "Approve with edits" : "Approve & continue"}
-            </Button>
+            </div>
           </div>
         </div>
       </div>
