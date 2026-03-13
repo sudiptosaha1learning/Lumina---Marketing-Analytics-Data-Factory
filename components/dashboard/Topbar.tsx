@@ -10,16 +10,17 @@ interface TopbarProps {
   timeframe: Timeframe;
   onRegionChange: (r: Region) => void;
   onTimeframeChange: (t: Timeframe) => void;
-  activeView: "mosaic" | "missions" | "retailers";
+  activeView: "mosaic" | "missions" | "retailers" | "dataproducts";
 }
 
 const regions: Region[] = ["Global", "North America", "Europe", "UK"];
 const timeframes: Timeframe[] = ["Q1 2026", "Q2 2026", "Q3 2026", "Q4 2026", "FY 2026"];
 
-const viewTitles = {
+const viewTitles: Record<string, { title: string; subtitle: string }> = {
   mosaic: { title: "Model Intelligence Mosaic", subtitle: "8 models · Live data feed" },
   missions: { title: "Mission Command Centre", subtitle: "3 strategic missions synthesised" },
   retailers: { title: "Retailer & Customer Drill-Down", subtitle: "Final mile intelligence" },
+  dataproducts: { title: "Agentic AI Data Product Factory", subtitle: "Governed workflow platform" },
 };
 
 export function Topbar({ region, timeframe, onRegionChange, onTimeframeChange, activeView }: TopbarProps) {

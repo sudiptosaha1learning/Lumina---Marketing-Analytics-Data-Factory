@@ -8,6 +8,7 @@ import { ReasoningEngine } from "@/components/dashboard/ReasoningEngine";
 import { MissionCommand, type SimState } from "@/components/dashboard/MissionCommand";
 import { RetailerDrillDown } from "@/components/dashboard/RetailerDrillDown";
 import { ThemeProvider, useTheme } from "@/components/dashboard/ThemeProvider";
+import { DataProductFactory } from "@/components/data-factory/DataProductFactory";
 import { modelCards, missions, type Region, type Timeframe, type Mission } from "@/lib/dashboard-data";
 
 type SimMultipliers = { revenue: number; customers: number; conversion: number } | null;
@@ -18,7 +19,7 @@ function DashboardInner() {
 
   const [region, setRegion] = useState<Region>("Global");
   const [timeframe, setTimeframe] = useState<Timeframe>("Q1 2026");
-  const [activeView, setActiveView] = useState<"mosaic" | "missions" | "retailers">("mosaic");
+  const [activeView, setActiveView] = useState<"mosaic" | "missions" | "retailers" | "dataproducts">("mosaic");
   const [synthesisComplete, setSynthesisComplete] = useState(false);
   const [highlightedModels, setHighlightedModels] = useState<string[]>([]);
   const [activeMission, setActiveMission] = useState<Mission | null>(null);
@@ -210,6 +211,10 @@ function DashboardInner() {
               simMultipliers={activeSimMultipliers}
               onBack={handleBackFromRetailers}
             />
+          )}
+          {/* STATE 4: DATA PRODUCT FACTORY */}
+          {activeView === "dataproducts" && (
+            <DataProductFactory />
           )}
         </div>
       </main>
