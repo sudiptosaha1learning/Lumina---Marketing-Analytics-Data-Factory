@@ -10,13 +10,14 @@ import {
   Bell,
   ChevronRight,
   Zap,
+  PackageSearch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/dashboard/ThemeProvider";
 
 interface SidebarProps {
-  activeView: "mosaic" | "missions" | "retailers";
-  onNavigate: (view: "mosaic" | "missions" | "retailers") => void;
+  activeView: "mosaic" | "missions" | "retailers" | "dataproducts";
+  onNavigate: (view: "mosaic" | "missions" | "retailers" | "dataproducts") => void;
   synthesisComplete: boolean;
 }
 
@@ -142,6 +143,37 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
         <div className="px-3 mt-6 mb-3">
           <span className={`text-[10px] tracking-widest uppercase font-semibold ${isDark ? "text-white/48" : "text-slate-400"}`}>Analytics</span>
         </div>
+
+        {/* Data Products - clickable */}
+        {(() => {
+          const isActive = activeView === "dataproducts";
+          return (
+            <button
+              onClick={() => onNavigate("dataproducts")}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group",
+                isActive
+                  ? "text-white"
+                  : isDark
+                    ? "text-white/62 hover:text-white/90 hover:bg-white/[0.05]"
+                    : "text-slate-500 hover:text-slate-800 hover:bg-black/[0.04]"
+              )}
+              style={isActive ? { background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)" } : {}}
+            >
+              <div className={cn(
+                "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
+                isActive ? "bg-blue-500/20" : isDark ? "bg-white/[0.04]" : "bg-black/[0.04]"
+              )}>
+                <PackageSearch className={cn("w-4 h-4 transition-colors", isActive ? "text-blue-400" : "text-current")} />
+              </div>
+              <div className="flex-1 text-left min-w-0">
+                <div className={cn("text-sm font-medium leading-tight truncate", isActive ? "text-white" : isDark ? "" : "text-slate-700")}>Data Products</div>
+                <div className={`text-[10px] truncate font-medium ${isDark ? "text-white/52" : "text-slate-400"}`}>Agentic Factory</div>
+              </div>
+              {isActive && <ChevronRight className="w-3 h-3 text-blue-400 flex-shrink-0" />}
+            </button>
+          );
+        })()}
 
         {[
           { label: "Performance Reports", icon: BarChart3 },
