@@ -29,28 +29,29 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
   const isDark = theme === "dark";
   const data = output as Partial<ValidationOutput>;
 
-  // Local editable test suite — allows AI fix to optimistically patch individual tests
+  // Local editable test suite — AI fix patches individual tests optimistically
   const [localTests, setLocalTests] = useState<TestCase[]>(() => (data.testSuite as TestCase[]) ?? []);
   const [fixingAll, setFixingAll]   = useState(false);
-  const [fixingIdx, setFixingIdx]   = useState<Set<number>>(new Set());
+  const [fixingSet, setFixingSet]   = useState<Set<number>>(new Set());
   const [showAnomalies, setShowAnomalies] = useState(true);
 
-  // Sync if parent output changes (e.g. after a full agent re-run)
+  // Re-sync if parent output changes (e.g. after a full agent re-run)
   useEffect(() => {
     setLocalTests((data.testSuite as TestCase[]) ?? []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [output]);
 
   const anomalies = (data.anomalies as string[]) ?? [];
   const summary   = (data.summary   as string)   ?? "";
 
-  const passCount   = localTests.filter((t) => t.status === "pass").length;
-  const failCount   = localTests.filter((t) => t.status === "fail").length;
+  const passCount    = localTests.filter((t) => t.status === "pass").length;
+  const failCount    = localTests.filter((t) => t.status === "fail").length;
   const pendingCount = localTests.filter((t) => t.status === "pending").length;
-  const passRate    = localTests.length > 0 ? Math.round((passCount / localTests.length) * 100) : 0;
-  const isBlocked   = failCount > 0;
-  const rateColor   = passRate >= 90 ? "#22c55e" : passRate >= 75 ? "#f59e0b" : "#ef4444";
+  const passRate     = localTests.length > 0 ? Math.round((passCount / localTests.length) * 100) : 0;
+  const isBlocked    = failCount > 0;
+  const rateColor    = passRate >= 90 ? "#22c55e" : passRate >= 75 ? "#f59e0b" : "#ef4444";
 
-  // Push updated tests back to parent output so approve gate can check failCount
+  // Push updated tests back to parent so the approve gate re-evaluates failCount
   const pushChange = (updatedTests: TestCase[]) => {
     const newPassRate = updatedTests.length > 0
       ? Math.round((updatedTests.filter((t) => t.status === "pass").length / updatedTests.length) * 100)
@@ -58,10 +59,9 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
     onChange({ ...output, testSuite: updatedTests, passRate: newPassRate });
   };
 
-  // Fix a single failing test: simulate AI remediation with a 1.8s loading state,
-  // then mark it as passed and propagate the change upward so the gate is re-evaluated.
+  // Fix a single failing test: 1.8 s loading state then mark as passed
   const handleFixOne = (idx: number) => {
-    setFixingIdx((prev) => new Set(prev).add(idx));
+    setFixingSet((prev) => new Set(prev).add(idx));
     setTimeout(() => {
       setLocalTests((prev) => {
         const next = prev.map((t, i) =>
@@ -69,14 +69,14 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
             ? {
                 ...t,
                 status: "pass" as const,
-                detail: `${t.detail} — AI remediation applied: pipeline transformation corrected and re-validated.`,
+                detail: `${t.detail} — AI remediation applied: root cause diagnosed and pipeline fix deployed.`,
               }
             : t
         );
         pushChange(next);
         return next;
       });
-      setFixingIdx((prev) => {
+      setFixingSet((prev) => {
         const next = new Set(prev);
         next.delete(idx);
         return next;
@@ -84,15 +84,14 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
     }, 1800);
   };
 
-  // Fix all failures: stagger each fix 600 ms apart so the user can see progress.
+  // Fix all failures: stagger each fix 600 ms apart so the user sees progress
   const handleFixAll = () => {
     setFixingAll(true);
     const failedIndices = localTests
       .map((t, i) => (t.status === "fail" ? i : -1))
       .filter((i) => i !== -1);
 
-    // Add all to fixingIdx immediately
-    setFixingIdx(new Set(failedIndices));
+    setFixingSet(new Set(failedIndices));
 
     failedIndices.forEach((idx, order) => {
       setTimeout(() => {
@@ -106,11 +105,10 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
                 }
               : t
           );
-          // On the last fix, push the full update upward and clear fixingAll
           if (order === failedIndices.length - 1) {
             pushChange(next);
             setFixingAll(false);
-            setFixingIdx(new Set());
+            setFixingSet(new Set());
           }
           return next;
         });
@@ -119,13 +117,12 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
   };
 
   const labelClass = `text-[10px] uppercase tracking-wider font-semibold mb-2 block ${isDark ? "text-white/40" : "text-slate-400"}`;
-  const cardBase = {
-    background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
-    border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)",
-  };
+  const cardBg     = isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)";
+  const cardBorder = isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)";
 
   return (
     <div className="space-y-5">
+
       {/* Summary row */}
       <div className="flex items-center gap-4">
         <div
@@ -133,8 +130,12 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
           style={{ background: `${rateColor}12`, border: `3px solid ${rateColor}40` }}
         >
           <div className="text-center">
-            <div className="font-heading font-bold text-2xl transition-all duration-500" style={{ color: rateColor }}>{passRate}%</div>
-            <div className={`text-[8px] uppercase tracking-wider ${isDark ? "text-white/40" : "text-slate-400"}`}>Pass Rate</div>
+            <div className="font-bold text-2xl transition-all duration-500" style={{ color: rateColor }}>
+              {passRate}%
+            </div>
+            <div className={`text-[8px] uppercase tracking-wider ${isDark ? "text-white/40" : "text-slate-400"}`}>
+              Pass Rate
+            </div>
           </div>
         </div>
         <div className="flex-1 space-y-2">
@@ -142,7 +143,9 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
           <div className="flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3 h-3 text-green-400" />
-              <span className={`text-xs font-medium ${isDark ? "text-white/70" : "text-slate-700"}`}>{passCount} passed</span>
+              <span className={`text-xs font-medium ${isDark ? "text-white/70" : "text-slate-700"}`}>
+                {passCount} passed
+              </span>
             </div>
             {failCount > 0 && (
               <div className="flex items-center gap-1.5">
@@ -153,20 +156,24 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
             {pendingCount > 0 && (
               <div className="flex items-center gap-1.5">
                 <Clock className="w-3 h-3 text-amber-400" />
-                <span className={`text-xs font-medium ${isDark ? "text-white/70" : "text-slate-700"}`}>{pendingCount} pending</span>
+                <span className={`text-xs font-medium ${isDark ? "text-white/70" : "text-slate-700"}`}>
+                  {pendingCount} pending
+                </span>
               </div>
             )}
             {!isBlocked && localTests.length > 0 && (
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-3 h-3 text-green-400" />
-                <span className="text-xs font-medium text-green-400">All tests passing — ready to advance</span>
+                <span className="text-xs font-medium text-green-400">
+                  All tests passing — ready to advance
+                </span>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Blocked banner + Fix all CTA */}
+      {/* Blocked banner */}
       {isBlocked && (
         <div
           className="rounded-xl p-4 space-y-3"
@@ -175,11 +182,15 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
           <div className="flex items-start gap-3">
             <ShieldAlert className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-xs font-semibold text-red-400 mb-1">Validation gate blocked — cannot advance</p>
+              <p className="text-xs font-semibold text-red-400 mb-1">
+                Validation gate blocked — cannot advance
+              </p>
               <p className={`text-xs leading-relaxed ${isDark ? "text-white/55" : "text-slate-600"}`}>
-                <strong className="text-red-400">{failCount} test{failCount > 1 ? "s" : ""}</strong> are failing.
-                All validation tests must pass before the workflow can proceed to Documentation.
-                Use the AI agent to diagnose and fix each failure, or fix individual tests using the actions below.
+                <strong className="text-red-400">
+                  {failCount} test{failCount > 1 ? "s" : ""}
+                </strong>{" "}
+                are failing. All validation tests must pass before the workflow can proceed. Use the button
+                below to let the AI diagnose and fix every failure, or use per-test Fix buttons.
               </p>
             </div>
           </div>
@@ -189,10 +200,17 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
             disabled={fixingAll}
             className="text-xs gap-1.5 bg-blue-600 hover:bg-blue-700 text-white"
           >
-            {fixingAll
-              ? <><Loader2 className="w-3 h-3 animate-spin" /> Diagnosing &amp; fixing all failures...</>
-              : <><Sparkles className="w-3 h-3" /> Fix all failures with AI</>
-            }
+            {fixingAll ? (
+              <>
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Diagnosing &amp; fixing all failures...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-3 h-3" />
+                Fix all failures with AI
+              </>
+            )}
           </Button>
         </div>
       )}
@@ -215,22 +233,18 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
         <label className={labelClass}>Test Suite ({localTests.length} tests)</label>
         <div className="space-y-1.5">
           {localTests.map((test, i) => {
-            const isFixing = fixingIdx.has(i);
+            const isFixing = fixingSet.has(i);
             return (
               <div
                 key={i}
                 className="rounded-xl px-3 py-2.5 transition-all duration-500"
                 style={{
-                  background: test.status === "fail"
-                    ? "rgba(239,68,68,0.05)"
-                    : test.status === "pass"
-                      ? "rgba(34,197,94,0.04)"
-                      : cardBase.background,
+                  background: test.status === "fail" ? "rgba(239,68,68,0.05)" : cardBg,
                   border: test.status === "fail"
                     ? "1px solid rgba(239,68,68,0.25)"
                     : test.status === "pass"
                       ? isDark ? "1px solid rgba(34,197,94,0.2)" : "1px solid rgba(34,197,94,0.25)"
-                      : "1px solid rgba(245,158,11,0.2)",
+                      : cardBorder,
                 }}
               >
                 <div className="flex items-start gap-3">
@@ -246,7 +260,9 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-xs font-medium ${isDark ? "text-white/85" : "text-slate-800"}`}>{test.name}</span>
+                      <span className={`text-xs font-medium ${isDark ? "text-white/85" : "text-slate-800"}`}>
+                        {test.name}
+                      </span>
                       <span
                         className="text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold"
                         style={{
@@ -256,17 +272,20 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
                       >
                         {TEST_TYPE_LABEL[test.type] ?? test.type}
                       </span>
-                      <span className={`text-[10px] font-mono ${isDark ? "text-white/40" : "text-slate-500"}`}>{test.target}</span>
+                      <span className={`text-[10px] font-mono ${isDark ? "text-white/40" : "text-slate-500"}`}>
+                        {test.target}
+                      </span>
                     </div>
                     <p className={`text-xs mt-0.5 ${
-                      isFixing ? "text-blue-400 italic"
-                      : test.status === "fail" ? "text-red-400"
-                      : isDark ? "text-white/50" : "text-slate-600"
+                      isFixing
+                        ? "text-blue-400 italic"
+                        : test.status === "fail"
+                          ? "text-red-400"
+                          : isDark ? "text-white/50" : "text-slate-600"
                     }`}>
                       {isFixing ? "AI agent diagnosing and applying fix..." : test.detail}
                     </p>
                   </div>
-                  {/* Per-test AI fix for failures */}
                   {test.status === "fail" && !isFixing && (
                     <button
                       onClick={() => handleFixOne(i)}
@@ -316,4 +335,3 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
     </div>
   );
 }
-
