@@ -14,11 +14,12 @@ import {
   CheckCircle2, XCircle, RotateCcw, Loader2, ChevronDown,
   ChevronUp, ShieldAlert, Terminal, Sparkles, Brain, Zap,
   Eye, EyeOff, ArrowRight, Clock, User, ArrowLeft, Send,
-  Search, Database, BarChart3, Shield, FileText, Cpu, GitBranch,
-  FlaskConical, BookOpen, Lock, Upload, AlertTriangle,
+  Search, Database, BarChart3, Shield, FileText, Cpu,
+  AlertTriangle,
 } from "lucide-react";
 
 import { AgentTrace, type TraceEvent } from "./AgentTrace";
+import { OpportunityPanel }   from "./panels/OpportunityPanel";
 import { PersonaPanel }        from "./panels/PersonaPanel";
 import { DiscoveryPanel }      from "./panels/DiscoveryPanel";
 import { QualityPanel }        from "./panels/QualityPanel";
@@ -46,102 +47,6 @@ interface Props {
   onRerunStale?: (stepId: AgentStepId) => void;
 }
 
-interface ThoughtEntry {
-  icon: React.ElementType;
-  color: string;
-  label: string;
-  text: string;
-}
-
-// ── Step-specific natural-language chain-of-thought traces ────────────────
-// These explain what each agent is doing in plain English for explainability.
-
-const STEP_COT: Record<AgentStepId, ThoughtEntry[]> = {
-  opportunity: [
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Reading the business request to understand the core objective, target customers, and intended outcome." },
-    { icon: Search, color: "#f59e0b", label: "Analysing", text: "Identifying the key business problem — what decision or action this data product needs to enable." },
-    { icon: Zap, color: "#f59e0b", label: "Action", text: "Formulating a clear problem statement that frames the gap between current state and the desired analytical capability." },
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Defining the purpose: what the data product will do, who it serves, and what value it delivers to the business." },
-    { icon: Search, color: "#2dd4bf", label: "Scoping", text: "Determining the boundaries — what data domains, time horizons, and customer segments are in scope." },
-    { icon: CheckCircle2, color: "#4ade80", label: "Result", text: "Documenting key assumptions and initial KPI candidates to guide downstream agents." },
-  ],
-  persona: [
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Reviewing the opportunity statement and scope to identify which business roles will consume and govern this data product." },
-    { icon: Search, color: "#f59e0b", label: "Analysing", text: "Determining mandatory governance roles: Data Product Owner, Data Steward, Data Analyst, and GDPR Champion are always required." },
-    { icon: Zap, color: "#f59e0b", label: "Action", text: "Identifying additional domain-specific personas based on the use case — e.g. CRM Manager, Campaign Analyst." },
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "For each persona, articulating the jobs-to-be-done: what decisions or analyses they need to perform using this data product." },
-    { icon: Search, color: "#2dd4bf", label: "Observing", text: "Mapping pain points — the friction, gaps, and limitations each persona experiences today without this data product." },
-    { icon: CheckCircle2, color: "#4ade80", label: "Result", text: "Generating user stories in 'As a [persona], I want [goal] so that [benefit]' format to anchor downstream design decisions." },
-  ],
-  discovery: [
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Reviewing the opportunity scope and personas to determine which data domains are likely to contain relevant signals." },
-    { icon: Database, color: "#f59e0b", label: "Scanning", text: "Scanning the enterprise data catalog for source systems in the Customer, Marketing, Digital, and Sales domains." },
-    { icon: Search, color: "#2dd4bf", label: "Evaluating", text: "Assessing each candidate source for semantic relevance: does it contain the entities and fields needed to support the defined KPIs?" },
-    { icon: Zap, color: "#f59e0b", label: "Action", text: "Cross-referencing customer identifiers across sources to identify viable join paths — e.g. customer_id links CRM to email events to orders." },
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Scoring each source on relevance, freshness, and join coverage. Flagging PII fields that will require masking or access control." },
-    { icon: CheckCircle2, color: "#4ade80", label: "Result", text: "Producing a ranked list of candidate data sources with join hypotheses, field-level relevance, and identified gaps." },
-  ],
-  quality: [
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Reviewing the selected data sources to assess their fitness-for-purpose for the defined analytics use case." },
-    { icon: BarChart3, color: "#f59e0b", label: "Profiling", text: "Running completeness checks — what percentage of records have non-null values for key fields like customer_id, email, and event timestamps?" },
-    { icon: Search, color: "#2dd4bf", label: "Analysing", text: "Checking uniqueness constraints: are customer IDs truly unique? Are there duplicate order records that could distort propensity scores?" },
-    { icon: Zap, color: "#f59e0b", label: "Action", text: "Assessing referential integrity — do all customer_id values in email events match records in the CRM master? Quantifying orphan rates." },
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Evaluating data freshness and latency against the required update frequency for the target use case." },
-    { icon: CheckCircle2, color: "#4ade80", label: "Result", text: "Calculating an overall quality score per source and an aggregated readiness score, with prioritised remediation recommendations." },
-  ],
-  kpi: [
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Reviewing the opportunity output and persona jobs-to-be-done to derive measurable KPIs that directly serve the stated business objective." },
-    { icon: BarChart3, color: "#f59e0b", label: "Designing", text: "For each KPI, defining a precise formula using available fields from the confirmed data sources." },
-    { icon: Search, color: "#2dd4bf", label: "Validating", text: "Checking that each KPI can actually be computed from the selected sources — no required fields are missing or of insufficient quality." },
-    { icon: Zap, color: "#f59e0b", label: "Action", text: "Defining update frequency, the target layer (e.g. gold / semantic), and the business owner for each metric." },
-    { icon: CheckCircle2, color: "#4ade80", label: "Result", text: "Producing a KPI specification that will anchor the data model design and validation test suite in downstream steps." },
-  ],
-  model: [
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Analysing the confirmed KPIs and data sources to determine the optimal target schema for analytics consumption." },
-    { icon: Database, color: "#f59e0b", label: "Designing", text: "Selecting the grain of the primary fact table — one row per customer per scoring period is appropriate for a propensity use case." },
-    { icon: Zap, color: "#f59e0b", label: "Action", text: "Mapping source fields to target columns, applying naming conventions, and deciding on derived vs pass-through attributes." },
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Designing supporting dimension tables for customer, campaign, and dealer to enable slice-and-dice analysis without joins in BI tools." },
-    { icon: Shield, color: "#2dd4bf", label: "Governance", text: "Flagging PII fields (name, email, phone) for column-level masking policies and marking foreign keys for lineage tracking." },
-    { icon: CheckCircle2, color: "#4ade80", label: "Result", text: "Producing a target schema with table definitions, field types, relationships, and annotation for governance controls." },
-  ],
-  pipeline: [
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Reviewing the data model and source discovery outputs to design the ingestion, transformation, and loading pipeline." },
-    { icon: GitBranch, color: "#f59e0b", label: "Designing", text: "Defining pipeline stages: Extract from source systems → Transform (cleanse, join, derive KPIs) → Load to the target analytical layer." },
-    { icon: Zap, color: "#f59e0b", label: "Action", text: "Writing dbt-compatible SQL transformation logic for each step, including CTEs for readability and incremental load patterns." },
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Adding data quality checks as pipeline assertions — row count thresholds, null rate alerts, and referential integrity tests." },
-    { icon: CheckCircle2, color: "#4ade80", label: "Result", text: "Generating a complete pipeline specification with SQL code, orchestration schedule, and monitoring configuration." },
-  ],
-  validation: [
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Reviewing the pipeline design and KPI specifications to derive a comprehensive test suite for the data product." },
-    { icon: FlaskConical, color: "#f59e0b", label: "Generating", text: "Creating schema tests: not-null constraints, uniqueness checks, accepted values, and referential integrity assertions." },
-    { icon: BarChart3, color: "#2dd4bf", label: "Analysing", text: "Designing business logic tests — e.g. propensity scores must fall between 0 and 1, no future event dates, customer lifetime value must be non-negative." },
-    { icon: Zap, color: "#f59e0b", label: "Action", text: "Defining freshness SLA tests: the data product must be updated within the agreed latency window before triggering alerts." },
-    { icon: CheckCircle2, color: "#4ade80", label: "Result", text: "Producing a test manifest with test names, severity levels, expected pass rates, and the team responsible for remediation." },
-  ],
-  documentation: [
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Synthesising all upstream outputs — opportunity, model design, pipeline, and KPIs — into unified human-readable documentation." },
-    { icon: BookOpen, color: "#f59e0b", label: "Writing", text: "Drafting the data product overview: purpose, scope, target consumers, update frequency, and SLA commitments." },
-    { icon: Database, color: "#2dd4bf", label: "Documenting", text: "Generating field-level descriptions for every column in the target schema, including business definitions and example values." },
-    { icon: Zap, color: "#f59e0b", label: "Action", text: "Creating a lineage diagram narrative — tracing each output field back to its source system and transformation logic." },
-    { icon: CheckCircle2, color: "#4ade80", label: "Result", text: "Producing a publication-ready data product specification that enables self-service consumption without requiring producer support." },
-  ],
-  governance: [
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Reviewing all PII-flagged fields, access patterns, and persona data requirements to design the governance framework." },
-    { icon: Shield, color: "#f59e0b", label: "Assessing", text: "Identifying all fields containing personal data under GDPR Article 4: names, emails, postcodes, and vehicle identification numbers." },
-    { icon: Lock, color: "#2dd4bf", label: "Configuring", text: "Defining column-level masking policies: email and phone masked for non-owners, postcode truncated to district level for analytics." },
-    { icon: Zap, color: "#f59e0b", label: "Action", text: "Setting role-based access control: Data Product Owner has full access; Data Analyst has read access to non-PII fields; GDPR Champion has audit access." },
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Defining the data retention schedule, deletion obligations, and consent linkage requirements for this data product." },
-    { icon: CheckCircle2, color: "#4ade80", label: "Result", text: "Generating a governance manifest with access policies, PII register, retention rules, and data quality SLA for publication." },
-  ],
-  publishing: [
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Performing a final pre-publication checklist: all required approvals collected, governance controls applied, tests passing." },
-    { icon: Upload, color: "#f59e0b", label: "Preparing", text: "Packaging the data product: schema, pipeline code, tests, documentation, and governance manifest into a publishable artefact." },
-    { icon: Zap, color: "#f59e0b", label: "Action", text: "Registering the data product in the enterprise catalog with metadata, lineage, SLA commitments, and contact information." },
-    { icon: Lock, color: "#2dd4bf", label: "Securing", text: "Applying access control policies and generating API endpoints for consumer team onboarding." },
-    { icon: CheckCircle2, color: "#4ade80", label: "Result", text: "Data product published and discoverable in the catalog. Lineage, tests, and documentation are live. Consumer teams can request access." },
-  ],
-};
-
 // ── Panel renderer ────────────────────────────────────────────────────────
 
 function renderPanel(
@@ -168,114 +73,6 @@ function renderPanel(
     case "publishing":    return <PublishingPanel    output={output} onChange={onChange} />;
     default: return null;
   }
-}
-
-// ── Chain-of-thought panel ────────────────────────────────────────────────
-
-function ChainOfThought({
-  stepId,
-  isStreaming,
-  isDark,
-  visibleCount,
-  defaultOpen = false,
-}: {
-  stepId: AgentStepId;
-  isStreaming: boolean;
-  isDark: boolean;
-  visibleCount: number;
-  defaultOpen?: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  const entries = STEP_COT[stepId] ?? [];
-  const shown = entries.slice(0, Math.max(1, visibleCount));
-
-  return (
-    <div
-      className="rounded-xl overflow-hidden"
-      style={{
-        background: isDark ? "rgba(129,140,248,0.04)" : "rgba(99,102,241,0.03)",
-        border: isDark ? "1px solid rgba(129,140,248,0.18)" : "1px solid rgba(99,102,241,0.18)",
-      }}
-    >
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-2 px-4 py-3 text-left"
-        style={{ background: isDark ? "rgba(129,140,248,0.07)" : "rgba(99,102,241,0.06)" }}
-      >
-        <Brain className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
-        <span className="flex-1 text-[11px] font-semibold text-indigo-400">
-          Agent Reasoning &amp; Actions
-        </span>
-        <span className={`text-[9px] px-1.5 py-0.5 rounded mr-2 font-medium ${isDark ? "bg-white/[0.06] text-white/40" : "bg-black/[0.06] text-slate-500"}`}>
-          {shown.length}/{entries.length} steps
-        </span>
-        {isStreaming && (
-          <span className="flex items-center gap-1 text-[9px] text-indigo-400 mr-2 font-medium">
-            <Loader2 className="w-2.5 h-2.5 animate-spin" />
-            live
-          </span>
-        )}
-        {open ? <ChevronUp className="w-3 h-3 text-indigo-400/50" /> : <ChevronDown className="w-3 h-3 text-indigo-400/50" />}
-      </button>
-
-      {open && (
-        <div className="px-4 py-3 space-y-0">
-          {shown.map((entry, i) => {
-            const Icon = entry.icon;
-            const isLast = i === shown.length - 1;
-            const isRunning = isLast && isStreaming;
-            return (
-              <div key={i} className="flex items-start gap-3">
-                {/* Vertical timeline */}
-                <div className="flex flex-col items-center flex-shrink-0">
-                  <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ background: `${entry.color}18`, border: `1px solid ${entry.color}35` }}
-                  >
-                    <Icon className="w-3 h-3" style={{ color: entry.color }} />
-                  </div>
-                  {i < shown.length - 1 && (
-                    <div
-                      className="w-px flex-1 my-1"
-                      style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)", minHeight: 12 }}
-                    />
-                  )}
-                </div>
-                {/* Text */}
-                <div className="flex-1 min-w-0 pt-0.5 pb-3">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span
-                      className="text-[9px] font-bold uppercase tracking-wider"
-                      style={{ color: entry.color }}
-                    >
-                      {entry.label}
-                    </span>
-                    {isRunning && (
-                      <span className="flex items-center gap-0.5 text-[8px] text-indigo-400/60 font-medium">
-                        <span className="w-1 h-1 rounded-full bg-indigo-400 animate-pulse" />
-                        running
-                      </span>
-                    )}
-                  </div>
-                  <p className={`text-[11px] leading-relaxed ${isDark ? "text-white/60" : "text-slate-600"}`}>
-                    {entry.text}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-          {isStreaming && shown.length < entries.length && (
-            <div className="flex items-center gap-2 pl-9 py-1">
-              <Loader2 className="w-3 h-3 text-indigo-400 animate-spin" />
-              <span className={`text-[10px] ${isDark ? "text-white/35" : "text-slate-400"}`}>
-                Agent is still working...
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
 }
 
 // ── Raw stream block ──────────────────────────────────────────────────────
@@ -593,29 +390,13 @@ export function AgentStepPanel({
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [hasEdits, setHasEdits] = useState(false);
 
-  // How many CoT entries to show based on streaming progress
-  const totalCotEntries = (STEP_COT[stepId] ?? []).length;
-  const [visibleCotCount, setVisibleCotCount] = useState(1);
-
   useEffect(() => {
     setEditedOutput(null);
     setHasEdits(false);
     setShowRejectForm(false);
     setRejectNote("");
     setShowRawJSON(false);
-    setVisibleCotCount(1);
   }, [stepId]);
-
-  // Progressively reveal CoT entries while streaming
-  useEffect(() => {
-    if (!isStreaming) {
-      setVisibleCotCount(totalCotEntries);
-      return;
-    }
-    if (visibleCotCount >= totalCotEntries) return;
-    const timer = setTimeout(() => setVisibleCotCount((n) => Math.min(n + 1, totalCotEntries)), 1400);
-    return () => clearTimeout(timer);
-  }, [isStreaming, visibleCotCount, totalCotEntries]);
 
   const displayOutput = editedOutput ?? step.editedOutput ?? step.output;
 
