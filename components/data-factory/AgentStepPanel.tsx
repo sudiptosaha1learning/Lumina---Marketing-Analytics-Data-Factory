@@ -18,7 +18,7 @@ import {
   FlaskConical, BookOpen, Lock, Upload, AlertTriangle,
 } from "lucide-react";
 
-import { OpportunityPanel }   from "./panels/OpportunityPanel";
+import { AgentTrace, type TraceEvent } from "./AgentTrace";
 import { PersonaPanel }        from "./panels/PersonaPanel";
 import { DiscoveryPanel }      from "./panels/DiscoveryPanel";
 import { QualityPanel }        from "./panels/QualityPanel";
@@ -39,6 +39,7 @@ interface Props {
   isStreaming: boolean;
   isViewingApproved?: boolean;
   qualityThreshold?: number;
+  traceEvents?: TraceEvent[];
   onApprove: (stepId: AgentStepId, editedOutput?: Record<string, unknown>) => void;
   onReject: (stepId: AgentStepId, note?: string) => void;
   onGoBack: (stepId: AgentStepId) => void;
@@ -450,17 +451,15 @@ function RefinementPrompt({
 // ── Approved panel ────────────────────────────────────────────────────────
 
 function ApprovedPanel({
-  stepId, step, isDark, onGoBack,
-}: { stepId: AgentStepId; step: AgentStep; isDark: boolean; onGoBack: (id: AgentStepId) => void }) {
+  stepId, step, isDark, onGoBack, traceEvents = [],
+}: { stepId: AgentStepId; step: AgentStep; isDark: boolean; onGoBack: (id: AgentStepId) => void; traceEvents?: TraceEvent[] }) {
   const [logOpen, setLogOpen] = useState(false);
   const [streamOpen, setStreamOpen] = useState(false);
-  const [cotOpen, setCotOpen] = useState(false);
   const def = AGENT_STEP_DEFINITIONS[stepId];
   const approvedOutput = step.editedOutput ?? step.output;
   const confidenceColor =
     (step.confidence ?? 0) >= 85 ? "#22c55e" :
     (step.confidence ?? 0) >= 70 ? "#f59e0b" : "#ef4444";
-  const entries = STEP_COT[stepId] ?? [];
 
   return (
     <div
@@ -517,48 +516,14 @@ function ApprovedPanel({
       {/* Body */}
       <div className="p-6 space-y-5">
 
-        {/* Chain-of-thought (collapsed by default on approved) */}
-        <div
-          className="rounded-xl overflow-hidden"
-          style={{
-            background: isDark ? "rgba(129,140,248,0.04)" : "rgba(99,102,241,0.03)",
-            border: isDark ? "1px solid rgba(129,140,248,0.18)" : "1px solid rgba(99,102,241,0.18)",
-          }}
-        >
-          <button
-            onClick={() => setCotOpen(!cotOpen)}
-            className="w-full flex items-center gap-2 px-4 py-2.5 text-left"
-            style={{ background: isDark ? "rgba(129,140,248,0.07)" : "rgba(99,102,241,0.06)" }}
-          >
-            <Brain className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
-            <span className="flex-1 text-[11px] font-semibold text-indigo-400">Agent Reasoning &amp; Actions</span>
-            <span className={`text-[9px] px-1.5 py-0.5 rounded mr-2 font-medium ${isDark ? "bg-white/[0.06] text-white/40" : "bg-black/[0.06] text-slate-500"}`}>
-              {entries.length} steps
-            </span>
-            {cotOpen ? <ChevronUp className="w-3 h-3 text-indigo-400/50" /> : <ChevronDown className="w-3 h-3 text-indigo-400/50" />}
-          </button>
-          {cotOpen && (
-            <div className="px-4 py-3 space-y-0">
-              {entries.map((entry, i) => {
-                const Icon = entry.icon;
-                return (
-                  <div key={i} className="flex items-start gap-3">
-                    <div className="flex flex-col items-center flex-shrink-0">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center mt-0.5" style={{ background: `${entry.color}18`, border: `1px solid ${entry.color}35` }}>
-                        <Icon className="w-3 h-3" style={{ color: entry.color }} />
-                      </div>
-                      {i < entries.length - 1 && <div className="w-px flex-1 my-1" style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)", minHeight: 12 }} />}
-                    </div>
-                    <div className="flex-1 min-w-0 pt-0.5 pb-3">
-                      <div className="text-[9px] font-bold uppercase tracking-wider mb-0.5" style={{ color: entry.color }}>{entry.label}</div>
-                      <p className={`text-[11px] leading-relaxed ${isDark ? "text-white/60" : "text-slate-600"}`}>{entry.text}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        {/* Agent tool trace — collapsed by default on approved */}
+        <AgentTrace
+          events={traceEvents}
+          isStreaming={false}
+          modelId="openai/gpt-4o"
+          stepLabel={def.label}
+          defaultOpen={false}
+        />
 
         {/* Output (read-only) */}
         {approvedOutput && renderPanel(stepId, approvedOutput, () => {})}
@@ -616,7 +581,7 @@ function ApprovedPanel({
 
 export function AgentStepPanel({
   stepId, step, streamingText, isStreaming, isViewingApproved,
-  qualityThreshold, onApprove, onReject, onGoBack, onRerunStale,
+  qualityThreshold, traceEvents = [], onApprove, onReject, onGoBack, onRerunStale,
 }: Props) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -737,7 +702,7 @@ export function AgentStepPanel({
 
   // ── APPROVED ──────────────────────────────────────────────────────────────
   if (step.status === "approved") {
-    return <ApprovedPanel stepId={stepId} step={step} isDark={isDark} onGoBack={onGoBack} />;
+    return <ApprovedPanel stepId={stepId} step={step} isDark={isDark} onGoBack={onGoBack} traceEvents={traceEvents} />;
   }
 
   // ── RUNNING ───────────────────────────��──────────────────��────────────────
@@ -768,7 +733,13 @@ export function AgentStepPanel({
         </div>
 
         <div className="p-6 space-y-4">
-          <ChainOfThought stepId={stepId} isStreaming={isStreaming} isDark={isDark} visibleCount={visibleCotCount} />
+          <AgentTrace
+            events={traceEvents}
+            isStreaming={isStreaming}
+            modelId="openai/gpt-4o"
+            stepLabel={def.label}
+            defaultOpen={true}
+          />
           <RawStreamBlock rawText={streamingText} isStreaming={isStreaming} isDark={isDark} />
         </div>
       </div>
@@ -816,8 +787,14 @@ export function AgentStepPanel({
         </div>
 
         <div className="p-6 space-y-5">
-          {/* Chain-of-thought — collapsed by default */}
-          <ChainOfThought stepId={stepId} isStreaming={false} isDark={isDark} visibleCount={totalCotEntries} defaultOpen={false} />
+          {/* Agent tool trace — collapsed by default after completion */}
+          <AgentTrace
+            events={traceEvents}
+            isStreaming={false}
+            modelId="openai/gpt-4o"
+            stepLabel={def.label}
+            defaultOpen={false}
+          />
 
           {/* Output panel */}
           {renderPanel(stepId, displayOutput, handleOutputChange, {

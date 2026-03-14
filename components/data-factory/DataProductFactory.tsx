@@ -15,6 +15,7 @@ import { FactoryRequestCapture, type CatalogProduct } from "./FactoryRequestCapt
 import { FactoryStepper } from "./FactoryStepper";
 import { AgentStepPanel } from "./AgentStepPanel";
 import { FactoryPublishSuccess } from "./FactoryPublishSuccess";
+import { type TraceEvent } from "./AgentTrace";
 import { Sparkles, ChevronLeft, RotateCcw, Activity, Settings2 } from "lucide-react";
 
 type FactoryView = "request" | "factory" | "published" | "catalog";
@@ -119,7 +120,10 @@ export function DataProductFactory() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [viewingStepId, setViewingStepId] = useState<AgentStepId | null>(null);
   const [showThresholdConfig, setShowThresholdConfig] = useState(false);
+  const [traceEvents, setTraceEvents] = useState<TraceEvent[]>([]);
   const abortRef = useRef<AbortController | null>(null);
+  // Track in-flight tool calls: toolCallId -> { name, input, startTime }
+  const pendingToolCalls = useRef<Map<string, { name: string; input: Record<string, unknown>; startTime: number }>>(new Map());
 
   // ── Build slim context for the agent ──────────────────────────────────────
   const buildContext = useCallback(
@@ -165,6 +169,8 @@ export function DataProductFactory() {
       setStreamingText("");
       setIsStreaming(true);
       setViewingStepId(stepId);
+      setTraceEvents([]);
+      pendingToolCalls.current = new Map();
 
       const updatedProj: DataProductProject = {
         ...proj,
@@ -204,27 +210,93 @@ export function DataProductFactory() {
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split("\n");
           buffer = lines.pop() ?? "";
+
           for (const line of lines) {
             const trimmed = line.trim();
-            if (trimmed.startsWith("data:")) {
-              const data = trimmed.slice(5).trim();
-              if (data === "[DONE]") continue;
-              try {
-                const chunk = JSON.parse(data) as {
-                  type?: string;
-                  delta?: string;
-                  text?: string;
-                };
-                if (chunk.type === "text-delta" && chunk.delta) {
-                  fullText += chunk.delta;
-                  setStreamingText(fullText);
-                } else if (chunk.type === "text" && chunk.text) {
-                  fullText = chunk.text;
-                  setStreamingText(fullText);
-                }
-              } catch {
-                // skip malformed chunk
+            if (!trimmed.startsWith("data:")) continue;
+            const data = trimmed.slice(5).trim();
+            if (data === "[DONE]") continue;
+
+            try {
+              const chunk = JSON.parse(data) as {
+                type?: string;
+                delta?: string;
+                text?: string;
+                toolCallId?: string;
+                toolName?: string;
+                argsTextDelta?: string;
+                args?: Record<string, unknown>;
+                result?: unknown;
+                error?: string;
+              };
+
+              // ── Text streaming ───────────────────────────────────────────
+              if (chunk.type === "text-delta" && chunk.delta) {
+                fullText += chunk.delta;
+                setStreamingText(fullText);
+              } else if (chunk.type === "text" && chunk.text) {
+                fullText = chunk.text;
+                setStreamingText(fullText);
               }
+
+              // ── Tool call start ──────────────────────────────────────────
+              else if (chunk.type === "tool-call" && chunk.toolCallId && chunk.toolName) {
+                const id = `tc-${chunk.toolCallId}`;
+                const toolArgs = (chunk.args ?? {}) as Record<string, unknown>;
+                pendingToolCalls.current.set(chunk.toolCallId, {
+                  name: chunk.toolName,
+                  input: toolArgs,
+                  startTime: Date.now(),
+                });
+                setTraceEvents(prev => [...prev, {
+                  id,
+                  type: "tool_call_start",
+                  timestamp: new Date().toISOString(),
+                  toolName: chunk.toolName,
+                  toolInput: toolArgs,
+                }]);
+              }
+
+              // ── Tool result ──────────────────────────────────────────────
+              else if (chunk.type === "tool-result" && chunk.toolCallId) {
+                const pending = pendingToolCalls.current.get(chunk.toolCallId);
+                const durationMs = pending ? Date.now() - pending.startTime : undefined;
+                const resultOutput = (chunk.result ?? {}) as Record<string, unknown>;
+
+                // Replace the "start" event with a "complete" event
+                setTraceEvents(prev => {
+                  const withoutStart = prev.filter(e => e.id !== `tc-${chunk.toolCallId}`);
+                  return [...withoutStart, {
+                    id: `tc-${chunk.toolCallId}`,
+                    type: "tool_call_complete",
+                    timestamp: new Date().toISOString(),
+                    toolName: pending?.name ?? chunk.toolName,
+                    toolInput: pending?.input,
+                    toolOutput: resultOutput,
+                    durationMs,
+                  }];
+                });
+                pendingToolCalls.current.delete(chunk.toolCallId!);
+              }
+
+              // ── Tool call error ──────────────────────────────────────────
+              else if (chunk.type === "tool-call-error" && chunk.toolCallId) {
+                const pending = pendingToolCalls.current.get(chunk.toolCallId);
+                setTraceEvents(prev => {
+                  const withoutStart = prev.filter(e => e.id !== `tc-${chunk.toolCallId}`);
+                  return [...withoutStart, {
+                    id: `tc-${chunk.toolCallId}`,
+                    type: "tool_call_error",
+                    timestamp: new Date().toISOString(),
+                    toolName: pending?.name ?? "unknown",
+                    toolInput: pending?.input,
+                    text: chunk.error ?? "Unknown error",
+                  }];
+                });
+                pendingToolCalls.current.delete(chunk.toolCallId!);
+              }
+            } catch {
+              // skip malformed chunk
             }
           }
         }
@@ -737,23 +809,19 @@ export function DataProductFactory() {
 
           <div className="min-w-0">
             {displayedStepId && displayedStep ? (
-              <AgentStepPanel
-                key={displayedStepId}
-                stepId={displayedStepId}
-                step={displayedStep}
-                streamingText={
-                  displayedStepId === activeStepId ? streamingText : ""
-                }
-                isStreaming={
-                  displayedStepId === activeStepId ? isStreaming : false
-                }
-                isViewingApproved={displayedStep.status === "approved"}
-                qualityThreshold={project.qualityThreshold}
-                onApprove={handleApproveStep}
-                onReject={handleRejectStep}
-                onGoBack={handleGoBackToStep}
-                onRerunStale={handleRerunStaleStep}
-              />
+            <AgentStepPanel
+              key={viewingStepId}
+              stepId={viewingStepId}
+              step={project.steps[viewingStepId]}
+              streamingText={streamingText}
+              isStreaming={isStreaming}
+              traceEvents={traceEvents}
+              qualityThreshold={project.qualityThreshold}
+              onApprove={handleApproveStep}
+              onReject={handleRejectStep}
+              onGoBack={handleGoBackStep}
+              onRerunStale={handleRerunStale}
+            />
             ) : (
               <div
                 className="rounded-2xl p-8 flex items-center justify-center"
