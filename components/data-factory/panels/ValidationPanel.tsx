@@ -35,14 +35,27 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
   const [fixingSet, setFixingSet]   = useState<Set<number>>(new Set());
   const [showAnomalies, setShowAnomalies] = useState(true);
 
+  // Track whether local tests were modified by a fix (not by parent output sync)
+  const [fixApplied, setFixApplied] = useState(false);
+
   // Re-sync if parent output changes (e.g. after a full agent re-run)
+  // Guard with fixApplied so we don't re-overwrite local state mid-fix
   useEffect(() => {
-    setLocalTests((data.testSuite as TestCase[]) ?? []);
+    if (!fixApplied) {
+      setLocalTests((data.testSuite as TestCase[]) ?? []);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [output]);
 
-  const anomalies = (data.anomalies as string[]) ?? [];
-  const summary   = (data.summary   as string)   ?? "";
+  // Push updated tests to parent AFTER render, never during a state updater
+  useEffect(() => {
+    if (!fixApplied) return;
+    const newPassRate = localTests.length > 0
+      ? Math.round((localTests.filter((t) => t.status === "pass").length / localTests.length) * 100)
+      : 0;
+    onChange({ ...output, testSuite: localTests, passRate: newPassRate });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localTests, fixApplied]);
 
   const passCount    = localTests.filter((t) => t.status === "pass").length;
   const failCount    = localTests.filter((t) => t.status === "fail").length;
@@ -51,20 +64,13 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
   const isBlocked    = failCount > 0;
   const rateColor    = passRate >= 90 ? "#22c55e" : passRate >= 75 ? "#f59e0b" : "#ef4444";
 
-  // Push updated tests back to parent so the approve gate re-evaluates failCount
-  const pushChange = (updatedTests: TestCase[]) => {
-    const newPassRate = updatedTests.length > 0
-      ? Math.round((updatedTests.filter((t) => t.status === "pass").length / updatedTests.length) * 100)
-      : 0;
-    onChange({ ...output, testSuite: updatedTests, passRate: newPassRate });
-  };
-
   // Fix a single failing test: 1.8 s loading state then mark as passed
   const handleFixOne = (idx: number) => {
     setFixingSet((prev) => new Set(prev).add(idx));
     setTimeout(() => {
-      setLocalTests((prev) => {
-        const next = prev.map((t, i) =>
+      setFixApplied(true);
+      setLocalTests((prev) =>
+        prev.map((t, i) =>
           i === idx
             ? {
                 ...t,
@@ -72,10 +78,8 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
                 detail: `${t.detail} — AI remediation applied: root cause diagnosed and pipeline fix deployed.`,
               }
             : t
-        );
-        pushChange(next);
-        return next;
-      });
+        )
+      );
       setFixingSet((prev) => {
         const next = new Set(prev);
         next.delete(idx);
@@ -95,8 +99,9 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
 
     failedIndices.forEach((idx, order) => {
       setTimeout(() => {
-        setLocalTests((prev) => {
-          const next = prev.map((t, i) =>
+        setFixApplied(true);
+        setLocalTests((prev) =>
+          prev.map((t, i) =>
             i === idx
               ? {
                   ...t,
@@ -104,14 +109,16 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
                   detail: `${t.detail} — AI remediation applied: root cause diagnosed and pipeline fix deployed.`,
                 }
               : t
-          );
-          if (order === failedIndices.length - 1) {
-            pushChange(next);
-            setFixingAll(false);
-            setFixingSet(new Set());
-          }
+          )
+        );
+        setFixingSet((prev) => {
+          const next = new Set(prev);
+          next.delete(idx);
           return next;
         });
+        if (order === failedIndices.length - 1) {
+          setFixingAll(false);
+        }
       }, 600 + order * 600);
     });
   };
