@@ -1,4 +1,3 @@
-// v2 — agentic pipeline, useEffect-based parent sync
 "use client";
 
 import { useState, useEffect } from "react";
