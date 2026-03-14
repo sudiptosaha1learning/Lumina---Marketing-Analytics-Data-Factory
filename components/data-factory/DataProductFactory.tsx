@@ -588,7 +588,7 @@ export function DataProductFactory() {
     };
   };
 
-  // ── View in catalog ────────────────────────────────────────────────────────
+  // ── View in catalog ──────────────────────────────────���─────────────────────
   const handleViewCatalog = () => {
     setView("catalog");
   };
@@ -819,8 +819,8 @@ export function DataProductFactory() {
               qualityThreshold={project.qualityThreshold}
               onApprove={handleApproveStep}
               onReject={handleRejectStep}
-              onGoBack={handleGoBackStep}
-              onRerunStale={handleRerunStale}
+              onGoBack={handleGoBackToStep}
+              onRerunStale={handleRerunStaleStep}
             />
             ) : (
               <div
