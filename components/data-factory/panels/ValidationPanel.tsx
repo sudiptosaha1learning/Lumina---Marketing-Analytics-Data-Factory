@@ -124,6 +124,9 @@ export function ValidationPanel({ output, onChange, onRequestFix }: Props) {
     });
   };
 
+  const anomalies = (data.anomalies as string[]) ?? [];
+  const summary   = (data.summary   as string)   ?? "";
+
   const labelClass = `text-[10px] uppercase tracking-wider font-semibold mb-2 block ${isDark ? "text-white/40" : "text-slate-400"}`;
   const cardBg     = isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)";
   const cardBorder = isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)";
