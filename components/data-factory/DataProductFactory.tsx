@@ -11,13 +11,13 @@ import {
   createInitialProject,
   MOCK_DATA_CATALOG,
 } from "@/lib/data-product-types";
-import { FactoryRequestCapture } from "./FactoryRequestCapture";
+import { FactoryRequestCapture, type CatalogProduct } from "./FactoryRequestCapture";
 import { FactoryStepper } from "./FactoryStepper";
 import { AgentStepPanel } from "./AgentStepPanel";
 import { FactoryPublishSuccess } from "./FactoryPublishSuccess";
 import { Sparkles, ChevronLeft, RotateCcw, Activity, Settings2 } from "lucide-react";
 
-type FactoryView = "request" | "factory" | "published";
+type FactoryView = "request" | "factory" | "published" | "catalog";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -449,7 +449,7 @@ export function DataProductFactory() {
     [project]
   );
 
-  // ── Click a step in the stepper ────────────────────────────────────────────
+  // ── Click a step in the stepper ─────���──────────────────────────────────────
   const handleStepClick = useCallback(
     (stepId: AgentStepId) => {
       if (!project) return;
@@ -476,6 +476,50 @@ export function DataProductFactory() {
     },
     [runAgentStep]
   );
+
+  // ── Derive a CatalogProduct from a published project ──────────────────────
+  const deriveCatalogProduct = (proj: DataProductProject): CatalogProduct => {
+    const pubOutput = (proj.steps.publishing?.editedOutput ?? proj.steps.publishing?.output) as Record<string, unknown> | null;
+    const card = (pubOutput?.productCard as Record<string, unknown>) ?? {};
+    const docOutput = (proj.steps.documentation?.editedOutput ?? proj.steps.documentation?.output) as Record<string, unknown> | null;
+    const govOutput = (proj.steps.governance?.editedOutput ?? proj.steps.governance?.output) as Record<string, unknown> | null;
+    const kpiOutput = (proj.steps.kpi?.editedOutput ?? proj.steps.kpi?.output) as Record<string, unknown> | null;
+    const kpis = (kpiOutput?.kpis as Array<{ name: string }> | undefined) ?? [];
+    const ownerPersona = (proj.steps.persona?.editedOutput ?? proj.steps.persona?.output) as Record<string, unknown> | null;
+    const personas = (ownerPersona?.personas as Array<{ role: string }> | undefined) ?? [];
+    const ownerName = personas.find(p => p.role?.toLowerCase().includes("owner"))?.role ?? "Data Platform";
+    const apiBase = "https://data.jlr.internal/api/v2/products";
+    const slug = (card?.name as string ?? proj.name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    const qualityOutput = (proj.steps.quality?.editedOutput ?? proj.steps.quality?.output) as Record<string, unknown> | null;
+    const qualityScore = (qualityOutput?.overallScore as number) ?? 85;
+    const domain = (govOutput?.classification as Record<string,unknown>)?.domain as string ?? "Analytics";
+    const tags = kpis.slice(0, 4).map((k) => k.name.toLowerCase().replace(/\s+/g, "-"));
+
+    return {
+      id: proj.id,
+      name: (card?.name as string) ?? proj.name,
+      domain,
+      description: (card?.description as string) ?? proj.requestText.slice(0, 150),
+      status: "Published",
+      tier: qualityScore >= 90 ? "Gold" : qualityScore >= 75 ? "Silver" : "Bronze",
+      owner: ownerName,
+      updatedAt: proj.publishedAt ? new Date(proj.publishedAt).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+      tags: tags.length > 0 ? tags : ["data-product", "analytics"],
+      consumers: 0,
+      quality: qualityScore,
+      freshness: "Just published",
+      updateSchedule: (docOutput?.updateFrequency as string) ?? "Daily",
+      apiEndpoint: `${apiBase}/${slug}`,
+      apiFormat: "REST / JSON",
+      apiAuth: "OAuth 2.0 (Bearer token)",
+      sampleQuery: `GET ${apiBase}/${slug}?limit=100`,
+    };
+  };
+
+  // ── View in catalog ────────────────────────────────────────────────────────
+  const handleViewCatalog = () => {
+    setView("catalog");
+  };
 
   // ── Reset ──────────────────────────────────────────────────────────────────
   const handleReset = () => {
@@ -660,7 +704,7 @@ export function DataProductFactory() {
             isDark ? "text-white/30" : "text-slate-400"
           }`}
         >
-          {view === "request"
+          {view === "request" || view === "catalog"
             ? "Start a new data product"
             : view === "published"
             ? "Product published"
@@ -737,7 +781,16 @@ export function DataProductFactory() {
 
       {/* PUBLISHED */}
       {view === "published" && project && (
-        <FactoryPublishSuccess project={project} onReset={handleReset} />
+        <FactoryPublishSuccess project={project} onReset={handleReset} onViewCatalog={handleViewCatalog} />
+      )}
+
+      {/* CATALOG — request page with newly published product highlighted */}
+      {view === "catalog" && (
+        <FactoryRequestCapture
+          onStart={handleStartFactory}
+          publishedProduct={project ? deriveCatalogProduct(project) : undefined}
+          highlightId={project?.id}
+        />
       )}
     </div>
   );

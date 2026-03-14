@@ -1,18 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/components/dashboard/ThemeProvider";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
   Sparkles, ArrowRight, Search, ChevronDown, ChevronUp,
   Database, Tag, Clock, CheckCircle2, FileText, BarChart3,
-  Layers, Eye,
+  Layers, Eye, Zap, Code2, Globe, RefreshCw, Star,
 } from "lucide-react";
 
-// ── Catalog data ──────────────────────────────────────────────────────────
+// ── Catalog types & data ──────────────────────────────────────────────────
 
-interface CatalogProduct {
+export interface CatalogProduct {
   id: string;
   name: string;
   domain: string;
@@ -24,9 +24,15 @@ interface CatalogProduct {
   tags: string[];
   consumers: number;
   quality: number;
+  freshness: string;
+  updateSchedule: string;
+  apiEndpoint: string;
+  apiFormat: string;
+  apiAuth: string;
+  sampleQuery: string;
 }
 
-const CATALOG: CatalogProduct[] = [
+export const BASE_CATALOG: CatalogProduct[] = [
   {
     id: "cp1",
     name: "Customer Propensity Score v2",
@@ -39,6 +45,12 @@ const CATALOG: CatalogProduct[] = [
     tags: ["propensity", "ml", "crm", "email"],
     consumers: 14,
     quality: 94,
+    freshness: "Updated 6 hours ago",
+    updateSchedule: "Daily at 02:00 UTC",
+    apiEndpoint: "https://data.jlr.internal/api/v2/products/customer-propensity",
+    apiFormat: "REST / JSON",
+    apiAuth: "OAuth 2.0 (Bearer token)",
+    sampleQuery: "GET /api/v2/products/customer-propensity?customer_id=C12345&fields=score,decile",
   },
   {
     id: "cp2",
@@ -52,6 +64,12 @@ const CATALOG: CatalogProduct[] = [
     tags: ["defender", "engagement", "scoring"],
     consumers: 8,
     quality: 71,
+    freshness: "Updated 2 days ago",
+    updateSchedule: "Weekly on Monday",
+    apiEndpoint: "https://data.jlr.internal/api/v2/products/defender-interest",
+    apiFormat: "REST / JSON",
+    apiAuth: "OAuth 2.0 (Bearer token)",
+    sampleQuery: "GET /api/v2/products/defender-interest?customer_id=C12345",
   },
   {
     id: "cp3",
@@ -65,6 +83,12 @@ const CATALOG: CatalogProduct[] = [
     tags: ["attribution", "email", "paid", "orders"],
     consumers: 3,
     quality: 58,
+    freshness: "Updated 8 days ago",
+    updateSchedule: "Manual / On-demand",
+    apiEndpoint: "https://data.jlr.internal/api/v1/products/mkt-attribution (draft)",
+    apiFormat: "REST / JSON",
+    apiAuth: "API Key",
+    sampleQuery: "GET /api/v1/products/mkt-attribution?order_id=ORD-98765",
   },
   {
     id: "cp4",
@@ -78,6 +102,12 @@ const CATALOG: CatalogProduct[] = [
     tags: ["contracts", "pcp", "renewal", "equity"],
     consumers: 21,
     quality: 97,
+    freshness: "Updated 1 hour ago",
+    updateSchedule: "Daily at 01:00 UTC",
+    apiEndpoint: "https://data.jlr.internal/api/v2/products/contract-lifecycle",
+    apiFormat: "REST / JSON + GraphQL",
+    apiAuth: "OAuth 2.0 (Bearer token)",
+    sampleQuery: "GET /api/v2/products/contract-lifecycle?customer_id=C12345&status=active",
   },
   {
     id: "cp5",
@@ -91,6 +121,12 @@ const CATALOG: CatalogProduct[] = [
     tags: ["dealer", "conversion", "kpi", "satisfaction"],
     consumers: 17,
     quality: 91,
+    freshness: "Updated 5 days ago",
+    updateSchedule: "Monthly on the 1st",
+    apiEndpoint: "https://data.jlr.internal/api/v2/products/dealer-performance",
+    apiFormat: "REST / JSON",
+    apiAuth: "OAuth 2.0 (Bearer token)",
+    sampleQuery: "GET /api/v2/products/dealer-performance?dealer_id=D456&period=2026-02",
   },
   {
     id: "cp6",
@@ -104,6 +140,12 @@ const CATALOG: CatalogProduct[] = [
     tags: ["customer", "360", "unified", "demographics"],
     consumers: 38,
     quality: 88,
+    freshness: "Updated 2 hours ago",
+    updateSchedule: "Daily at 03:00 UTC",
+    apiEndpoint: "https://data.jlr.internal/api/v2/products/customer-360",
+    apiFormat: "REST / JSON + GraphQL",
+    apiAuth: "OAuth 2.0 (Bearer token)",
+    sampleQuery: "GET /api/v2/products/customer-360?customer_id=C12345&include=vehicles,services",
   },
   {
     id: "cp7",
@@ -117,6 +159,12 @@ const CATALOG: CatalogProduct[] = [
     tags: ["clickstream", "web", "events", "configurator"],
     consumers: 11,
     quality: 83,
+    freshness: "Real-time (5 min lag)",
+    updateSchedule: "Continuous streaming",
+    apiEndpoint: "https://data.jlr.internal/api/v2/products/web-events",
+    apiFormat: "REST / JSON + Event Stream",
+    apiAuth: "OAuth 2.0 (Bearer token)",
+    sampleQuery: "GET /api/v2/products/web-events?customer_id=C12345&event_type=configurator_session&limit=100",
   },
   {
     id: "cp8",
@@ -130,6 +178,12 @@ const CATALOG: CatalogProduct[] = [
     tags: ["email", "engagement", "crm", "campaigns"],
     consumers: 9,
     quality: 85,
+    freshness: "Updated 8 hours ago",
+    updateSchedule: "Daily at 04:00 UTC",
+    apiEndpoint: "https://data.jlr.internal/api/v2/products/email-engagement",
+    apiFormat: "REST / JSON",
+    apiAuth: "OAuth 2.0 (Bearer token)",
+    sampleQuery: "GET /api/v2/products/email-engagement?customer_id=C12345&campaign_id=CMP-7890",
   },
 ];
 
@@ -138,14 +192,14 @@ const STATUSES = ["All", "Published", "Draft"];
 const TIERS = ["All", "Gold", "Silver", "Bronze"];
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  Published: { bg: "rgba(34,197,94,0.1)", text: "#4ade80" },
-  Draft:     { bg: "rgba(245,158,11,0.1)", text: "#fbbf24" },
-  Deprecated:{ bg: "rgba(239,68,68,0.1)", text: "#f87171" },
+  Published:  { bg: "rgba(34,197,94,0.1)",  text: "#4ade80" },
+  Draft:      { bg: "rgba(245,158,11,0.1)", text: "#fbbf24" },
+  Deprecated: { bg: "rgba(239,68,68,0.1)",  text: "#f87171" },
 };
 const TIER_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  Gold:   { bg: "rgba(234,179,8,0.1)",  text: "#eab308", border: "rgba(234,179,8,0.3)" },
+  Gold:   { bg: "rgba(234,179,8,0.1)",   text: "#eab308", border: "rgba(234,179,8,0.3)" },
   Silver: { bg: "rgba(148,163,184,0.1)", text: "#94a3b8", border: "rgba(148,163,184,0.3)" },
-  Bronze: { bg: "rgba(180,83,9,0.12)",  text: "#b45309", border: "rgba(180,83,9,0.3)" },
+  Bronze: { bg: "rgba(180,83,9,0.12)",   text: "#b45309", border: "rgba(180,83,9,0.3)" },
 };
 
 // ── Quality bar ───────────────────────────────────────────────────────────
@@ -164,19 +218,50 @@ function QualityBar({ score, isDark }: { score: number; isDark: boolean }) {
 
 // ── Catalog card ──────────────────────────────────────────────────────────
 
-function CatalogCard({ product, isDark }: { product: CatalogProduct; isDark: boolean }) {
-  const [expanded, setExpanded] = useState(false);
+function CatalogCard({
+  product,
+  isDark,
+  highlighted,
+  cardRef,
+}: {
+  product: CatalogProduct;
+  isDark: boolean;
+  highlighted?: boolean;
+  cardRef?: React.RefObject<HTMLDivElement>;
+}) {
+  const [expanded, setExpanded] = useState(highlighted ?? false);
   const status = STATUS_COLORS[product.status];
   const tier = TIER_COLORS[product.tier];
 
+  useEffect(() => {
+    if (highlighted) setExpanded(true);
+  }, [highlighted]);
+
   return (
     <div
-      className="rounded-xl overflow-hidden transition-all"
+      ref={cardRef}
+      className="rounded-xl overflow-hidden transition-all duration-300"
       style={{
-        background: isDark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.9)",
-        border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)",
+        background: highlighted
+          ? isDark ? "rgba(59,130,246,0.08)" : "rgba(59,130,246,0.05)"
+          : isDark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.9)",
+        border: highlighted
+          ? "1px solid rgba(59,130,246,0.4)"
+          : isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)",
+        boxShadow: highlighted ? "0 0 0 2px rgba(59,130,246,0.15)" : undefined,
       }}
     >
+      {/* New badge */}
+      {highlighted && (
+        <div
+          className="px-3 py-1.5 flex items-center gap-1.5 border-b"
+          style={{ background: "rgba(59,130,246,0.12)", borderColor: "rgba(59,130,246,0.2)" }}
+        >
+          <Star className="w-3 h-3 text-blue-400" />
+          <span className="text-[10px] font-semibold text-blue-400">Just published — new data product</span>
+        </div>
+      )}
+
       {/* Main row */}
       <button
         onClick={() => setExpanded(!expanded)}
@@ -210,7 +295,6 @@ function CatalogCard({ product, isDark }: { product: CatalogProduct; isDark: boo
             <p className={`text-[10px] mt-0.5 line-clamp-1 ${isDark ? "text-white/45" : "text-slate-500"}`}>
               {product.description}
             </p>
-            {/* Quality bar */}
             <div className="mt-1.5">
               <QualityBar score={product.quality} isDark={isDark} />
             </div>
@@ -234,26 +318,103 @@ function CatalogCard({ product, isDark }: { product: CatalogProduct; isDark: boo
             {product.description}
           </p>
 
+          {/* Metadata grid */}
           <div className="grid grid-cols-2 gap-2 text-[10px]">
             <div className="flex items-center gap-1.5">
-              <Tag className={`w-3 h-3 ${isDark ? "text-white/30" : "text-slate-400"}`} />
+              <Tag className={`w-3 h-3 flex-shrink-0 ${isDark ? "text-white/30" : "text-slate-400"}`} />
               <span className={isDark ? "text-white/40" : "text-slate-500"}>Domain:</span>
               <span className={`font-medium ${isDark ? "text-white/70" : "text-slate-700"}`}>{product.domain}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Eye className={`w-3 h-3 ${isDark ? "text-white/30" : "text-slate-400"}`} />
+              <Eye className={`w-3 h-3 flex-shrink-0 ${isDark ? "text-white/30" : "text-slate-400"}`} />
               <span className={isDark ? "text-white/40" : "text-slate-500"}>Consumers:</span>
               <span className={`font-medium ${isDark ? "text-white/70" : "text-slate-700"}`}>{product.consumers}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <FileText className={`w-3 h-3 ${isDark ? "text-white/30" : "text-slate-400"}`} />
+              <FileText className={`w-3 h-3 flex-shrink-0 ${isDark ? "text-white/30" : "text-slate-400"}`} />
               <span className={isDark ? "text-white/40" : "text-slate-500"}>Owner:</span>
               <span className={`font-medium ${isDark ? "text-white/70" : "text-slate-700"}`}>{product.owner}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Clock className={`w-3 h-3 ${isDark ? "text-white/30" : "text-slate-400"}`} />
+              <Clock className={`w-3 h-3 flex-shrink-0 ${isDark ? "text-white/30" : "text-slate-400"}`} />
               <span className={isDark ? "text-white/40" : "text-slate-500"}>Updated:</span>
               <span className={`font-medium ${isDark ? "text-white/70" : "text-slate-700"}`}>{product.updatedAt}</span>
+            </div>
+          </div>
+
+          {/* Freshness */}
+          <div
+            className="flex items-center gap-2 rounded-lg px-3 py-2"
+            style={{
+              background: isDark ? "rgba(34,197,94,0.06)" : "rgba(34,197,94,0.05)",
+              border: "1px solid rgba(34,197,94,0.18)",
+            }}
+          >
+            <RefreshCw className="w-3 h-3 text-green-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="text-[10px] font-semibold text-green-400">{product.freshness}</span>
+              <span className={`text-[9px] ml-2 ${isDark ? "text-white/35" : "text-slate-400"}`}>
+                Schedule: {product.updateSchedule}
+              </span>
+            </div>
+          </div>
+
+          {/* API Details */}
+          <div
+            className="rounded-lg overflow-hidden"
+            style={{
+              border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)",
+            }}
+          >
+            <div
+              className="flex items-center gap-2 px-3 py-2 border-b"
+              style={{
+                background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)",
+                borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+              }}
+            >
+              <Globe className="w-3 h-3 text-blue-400" />
+              <span className={`text-[10px] font-semibold ${isDark ? "text-white/70" : "text-slate-700"}`}>
+                API Access
+              </span>
+              <span
+                className="ml-auto text-[9px] px-1.5 py-0.5 rounded font-medium"
+                style={{ background: "rgba(59,130,246,0.12)", color: "#60a5fa" }}
+              >
+                {product.apiFormat}
+              </span>
+            </div>
+            <div className="px-3 py-2.5 space-y-2">
+              <div className="flex items-start gap-2">
+                <Zap className={`w-3 h-3 flex-shrink-0 mt-0.5 ${isDark ? "text-white/30" : "text-slate-400"}`} />
+                <div className="min-w-0">
+                  <p className={`text-[9px] mb-0.5 ${isDark ? "text-white/35" : "text-slate-400"}`}>Endpoint</p>
+                  <p
+                    className="text-[10px] font-mono break-all"
+                    style={{ color: isDark ? "rgba(147,197,253,0.85)" : "#1d4ed8" }}
+                  >
+                    {product.apiEndpoint}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <Code2 className={`w-3 h-3 flex-shrink-0 mt-0.5 ${isDark ? "text-white/30" : "text-slate-400"}`} />
+                <div className="min-w-0">
+                  <p className={`text-[9px] mb-0.5 ${isDark ? "text-white/35" : "text-slate-400"}`}>Auth</p>
+                  <p className={`text-[10px] font-medium ${isDark ? "text-white/60" : "text-slate-600"}`}>
+                    {product.apiAuth}
+                  </p>
+                </div>
+              </div>
+              <div
+                className="rounded-lg p-2 font-mono text-[9px] leading-relaxed break-all"
+                style={{
+                  background: isDark ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.04)",
+                  color: isDark ? "rgba(134,239,172,0.8)" : "#166534",
+                }}
+              >
+                {product.sampleQuery}
+              </div>
             </div>
           </div>
 
@@ -263,7 +424,10 @@ function CatalogCard({ product, isDark }: { product: CatalogProduct; isDark: boo
               <span
                 key={tag}
                 className="text-[9px] px-2 py-0.5 rounded-full font-medium"
-                style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", color: isDark ? "rgba(255,255,255,0.45)" : "#64748b" }}
+                style={{
+                  background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+                  color: isDark ? "rgba(255,255,255,0.45)" : "#64748b",
+                }}
               >
                 #{tag}
               </span>
@@ -285,19 +449,36 @@ const SAMPLE_REQUESTS = [
 
 interface Props {
   onStart: (requestText: string) => void;
+  publishedProduct?: CatalogProduct;
+  highlightId?: string;
 }
 
-export function FactoryRequestCapture({ onStart }: Props) {
+export function FactoryRequestCapture({ onStart, publishedProduct, highlightId }: Props) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [requestText, setRequestText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Catalog filters
+  // Merge published product at the top
+  const CATALOG = publishedProduct
+    ? [publishedProduct, ...BASE_CATALOG.filter((p) => p.id !== publishedProduct.id)]
+    : BASE_CATALOG;
+
   const [catalogSearch, setCatalogSearch] = useState("");
   const [domainFilter, setDomainFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [tierFilter, setTierFilter] = useState("All");
+
+  const highlightRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (highlightId && highlightRef.current) {
+      setTimeout(() => {
+        highlightRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 200);
+    }
+  }, [highlightId]);
 
   const handleSubmit = () => {
     if (!requestText.trim()) return;
@@ -328,7 +509,7 @@ export function FactoryRequestCapture({ onStart }: Props) {
     }`;
 
   return (
-    <div className="grid grid-cols-[1fr_360px] gap-6 items-start">
+    <div className="grid grid-cols-[1fr_380px] gap-6 items-start">
 
       {/* ── LEFT: Request panel ─────────────────────────────────────────── */}
       <div className="space-y-5">
@@ -428,11 +609,13 @@ export function FactoryRequestCapture({ onStart }: Props) {
         className="rounded-2xl overflow-hidden flex flex-col"
         style={{
           background: isDark ? "rgba(255,255,255,0.025)" : "rgba(255,255,255,0.8)",
-          border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)",
+          border: highlightId
+            ? "1px solid rgba(59,130,246,0.35)"
+            : isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.08)",
           maxHeight: "calc(100vh - 220px)",
         }}
       >
-        {/* Catalog header */}
+        {/* Header */}
         <div
           className="px-4 py-3 border-b flex-shrink-0"
           style={{ borderColor: isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)" }}
@@ -450,7 +633,7 @@ export function FactoryRequestCapture({ onStart }: Props) {
             </span>
           </div>
           <p className={`text-[10px] mb-3 leading-relaxed ${isDark ? "text-white/35" : "text-slate-500"}`}>
-            Browse existing data products before creating a new one. You may find what you need already exists.
+            Browse existing data products. Click any card to view freshness and API details.
           </p>
 
           {/* Search */}
@@ -513,7 +696,7 @@ export function FactoryRequestCapture({ onStart }: Props) {
         </div>
 
         {/* Catalog list — scrollable */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-2 min-h-0">
+        <div ref={listRef} className="flex-1 overflow-y-auto p-3 space-y-2 min-h-0">
           {filteredCatalog.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 gap-2">
               <Database className={`w-8 h-8 ${isDark ? "text-white/15" : "text-slate-300"}`} />
@@ -521,7 +704,13 @@ export function FactoryRequestCapture({ onStart }: Props) {
             </div>
           ) : (
             filteredCatalog.map((product) => (
-              <CatalogCard key={product.id} product={product} isDark={isDark} />
+              <CatalogCard
+                key={product.id}
+                product={product}
+                isDark={isDark}
+                highlighted={product.id === highlightId}
+                cardRef={product.id === highlightId ? highlightRef : undefined}
+              />
             ))
           )}
         </div>

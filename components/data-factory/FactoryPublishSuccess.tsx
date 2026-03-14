@@ -19,9 +19,10 @@ import { Button } from "@/components/ui/button";
 interface Props {
   project: DataProductProject;
   onReset: () => void;
+  onViewCatalog: () => void;
 }
 
-export function FactoryPublishSuccess({ project, onReset }: Props) {
+export function FactoryPublishSuccess({ project, onReset, onViewCatalog }: Props) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
@@ -173,10 +174,10 @@ export function FactoryPublishSuccess({ project, onReset }: Props) {
           Build another data product
         </Button>
         <Button
-          disabled
-          className="gap-2 text-sm bg-blue-600 hover:bg-blue-700 text-white opacity-50 cursor-not-allowed"
+          onClick={onViewCatalog}
+          className="gap-2 text-sm bg-blue-600 hover:bg-blue-700 text-white"
         >
-          View in Data Catalogue
+          View in Data Catalog
           <ArrowRight className="w-4 h-4" />
         </Button>
       </div>
