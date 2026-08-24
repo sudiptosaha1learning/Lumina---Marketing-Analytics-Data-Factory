@@ -1547,7 +1547,7 @@ export const missions: Mission[] = [
     ],
   },
   {
-    id: "defender-performance-drive",
+    id: "premium-format-upsell-drive",
     title: "The Premium Format Upsell Drive",
     subtitle: "Convert high-growth accounts to high-barrier, premium-performance packaging formats",
     priority: "Strategic",
@@ -1698,5 +1698,5 @@ export const reasoningSteps = [
 export const connectionMap: Record<string, string[]> = {
   "ev-equity-pivot": ["buyback", "renewal", "upselling", "intelligent-lead", "customer-experience"],
   "loyalty-recovery": ["cancellation", "lead-scoring", "service-retention", "renewal", "customer-experience"],
-  "defender-performance-drive": ["upselling", "intelligent-lead", "lead-scoring", "buyback", "customer-experience"],
+  "premium-format-upsell-drive": ["upselling", "intelligent-lead", "lead-scoring", "buyback", "customer-experience"],
 };

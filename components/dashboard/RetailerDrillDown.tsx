@@ -495,7 +495,7 @@ function CustomerModal({ customer, retailer, mission, isDark, scriptGenerated, g
         <div className="flex-1 overflow-y-auto p-6 scrollbar-thin space-y-5">
           {!scriptView ? (
             <>
-              {/* Vehicle + Scores */}
+              {/* Format + Scores */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl space-y-2" style={{ background: surfaceBg, border: surfaceBorder }}>
                   <div className="flex items-center gap-2 mb-2">

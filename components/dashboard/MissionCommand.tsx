@@ -268,7 +268,7 @@ const MISSION_RULES: MissionRule[] = [
     },
   },
   {
-    missionId: "defender-performance-drive",
+    missionId: "premium-format-upsell-drive",
     check: (p, obj) => {
       if (p.marginProtection > 80 && p.incentiveAggression < 25)
         return "Margin protection constraints prevent volume-rebate deployment needed for this mission";
