@@ -488,7 +488,7 @@ export function DataProductFactory() {
     const ownerPersona = (proj.steps.persona?.editedOutput ?? proj.steps.persona?.output) as Record<string, unknown> | null;
     const personas = (ownerPersona?.personas as Array<{ role: string }> | undefined) ?? [];
     const ownerName = personas.find(p => p.role?.toLowerCase().includes("owner"))?.role ?? "Data Platform";
-    const apiBase = "https://data.jlr.internal/api/v2/products";
+    const apiBase = "https://data.vantagepackaging.internal/api/v2/products";
     const slug = (card?.name as string ?? proj.name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
     const qualityOutput = (proj.steps.quality?.editedOutput ?? proj.steps.quality?.output) as Record<string, unknown> | null;
     const qualityScore = (qualityOutput?.overallScore as number) ?? 85;

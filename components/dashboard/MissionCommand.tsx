@@ -221,7 +221,7 @@ const SLIDERS: SliderDef[] = [
   },
   {
     key: "ownerEngagement",
-    label: "Owners",
+    label: "Accounts",
     leftLabel: "Passive",
     rightLabel: "Engaged",
     color: "#f59e0b",
@@ -232,7 +232,7 @@ const SLIDERS: SliderDef[] = [
     key: "customerOffer",
     label: "Customer Offer",
     leftLabel: "Upgrade Focus",
-    rightLabel: "Ownership Value",
+    rightLabel: "Contract Value",
     color: "#f59e0b",
     relevantFor: ["Improve Customer Retention"],
     icon: Heart,
@@ -273,7 +273,7 @@ const MISSION_RULES: MissionRule[] = [
       if (p.marginProtection > 80 && p.incentiveAggression < 25)
         return "Margin protection constraints prevent performance incentive deployment needed for this mission";
       if (p.revenueWeight < 25 && obj === "Reduce Incentive Spend")
-        return "Revenue weight is too low to justify the high-value OCTA-grade line upsell investment";
+        return "Revenue weight is too low to justify the high-value APEX-grade line upsell investment";
       return null;
     },
   },
@@ -437,9 +437,9 @@ function computeSimMultipliers(
     primaryObjective === "Improve Customer Retention"
       ? (p.ownerEngagement / 100) * 0.12 + (p.customerOffer / 100) * 0.08
       : 0;
-  // portfolio param boosts EV adoption customer multiplier in place of carModelMix
+  // portfolio param boosts sustainable adoption customer multiplier in place of carModelMix
   const evPortfolioBoost =
-    primaryObjective === "Accelerate EV Adoption" ? (p.portfolio / 100) * 0.12 : 0;
+    primaryObjective === "Accelerate Sustainable Packaging Adoption" ? (p.portfolio / 100) * 0.12 : 0;
   const customerMultiplier =
     0.70 +
     ((100 - p.lifecycleBias) / 100) * 0.55 +
@@ -680,7 +680,7 @@ export function MissionCommand({
   );
 }
 
-// ─── Adaptive Summary Strip ───────────────────────────────────────────────────
+// ─── Adaptive Summary Strip ──────────────────────────────────────────���────────
 
 function AdaptiveSummaryStrip({
   isDark,
@@ -1388,7 +1388,7 @@ function MissionCard({
               }}
             >
               <Store className="w-3.5 h-3.5" />
-              Retailers
+              Plants
             </button>
           </div>
         </div>

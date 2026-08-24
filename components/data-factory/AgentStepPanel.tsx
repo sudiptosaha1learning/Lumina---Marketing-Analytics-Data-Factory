@@ -99,7 +99,7 @@ const STEP_COT: Record<AgentStepId, ThoughtEntry[]> = {
     { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Analysing the confirmed KPIs and data sources to determine the optimal target schema for analytics consumption." },
     { icon: Database, color: "#f59e0b", label: "Designing", text: "Selecting the grain of the primary fact table — one row per customer per scoring period is appropriate for a propensity use case." },
     { icon: Zap, color: "#f59e0b", label: "Action", text: "Mapping source fields to target columns, applying naming conventions, and deciding on derived vs pass-through attributes." },
-    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Designing supporting dimension tables for customer, campaign, and dealer to enable slice-and-dice analysis without joins in BI tools." },
+    { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Designing supporting dimension tables for customer, campaign, and plant to enable slice-and-dice analysis without joins in BI tools." },
     { icon: Shield, color: "#2dd4bf", label: "Governance", text: "Flagging PII fields (name, email, phone) for column-level masking policies and marking foreign keys for lineage tracking." },
     { icon: CheckCircle2, color: "#4ade80", label: "Result", text: "Producing a target schema with table definitions, field types, relationships, and annotation for governance controls." },
   ],
@@ -126,7 +126,7 @@ const STEP_COT: Record<AgentStepId, ThoughtEntry[]> = {
   ],
   governance: [
     { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Reviewing all PII-flagged fields, access patterns, and persona data requirements to design the governance framework." },
-    { icon: Shield, color: "#f59e0b", label: "Assessing", text: "Identifying all fields containing personal data under GDPR Article 4: names, emails, postcodes, and vehicle identification numbers." },
+    { icon: Shield, color: "#f59e0b", label: "Assessing", text: "Identifying all fields containing personal data under GDPR Article 4: names, emails, postcodes, and batch identification numbers." },
     { icon: Lock, color: "#2dd4bf", label: "Configuring", text: "Defining column-level masking policies: email and phone masked for non-owners, postcode truncated to district level for analytics." },
     { icon: Zap, color: "#f59e0b", label: "Action", text: "Setting role-based access control: Data Product Owner has full access; Data Analyst has read access to non-PII fields; GDPR Champion has audit access." },
     { icon: Brain, color: "#818cf8", label: "Reasoning", text: "Defining the data retention schedule, deletion obligations, and consent linkage requirements for this data product." },
@@ -345,16 +345,16 @@ function RefinementPrompt({
   const def = AGENT_STEP_DEFINITIONS[stepId];
 
   const PLACEHOLDERS: Partial<Record<AgentStepId, string>> = {
-    opportunity: "e.g. Focus only on Range Rover owners in the UK with contracts expiring in the next 6 months.",
-    persona: "e.g. Add a Dealer Relationship Manager persona who uses this at the point of vehicle handover.",
-    discovery: "e.g. Also include the Finance Contracts table — we need to see PCP end dates.",
-    quality: "e.g. Flag any source with more than 15% null rate on the customer_id field as not suitable.",
-    kpi: "e.g. Add a metric for email-to-test-drive conversion rate, segmented by model.",
+    opportunity: "e.g. Focus only on key accounts in the UK with contracts expiring in the next 6 months.",
+    persona: "e.g. Add a Plant Account Manager persona who uses this at the point of order handover.",
+    discovery: "e.g. Also include the Finance Contracts table — we need to see fixed-term end dates.",
+    quality: "e.g. Flag any source with more than 15% null rate on the account_id field as not suitable.",
+    kpi: "e.g. Add a metric for email-to-sample-request conversion rate, segmented by SKU.",
     model: "e.g. Add a contract_end_date field to the fact table — it is critical for renewal timing.",
     pipeline: "e.g. The pipeline should run at 6am UTC daily and alert if row count drops by more than 10%.",
-    validation: "e.g. Add a test that propensity scores for churned customers are always below 0.3.",
+    validation: "e.g. Add a test that propensity scores for churned accounts are always below 0.3.",
     documentation: "e.g. Add a section explaining how the propensity score is calculated for a non-technical audience.",
-    governance: "e.g. The Campaign Manager role should only see aggregated scores, not individual customer records.",
+    governance: "e.g. The Campaign Manager role should only see aggregated scores, not individual account records.",
     publishing: "e.g. Publish to the Marketing Analytics domain with a Bronze → Gold data tier classification.",
   };
 
@@ -867,7 +867,7 @@ export function AgentStepPanel({
             <div className="rounded-xl p-4 space-y-3" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)" }}>
               <p className="text-xs font-medium text-red-400">Reject &amp; re-run this step. Add a note for the agent (optional):</p>
               <Textarea
-                placeholder="e.g. The scope is too broad, focus only on Range Rover customers..."
+                placeholder="e.g. The scope is too broad, focus only on key packaging accounts..."
                 value={rejectNote}
                 onChange={(e) => setRejectNote(e.target.value)}
                 rows={2}
