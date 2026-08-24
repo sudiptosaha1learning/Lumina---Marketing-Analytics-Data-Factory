@@ -38,8 +38,8 @@ const navItems = [
   },
   {
     id: "retailers" as const,
-    label: "Retailer Intel",
-    sublabel: "Dealer Drill-Down",
+    label: "Plant & Account Intel",
+    sublabel: "Site & Key Account Drill-Down",
     icon: Store,
     alwaysEnabled: false,
   },
@@ -83,7 +83,7 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
           style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)" }}
         >
           <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className={`text-xs font-medium ${isDark ? "text-white/68" : "text-slate-600"}`}>JLR Global Analytics</span>
+          <span className={`text-xs font-medium ${isDark ? "text-white/68" : "text-slate-600"}`}>Vantage Packaging Global Analytics</span>
         </div>
       </div>
 
@@ -223,7 +223,7 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
           </div>
           <div className="min-w-0">
             <div className={`text-xs font-semibold truncate ${isDark ? "text-white/88" : "text-slate-800"}`}>John Doe</div>
-            <div className={`text-[10px] truncate font-medium ${isDark ? "text-white/52" : "text-slate-400"}`}>Group Product Owner</div>
+            <div className={`text-[10px] truncate font-medium ${isDark ? "text-white/52" : "text-slate-400"}`}>Global Data Product Owner</div>
           </div>
         </div>
       </div>

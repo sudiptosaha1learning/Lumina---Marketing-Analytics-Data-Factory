@@ -45,7 +45,7 @@ const PRIORITY_CONFIG = {
 export type BusinessObjective =
   | "Maximize Revenue"
   | "Protect Margin"
-  | "Accelerate EV Adoption"
+  | "Accelerate Sustainable Packaging Adoption"
   | "Improve Customer Retention"
   | "Reduce Incentive Spend";
 
@@ -79,12 +79,12 @@ const OBJECTIVES: ObjectiveDef[] = [
     affinity: ["lead-scoring", "cancellation", "service-retention"],
   },
   {
-    id: "Accelerate EV Adoption",
+    id: "Accelerate Sustainable Packaging Adoption",
     icon: Leaf,
     color: "#06b6d4",
     bg: "rgba(6,182,212,0.1)",
     border: "rgba(6,182,212,0.25)",
-    tagline: "Meet BEV transition targets",
+    tagline: "Meet recyclable-format transition targets",
     affinity: ["buyback", "renewal", "intelligent-lead"],
   },
   {
@@ -119,7 +119,7 @@ export interface SimParams {
   // Improve Customer Retention specific
   ownerEngagement: number;
   customerOffer: number;
-  // Accelerate EV Adoption specific
+  // Accelerate Sustainable Packaging Adoption specific
   portfolio: number;
 }
 
@@ -138,7 +138,7 @@ const DEFAULT_PARAMS: SimParams = {
 const OBJECTIVE_PRESETS: Record<BusinessObjective, Partial<SimParams>> = {
   "Maximize Revenue": { revenueWeight: 80, marginProtection: 30, incentiveAggression: 65, carModelMix: 40 },
   "Protect Margin": { marginProtection: 80, incentiveAggression: 20, revenueWeight: 55 },
-  "Accelerate EV Adoption": { evFocus: 85, lifecycleBias: 55, portfolio: 70 },
+  "Accelerate Sustainable Packaging Adoption": { evFocus: 85, lifecycleBias: 55, portfolio: 70 },
   "Improve Customer Retention": { lifecycleBias: 80, marginProtection: 60, incentiveAggression: 40, ownerEngagement: 70, customerOffer: 65 },
   "Reduce Incentive Spend": { incentiveAggression: 15, marginProtection: 75, revenueWeight: 45 },
 };
@@ -176,18 +176,18 @@ const SLIDERS: SliderDef[] = [
   },
   {
     key: "evFocus",
-    label: "EV Customer Focus",
-    leftLabel: "ICE Retention",
-    rightLabel: "EV Acceleration",
+    label: "Sustainable Format Focus",
+    leftLabel: "Legacy Format Retention",
+    rightLabel: "Mono-Material Acceleration",
     color: "#06b6d4",
-    relevantFor: ["Accelerate EV Adoption", "Maximize Revenue"],
+    relevantFor: ["Accelerate Sustainable Packaging Adoption", "Maximize Revenue"],
     icon: Leaf,
   },
   {
     key: "carModelMix",
-    label: "Vehicle Model Mix",
-    leftLabel: "Range Rover / Defender",
-    rightLabel: "Balanced Model Mix",
+    label: "Product Line Mix",
+    leftLabel: "Flexible / Rigid Formats",
+    rightLabel: "Balanced Product Mix",
     color: "#f97316",
     relevantFor: ["Maximize Revenue", "Protect Margin"],
     icon: BarChart2,
@@ -196,9 +196,9 @@ const SLIDERS: SliderDef[] = [
     key: "portfolio",
     label: "Portfolio",
     leftLabel: "Balanced Focus",
-    rightLabel: "Electrified",
+    rightLabel: "Recyclable-Content Weighted",
     color: "#06b6d4",
-    relevantFor: ["Accelerate EV Adoption"],
+    relevantFor: ["Accelerate Sustainable Packaging Adoption"],
     icon: BarChart2,
   },
   {
@@ -207,7 +207,7 @@ const SLIDERS: SliderDef[] = [
     leftLabel: "Acquisition",
     rightLabel: "Retention",
     color: "#f59e0b",
-    relevantFor: ["Improve Customer Retention", "Accelerate EV Adoption", "Protect Margin"],
+    relevantFor: ["Improve Customer Retention", "Accelerate Sustainable Packaging Adoption", "Protect Margin"],
     icon: Heart,
   },
   {
@@ -251,9 +251,9 @@ const MISSION_RULES: MissionRule[] = [
     missionId: "ev-equity-pivot",
     check: (p) => {
       if (p.evFocus < 40)
-        return `EV Customer Focus is too low (${p.evFocus}) — raise above 40 to make this mission viable`;
+        return `Sustainable Format Focus is too low (${p.evFocus}) — raise above 40 to make this mission viable`;
       if (p.incentiveAggression < 20 && p.marginProtection > 75)
-        return "Incentive strategy too conservative to drive equity-swap conversion at scale";
+        return "Incentive strategy too conservative to drive margin-swap conversion at scale";
       return null;
     },
   },
@@ -273,7 +273,7 @@ const MISSION_RULES: MissionRule[] = [
       if (p.marginProtection > 80 && p.incentiveAggression < 25)
         return "Margin protection constraints prevent performance incentive deployment needed for this mission";
       if (p.revenueWeight < 25 && obj === "Reduce Incentive Spend")
-        return "Revenue weight is too low to justify the high-value Defender OCTA upsell investment";
+        return "Revenue weight is too low to justify the high-value OCTA-grade line upsell investment";
       return null;
     },
   },
@@ -300,10 +300,10 @@ export interface SuggestedMission {
 const SUGGESTED_MISSIONS: SuggestedMission[] = [
   {
     id: "suggest-ice-conquest",
-    title: "ICE Conquest Campaign",
-    subtitle: "Target BMW X5 / Audi Q7 owners with trade-in advantage offers",
-    reason: "EV Focus is low — redirecting budget toward ICE conquest unlocks a larger addressable pool",
-    triggerLabel: "Low EV Focus",
+    title: "Legacy Format Conquest Campaign",
+    subtitle: "Target Sonoco / Berry Global incumbent accounts with margin-upside advantage offers",
+    reason: "Sustainable Format Focus is low — redirecting budget toward legacy-format conquest unlocks a larger addressable pool",
+    triggerLabel: "Low Sustainable Focus",
     triggerColor: "#f97316",
     projectedRevenue: "$2.1M",
     projectedCustomers: 28,
@@ -316,8 +316,8 @@ const SUGGESTED_MISSIONS: SuggestedMission[] = [
   {
     id: "suggest-margin-harvest",
     title: "Premium Margin Harvest",
-    subtitle: "Convert SV Autobiography customers to bespoke Commission programme — zero incentive required",
-    reason: "High margin protection + low incentive aggression creates an ideal environment for organic SV upsells",
+    subtitle: "Convert SV Autobiography-tier accounts to bespoke structure design programme — zero incentive required",
+    reason: "High margin protection + low incentive aggression creates an ideal environment for organic premium-tier upsells",
     triggerLabel: "High Margin Mode",
     triggerColor: "#3b82f6",
     projectedRevenue: "$1.8M",
@@ -331,7 +331,7 @@ const SUGGESTED_MISSIONS: SuggestedMission[] = [
   {
     id: "suggest-early-retention",
     title: "Early Lifecycle Retention Blitz",
-    subtitle: "Intercept 1-year renewal customers before competitor outreach with proactive service-led offers",
+    subtitle: "Intercept 1-year renewal accounts before competitor outreach with proactive service-led offers",
     reason: "Lifecycle target skewed strongly toward Retention — early intervention maximises LTV and prevents churn",
     triggerLabel: "Retention Focus",
     triggerColor: "#f59e0b",
@@ -346,8 +346,8 @@ const SUGGESTED_MISSIONS: SuggestedMission[] = [
   {
     id: "suggest-balanced-mix",
     title: "Full Portfolio Diversification Push",
-    subtitle: "Activate Defender, Discovery, Range Rover Sport & Velar cross-sell across multi-model households",
-    reason: "Balanced vehicle model mix setting signals readiness for a diversified portfolio activation",
+    subtitle: "Activate flexible, rigid, closure & specialty carton cross-sell across multi-line accounts",
+    reason: "Balanced product line mix setting signals readiness for a diversified portfolio activation",
     triggerLabel: "Balanced Mix",
     triggerColor: "#10b981",
     projectedRevenue: "$1.4M",
@@ -375,10 +375,10 @@ const SUGGESTED_MISSIONS: SuggestedMission[] = [
   },
   {
     id: "suggest-ev-fleet",
-    title: "Corporate EV Fleet Accelerator",
-    subtitle: "Target SME and enterprise fleet managers with Range Rover Electric priority allocation and fleet finance",
-    reason: "EV Focus is high — fleet channel multiplies volume impact of BEV transition targets",
-    triggerLabel: "High EV Focus",
+    title: "Enterprise Sustainability Accelerator",
+    subtitle: "Target enterprise CPG procurement leads with mono-material laminate priority allocation and transition financing",
+    reason: "Sustainable Format Focus is high — enterprise channel multiplies volume impact of recyclable-format transition targets",
+    triggerLabel: "High Sustainable Focus",
     triggerColor: "#06b6d4",
     projectedRevenue: "$3.2M",
     projectedCustomers: 41,
@@ -386,7 +386,7 @@ const SUGGESTED_MISSIONS: SuggestedMission[] = [
     sourceModels: ["buyback", "renewal", "intelligent-lead"],
     priority: "Critical",
     color: "#06b6d4",
-    condition: (p, obj) => p.evFocus > 75 && obj === "Accelerate EV Adoption",
+    condition: (p, obj) => p.evFocus > 75 && obj === "Accelerate Sustainable Packaging Adoption",
   },
 ];
 
