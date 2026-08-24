@@ -45,7 +45,7 @@ const PRIORITY_CONFIG = {
 export type BusinessObjective =
   | "Maximize Revenue"
   | "Protect Margin"
-  | "Accelerate EV Adoption"
+  | "Accelerate Sustainable Format Adoption"
   | "Improve Customer Retention"
   | "Reduce Incentive Spend";
 
@@ -79,12 +79,12 @@ const OBJECTIVES: ObjectiveDef[] = [
     affinity: ["lead-scoring", "cancellation", "service-retention"],
   },
   {
-    id: "Accelerate EV Adoption",
+    id: "Accelerate Sustainable Format Adoption",
     icon: Leaf,
     color: "#06b6d4",
     bg: "rgba(6,182,212,0.1)",
     border: "rgba(6,182,212,0.25)",
-    tagline: "Meet BEV transition targets",
+    tagline: "Meet recycled-content & PPWR targets",
     affinity: ["buyback", "renewal", "intelligent-lead"],
   },
   {
@@ -112,22 +112,22 @@ const OBJECTIVES: ObjectiveDef[] = [
 export interface SimParams {
   revenueWeight: number;
   marginProtection: number;
-  evFocus: number;
-  carModelMix: number;
+  sustainableFocus: number;
+  formatMix: number;
   lifecycleBias: number;
   incentiveAggression: number;
   // Improve Customer Retention specific
   ownerEngagement: number;
   customerOffer: number;
-  // Accelerate EV Adoption specific
+  // Accelerate Sustainable Format Adoption specific
   portfolio: number;
 }
 
 const DEFAULT_PARAMS: SimParams = {
   revenueWeight: 50,
   marginProtection: 50,
-  evFocus: 50,
-  carModelMix: 50,
+  sustainableFocus: 50,
+  formatMix: 50,
   lifecycleBias: 50,
   incentiveAggression: 50,
   ownerEngagement: 50,
@@ -136,9 +136,9 @@ const DEFAULT_PARAMS: SimParams = {
 };
 
 const OBJECTIVE_PRESETS: Record<BusinessObjective, Partial<SimParams>> = {
-  "Maximize Revenue": { revenueWeight: 80, marginProtection: 30, incentiveAggression: 65, carModelMix: 40 },
+  "Maximize Revenue": { revenueWeight: 80, marginProtection: 30, incentiveAggression: 65, formatMix: 40 },
   "Protect Margin": { marginProtection: 80, incentiveAggression: 20, revenueWeight: 55 },
-  "Accelerate EV Adoption": { evFocus: 85, lifecycleBias: 55, portfolio: 70 },
+  "Accelerate Sustainable Format Adoption": { sustainableFocus: 85, lifecycleBias: 55, portfolio: 70 },
   "Improve Customer Retention": { lifecycleBias: 80, marginProtection: 60, incentiveAggression: 40, ownerEngagement: 70, customerOffer: 65 },
   "Reduce Incentive Spend": { incentiveAggression: 15, marginProtection: 75, revenueWeight: 45 },
 };
@@ -175,19 +175,19 @@ const SLIDERS: SliderDef[] = [
     icon: Shield,
   },
   {
-    key: "evFocus",
-    label: "EV Customer Focus",
-    leftLabel: "ICE Retention",
-    rightLabel: "EV Acceleration",
+    key: "sustainableFocus",
+    label: "Sustainable Format Focus",
+    leftLabel: "Conventional Retention",
+    rightLabel: "Recycled-Content Acceleration",
     color: "#06b6d4",
-    relevantFor: ["Accelerate EV Adoption", "Maximize Revenue"],
+    relevantFor: ["Accelerate Sustainable Format Adoption", "Maximize Revenue"],
     icon: Leaf,
   },
   {
-    key: "carModelMix",
-    label: "Vehicle Model Mix",
-    leftLabel: "Range Rover / Defender",
-    rightLabel: "Balanced Model Mix",
+    key: "formatMix",
+    label: "Format Portfolio Mix",
+    leftLabel: "Core Rigid Formats",
+    rightLabel: "Balanced Format Mix",
     color: "#f97316",
     relevantFor: ["Maximize Revenue", "Protect Margin"],
     icon: BarChart2,
@@ -196,9 +196,9 @@ const SLIDERS: SliderDef[] = [
     key: "portfolio",
     label: "Portfolio",
     leftLabel: "Balanced Focus",
-    rightLabel: "Electrified",
+    rightLabel: "Recycled-Content Led",
     color: "#06b6d4",
-    relevantFor: ["Accelerate EV Adoption"],
+    relevantFor: ["Accelerate Sustainable Format Adoption"],
     icon: BarChart2,
   },
   {
@@ -207,7 +207,7 @@ const SLIDERS: SliderDef[] = [
     leftLabel: "Acquisition",
     rightLabel: "Retention",
     color: "#f59e0b",
-    relevantFor: ["Improve Customer Retention", "Accelerate EV Adoption", "Protect Margin"],
+    relevantFor: ["Improve Customer Retention", "Accelerate Sustainable Format Adoption", "Protect Margin"],
     icon: Heart,
   },
   {
@@ -221,7 +221,7 @@ const SLIDERS: SliderDef[] = [
   },
   {
     key: "ownerEngagement",
-    label: "Owners",
+    label: "Account Engagement",
     leftLabel: "Passive",
     rightLabel: "Engaged",
     color: "#f59e0b",
@@ -250,10 +250,10 @@ const MISSION_RULES: MissionRule[] = [
   {
     missionId: "ev-equity-pivot",
     check: (p) => {
-      if (p.evFocus < 40)
-        return `EV Customer Focus is too low (${p.evFocus}) — raise above 40 to make this mission viable`;
+      if (p.sustainableFocus < 40)
+        return `Sustainable Format Focus is too low (${p.sustainableFocus}) — raise above 40 to make this mission viable`;
       if (p.incentiveAggression < 20 && p.marginProtection > 75)
-        return "Incentive strategy too conservative to drive equity-swap conversion at scale";
+        return "Incentive strategy too conservative to drive format-upgrade conversion at scale";
       return null;
     },
   },
@@ -263,7 +263,7 @@ const MISSION_RULES: MissionRule[] = [
       if (p.lifecycleBias < 30 && obj !== "Improve Customer Retention")
         return `Lifecycle target is acquisition-focused (${p.lifecycleBias}) — shift toward Retention to activate this mission`;
       if (p.incentiveAggression < 15)
-        return "Incentive strategy too restricted to fund loyalty recovery programme";
+        return "Incentive strategy too restricted to fund account-recovery programme";
       return null;
     },
   },
@@ -271,9 +271,9 @@ const MISSION_RULES: MissionRule[] = [
     missionId: "defender-performance-drive",
     check: (p, obj) => {
       if (p.marginProtection > 80 && p.incentiveAggression < 25)
-        return "Margin protection constraints prevent performance incentive deployment needed for this mission";
+        return "Margin protection constraints prevent volume-rebate deployment needed for this mission";
       if (p.revenueWeight < 25 && obj === "Reduce Incentive Spend")
-        return "Revenue weight is too low to justify the high-value Defender OCTA upsell investment";
+        return "Revenue weight is too low to justify the high-value premium-format upsell investment";
       return null;
     },
   },
@@ -299,11 +299,11 @@ export interface SuggestedMission {
 
 const SUGGESTED_MISSIONS: SuggestedMission[] = [
   {
-    id: "suggest-ice-conquest",
-    title: "ICE Conquest Campaign",
-    subtitle: "Target BMW X5 / Audi Q7 owners with trade-in advantage offers",
-    reason: "EV Focus is low — redirecting budget toward ICE conquest unlocks a larger addressable pool",
-    triggerLabel: "Low EV Focus",
+    id: "suggest-conventional-conquest",
+    title: "Conventional-Format Conquest Campaign",
+    subtitle: "Target competitor-supplied rigid-format accounts with a total-cost-of-ownership displacement offer",
+    reason: "Sustainable Format Focus is low — redirecting budget toward conventional-format conquest unlocks a larger addressable pool",
+    triggerLabel: "Low Sustainable Focus",
     triggerColor: "#f97316",
     projectedRevenue: "$2.1M",
     projectedCustomers: 28,
@@ -311,13 +311,13 @@ const SUGGESTED_MISSIONS: SuggestedMission[] = [
     sourceModels: ["intelligent-lead", "lead-scoring", "buyback"],
     priority: "High",
     color: "#f97316",
-    condition: (p) => p.evFocus < 40,
+    condition: (p) => p.sustainableFocus < 40,
   },
   {
     id: "suggest-margin-harvest",
     title: "Premium Margin Harvest",
-    subtitle: "Convert SV Autobiography customers to bespoke Commission programme — zero incentive required",
-    reason: "High margin protection + low incentive aggression creates an ideal environment for organic SV upsells",
+    subtitle: "Convert top-tier strategic accounts to a bespoke high-barrier specification programme — zero incentive required",
+    reason: "High margin protection + low incentive aggression creates an ideal environment for organic premium-format upsells",
     triggerLabel: "High Margin Mode",
     triggerColor: "#3b82f6",
     projectedRevenue: "$1.8M",
@@ -331,7 +331,7 @@ const SUGGESTED_MISSIONS: SuggestedMission[] = [
   {
     id: "suggest-early-retention",
     title: "Early Lifecycle Retention Blitz",
-    subtitle: "Intercept 1-year renewal customers before competitor outreach with proactive service-led offers",
+    subtitle: "Intercept accounts entering their final renewal-window quarter before competitor outreach with proactive account-led offers",
     reason: "Lifecycle target skewed strongly toward Retention — early intervention maximises LTV and prevents churn",
     triggerLabel: "Retention Focus",
     triggerColor: "#f59e0b",
@@ -346,8 +346,8 @@ const SUGGESTED_MISSIONS: SuggestedMission[] = [
   {
     id: "suggest-balanced-mix",
     title: "Full Portfolio Diversification Push",
-    subtitle: "Activate Defender, Discovery, Range Rover Sport & Velar cross-sell across multi-model households",
-    reason: "Balanced vehicle model mix setting signals readiness for a diversified portfolio activation",
+    subtitle: "Activate rigid, flexible, fiber-based & specialty-barrier cross-sell across multi-format accounts",
+    reason: "Balanced format portfolio mix setting signals readiness for a diversified portfolio activation",
     triggerLabel: "Balanced Mix",
     triggerColor: "#10b981",
     projectedRevenue: "$1.4M",
@@ -356,13 +356,13 @@ const SUGGESTED_MISSIONS: SuggestedMission[] = [
     sourceModels: ["upselling", "intelligent-lead", "renewal"],
     priority: "Strategic",
     color: "#10b981",
-    condition: (p) => p.carModelMix > 65,
+    condition: (p) => p.formatMix > 65,
   },
   {
     id: "suggest-incentive-reset",
     title: "Incentive Rationalisation Programme",
-    subtitle: "Replace blanket discount offers with targeted value-add packages — accessories, EliteCare & events",
-    reason: "Incentive burn reduction objective detected — replace cash discounts with value-add to protect margin",
+    subtitle: "Replace blanket volume-rebate offers with targeted value-add packages — co-design support, technical services & priority allocation",
+    reason: "Incentive burn reduction objective detected — replace cash rebates with value-add to protect margin",
     triggerLabel: "Incentive Burn Reduction",
     triggerColor: "#8b5cf6",
     projectedRevenue: "$0.7M",
@@ -374,11 +374,11 @@ const SUGGESTED_MISSIONS: SuggestedMission[] = [
     condition: (p, obj) => p.incentiveAggression < 25 && obj === "Reduce Incentive Spend",
   },
   {
-    id: "suggest-ev-fleet",
-    title: "Corporate EV Fleet Accelerator",
-    subtitle: "Target SME and enterprise fleet managers with Range Rover Electric priority allocation and fleet finance",
-    reason: "EV Focus is high — fleet channel multiplies volume impact of BEV transition targets",
-    triggerLabel: "High EV Focus",
+    id: "suggest-sustainable-portfolio",
+    title: "Enterprise Sustainable Portfolio Accelerator",
+    subtitle: "Target multinational CPG accounts with published 2030 recyclability pledges via AmPrima® / AmFiber® priority allocation and multi-year capacity commitments",
+    reason: "Sustainable Format Focus is high — enterprise CPG accounts multiply volume impact of recycled-content adoption targets",
+    triggerLabel: "High Sustainable Focus",
     triggerColor: "#06b6d4",
     projectedRevenue: "$3.2M",
     projectedCustomers: 41,
@@ -386,7 +386,7 @@ const SUGGESTED_MISSIONS: SuggestedMission[] = [
     sourceModels: ["buyback", "renewal", "intelligent-lead"],
     priority: "Critical",
     color: "#06b6d4",
-    condition: (p, obj) => p.evFocus > 75 && obj === "Accelerate EV Adoption",
+    condition: (p, obj) => p.sustainableFocus > 75 && obj === "Accelerate Sustainable Format Adoption",
   },
 ];
 
@@ -437,9 +437,9 @@ function computeSimMultipliers(
     primaryObjective === "Improve Customer Retention"
       ? (p.ownerEngagement / 100) * 0.12 + (p.customerOffer / 100) * 0.08
       : 0;
-  // portfolio param boosts EV adoption customer multiplier in place of carModelMix
+      // portfolio param boosts sustainable-format adoption customer multiplier in place of formatMix
   const evPortfolioBoost =
-    primaryObjective === "Accelerate EV Adoption" ? (p.portfolio / 100) * 0.12 : 0;
+        primaryObjective === "Accelerate Sustainable Format Adoption" ? (p.portfolio / 100) * 0.12 : 0;
   const customerMultiplier =
     0.70 +
     ((100 - p.lifecycleBias) / 100) * 0.55 +
@@ -1388,7 +1388,7 @@ function MissionCard({
               }}
             >
               <Store className="w-3.5 h-3.5" />
-              Retailers
+              Accounts
             </button>
           </div>
         </div>

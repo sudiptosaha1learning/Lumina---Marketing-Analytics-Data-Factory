@@ -1240,14 +1240,14 @@ export interface RetailerData {
 export interface CustomerProfile {
   id: string;
   name: string;
-  currentVehicle: string;
-  currentVariant: string;
-  buybackEquity: string;
+  currentFormat: string;
+  currentSpec: string;
+  expansionValue: string;
   renewalScore: number;
   upsellScore: number;
   cancellationRisk: string;
   leadScore: number;
-  career: string;
+  role: string;
   location: string;
   tenure: string;
   lifetimeValue: string;
@@ -1255,7 +1255,7 @@ export interface CustomerProfile {
   recommendedAction: string;
   contactWindow: string;
   preferredChannel: string;
-}
+  }
 
 // ─── ACCOUNT PLAY DATA ─────────────────────────────────────────────────────────
 // "retailers" represent regional account hubs / account teams (or, where relevant,
@@ -1314,14 +1314,14 @@ export const missions: Mission[] = [
           {
             id: "northstar-beverage",
             name: "NorthStar Beverage Co.",
-            currentVehicle: "Rigid HDPE Bottles",
-            currentVariant: "1L & 2L retail lines, 2022 spec",
-            buybackEquity: "+$142,000 upgrade opportunity",
+            currentFormat: "Rigid HDPE Bottles",
+            currentSpec: "1L & 2L retail lines, 2022 spec",
+            expansionValue: "+$142,000 upgrade opportunity",
             renewalScore: 0.91,
             upsellScore: 0.88,
             cancellationRisk: "Low (0.08)",
             leadScore: 0.94,
-            career: "VP Procurement, Beverage Division",
+            role: "VP Procurement, Beverage Division",
             location: "Trenton, NJ",
             tenure: "7 years / $2.9M cumulative spend",
             lifetimeValue: "$4.1M",
@@ -1333,14 +1333,14 @@ export const missions: Mission[] = [
           {
             id: "cascade-foods",
             name: "Cascade Foods",
-            currentVehicle: "Flexible Laminate Pouches",
-            currentVariant: "Stand-up snack pouches, PE-based",
-            buybackEquity: "+$96,000 upgrade opportunity",
+            currentFormat: "Flexible Laminate Pouches",
+            currentSpec: "Stand-up snack pouches, PE-based",
+            expansionValue: "+$96,000 upgrade opportunity",
             renewalScore: 0.87,
             upsellScore: 0.92,
             cancellationRisk: "Very Low (0.04)",
             leadScore: 0.96,
-            career: "Director of Packaging Innovation",
+            role: "Director of Packaging Innovation",
             location: "Morristown, NJ",
             tenure: "5 years / $1.8M cumulative spend",
             lifetimeValue: "$2.6M",
@@ -1364,14 +1364,14 @@ export const missions: Mission[] = [
           {
             id: "lumen-personal-care",
             name: "Lumen Personal Care",
-            currentVehicle: "Rigid PET Bottles",
-            currentVariant: "Skincare dispensing line, 50–250ml",
-            buybackEquity: "+€61,000 upgrade opportunity",
+            currentFormat: "Rigid PET Bottles",
+            currentSpec: "Skincare dispensing line, 50–250ml",
+            expansionValue: "+€61,000 upgrade opportunity",
             renewalScore: 0.83,
             upsellScore: 0.89,
             cancellationRisk: "Low (0.11)",
             leadScore: 0.90,
-            career: "Head of Sustainable Sourcing",
+            role: "Head of Sustainable Sourcing",
             location: "Zug, Switzerland",
             tenure: "4 years / €1.4M cumulative spend",
             lifetimeValue: "€2.1M",
@@ -1395,14 +1395,14 @@ export const missions: Mission[] = [
           {
             id: "meridian-dairy",
             name: "Meridian Dairy Group",
-            currentVehicle: "Rigid HDPE Containers",
-            currentVariant: "500ml–1L dairy tubs",
-            buybackEquity: "+$54,000 upgrade opportunity",
+            currentFormat: "Rigid HDPE Containers",
+            currentSpec: "500ml–1L dairy tubs",
+            expansionValue: "+$54,000 upgrade opportunity",
             renewalScore: 0.79,
             upsellScore: 0.81,
             cancellationRisk: "Low (0.14)",
             leadScore: 0.85,
-            career: "Regional Supply Chain Director",
+            role: "Regional Supply Chain Director",
             location: "Singapore",
             tenure: "3 years / $780k cumulative spend",
             lifetimeValue: "$1.2M",
@@ -1464,14 +1464,14 @@ export const missions: Mission[] = [
           {
             id: "aurora-snacks",
             name: "Aurora Snacks Co.",
-            currentVehicle: "Flexible Laminate Pouches",
-            currentVariant: "Multi-serve snack pouches (On Order)",
-            buybackEquity: "N/A (on order)",
+            currentFormat: "Flexible Laminate Pouches",
+            currentSpec: "Multi-serve snack pouches (On Order)",
+            expansionValue: "N/A (on order)",
             renewalScore: 0.61,
             upsellScore: 0.72,
             cancellationRisk: "High (0.76)",
             leadScore: 0.82,
-            career: "VP Supply Chain",
+            role: "VP Supply Chain",
             location: "Lincoln Park, Chicago",
             tenure: "3 years / $890k cumulative spend",
             lifetimeValue: "$1.3M",
@@ -1495,14 +1495,14 @@ export const missions: Mission[] = [
           {
             id: "vantage-home-care",
             name: "Vantage Home Care",
-            currentVehicle: "Rigid PET Bottles",
-            currentVariant: "Household refill line, 2020 spec",
-            buybackEquity: "+£31,000 opportunity",
+            currentFormat: "Rigid PET Bottles",
+            currentSpec: "Household refill line, 2020 spec",
+            expansionValue: "+£31,000 opportunity",
             renewalScore: 0.58,
             upsellScore: 0.79,
             cancellationRisk: "Medium (0.54)",
             leadScore: 0.78,
-            career: "Head of Procurement",
+            role: "Head of Procurement",
             location: "Knightsbridge, London",
             tenure: "6 years / £2.2M cumulative spend",
             lifetimeValue: "£3.4M",
@@ -1526,14 +1526,14 @@ export const missions: Mission[] = [
           {
             id: "terra-pet-nutrition",
             name: "Terra Pet Nutrition",
-            currentVehicle: "Flexible Laminate Pouches",
-            currentVariant: "Pet food stand-up pouches",
-            buybackEquity: "N/A",
+            currentFormat: "Flexible Laminate Pouches",
+            currentSpec: "Pet food stand-up pouches",
+            expansionValue: "N/A",
             renewalScore: 0.64,
             upsellScore: 0.70,
             cancellationRisk: "Medium (0.58)",
             leadScore: 0.75,
-            career: "Purchasing Manager",
+            role: "Purchasing Manager",
             location: "São Paulo",
             tenure: "2 years / $410k cumulative spend",
             lifetimeValue: "$620k",
@@ -1595,14 +1595,14 @@ export const missions: Mission[] = [
           {
             id: "bluewave-beverages",
             name: "Bluewave Beverages",
-            currentVehicle: "Standard Flexible Pouches",
-            currentVariant: "Retort pouches, standard barrier, 2022 spec",
-            buybackEquity: "+$68,000 opportunity",
+            currentFormat: "Standard Flexible Pouches",
+            currentSpec: "Retort pouches, standard barrier, 2022 spec",
+            expansionValue: "+$68,000 opportunity",
             renewalScore: 0.84,
             upsellScore: 0.94,
             cancellationRisk: "Very Low (0.06)",
             leadScore: 0.93,
-            career: "Chief Supply Chain Officer",
+            role: "Chief Supply Chain Officer",
             location: "Highland Park, Dallas",
             tenure: "5 years / $2.1M cumulative spend",
             lifetimeValue: "$3.4M",
@@ -1626,14 +1626,14 @@ export const missions: Mission[] = [
           {
             id: "solace-health-sciences",
             name: "Solace Health Sciences",
-            currentVehicle: "Standard Rigid Blister Packs",
-            currentVariant: "Pharma unit-dose blister, standard barrier",
-            buybackEquity: "+€52,000 opportunity",
+            currentFormat: "Standard Rigid Blister Packs",
+            currentSpec: "Pharma unit-dose blister, standard barrier",
+            expansionValue: "+€52,000 opportunity",
             renewalScore: 0.86,
             upsellScore: 0.91,
             cancellationRisk: "Very Low (0.05)",
             leadScore: 0.89,
-            career: "Director of Packaging Engineering",
+            role: "Director of Packaging Engineering",
             location: "Munich",
             tenure: "8 years / €3.6M cumulative spend",
             lifetimeValue: "€5.8M",
@@ -1657,14 +1657,14 @@ export const missions: Mission[] = [
           {
             id: "highfield-pharma",
             name: "Highfield Pharma",
-            currentVehicle: "Standard Flexible Sachets",
-            currentVariant: "Single-dose sachets, standard barrier",
-            buybackEquity: "+$41,000 opportunity",
+            currentFormat: "Standard Flexible Sachets",
+            currentSpec: "Single-dose sachets, standard barrier",
+            expansionValue: "+$41,000 opportunity",
             renewalScore: 0.80,
             upsellScore: 0.86,
             cancellationRisk: "Low (0.12)",
             leadScore: 0.84,
-            career: "Regional Head of Procurement",
+            role: "Regional Head of Procurement",
             location: "Singapore",
             tenure: "4 years / $920k cumulative spend",
             lifetimeValue: "$1.5M",
