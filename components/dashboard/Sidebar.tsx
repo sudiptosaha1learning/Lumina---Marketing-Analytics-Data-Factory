@@ -31,15 +31,15 @@ const navItems = [
   },
   {
     id: "missions" as const,
-    label: "Mission Command",
-    sublabel: "Strategic Missions",
+    label: "Account Campaign Command",
+    sublabel: "Strategic ABM Plays",
     icon: Target,
     alwaysEnabled: false,
   },
   {
     id: "retailers" as const,
-    label: "Retailer Intel",
-    sublabel: "Dealer Drill-Down",
+    label: "Key Account Intel",
+    sublabel: "Account Drill-Down",
     icon: Store,
     alwaysEnabled: false,
   },
@@ -83,7 +83,7 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
           style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)" }}
         >
           <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className={`text-xs font-medium ${isDark ? "text-white/68" : "text-slate-600"}`}>JLR Global Analytics</span>
+          <span className={`text-xs font-medium ${isDark ? "text-white/68" : "text-slate-600"}`}>Amcor Global Analytics</span>
         </div>
       </div>
 
@@ -219,11 +219,11 @@ export function Sidebar({ activeView, onNavigate, synthesisComplete }: SidebarPr
           }}
         >
           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-[10px] font-bold">AG</span>
+            <span className="text-white text-[10px] font-bold">JA</span>
           </div>
           <div className="min-w-0">
-            <div className={`text-xs font-semibold truncate ${isDark ? "text-white/88" : "text-slate-800"}`}>John Doe</div>
-            <div className={`text-[10px] truncate font-medium ${isDark ? "text-white/52" : "text-slate-400"}`}>Group Product Owner</div>
+            <div className={`text-xs font-semibold truncate ${isDark ? "text-white/88" : "text-slate-800"}`}>J. Alvarez</div>
+            <div className={`text-[10px] truncate font-medium ${isDark ? "text-white/52" : "text-slate-400"}`}>Global Commercial Analytics Lead</div>
           </div>
         </div>
       </div>

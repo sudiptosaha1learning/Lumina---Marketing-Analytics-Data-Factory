@@ -13,13 +13,13 @@ interface TopbarProps {
   activeView: "mosaic" | "missions" | "retailers" | "dataproducts";
 }
 
-const regions: Region[] = ["Global", "North America", "Europe", "UK"];
+const regions: Region[] = ["Global", "North America", "Europe", "Asia Pacific", "Latin America"];
 const timeframes: Timeframe[] = ["Q1 2026", "Q2 2026", "Q3 2026", "Q4 2026", "FY 2026"];
 
 const viewTitles: Record<string, { title: string; subtitle: string }> = {
   mosaic: { title: "Model Intelligence Mosaic", subtitle: "8 models · Live data feed" },
-  missions: { title: "Mission Command Centre", subtitle: "3 strategic missions synthesised" },
-  retailers: { title: "Retailer & Customer Drill-Down", subtitle: "Final mile intelligence" },
+  missions: { title: "Account Campaign Command Centre", subtitle: "3 strategic ABM plays synthesised" },
+  retailers: { title: "Key Account Intel", subtitle: "Account drill-down intelligence" },
   dataproducts: { title: "Agentic AI Data Product Factory", subtitle: "Governed workflow platform" },
 };
 
@@ -114,7 +114,7 @@ export function Topbar({ region, timeframe, onRegionChange, onTimeframeChange, a
               )}
               style={region === r ? activeTabStyle : {}}
             >
-              {r === "North America" ? "N. America" : r}
+              {r === "North America" ? "N. America" : r === "Asia Pacific" ? "APAC" : r === "Latin America" ? "LATAM" : r}
             </button>
           ))}
         </div>
