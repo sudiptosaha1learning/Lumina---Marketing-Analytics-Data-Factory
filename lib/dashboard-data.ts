@@ -6,14 +6,18 @@ export type Timeframe = "Q1 2026" | "Q2 2026" | "Q3 2026" | "Q4 2026" | "FY 2026
 
 // ─── Dynamic date helpers ─────────────────────────────────────────────────────
 
-export function formatUtcDate(offsetHours = 0): string {
-  const d = new Date(Date.now() + offsetHours * 3600 * 1000);
+// `now` must be passed in explicitly (rather than read internally via Date.now())
+// so callers can pin it to a single client-computed timestamp. This avoids
+// SSR/client hydration mismatches, since the server and client would otherwise
+// render this text at two different real-world instants.
+export function formatUtcDate(offsetHours = 0, now: number = Date.now()): string {
+  const d = new Date(now + offsetHours * 3600 * 1000);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`;
 }
 
-export function formatUtcDatePlus(days: number, hour: number): string {
-  const d = new Date();
+export function formatUtcDatePlus(days: number, hour: number, now: number = Date.now()): string {
+  const d = new Date(now);
   d.setUTCDate(d.getUTCDate() + days);
   d.setUTCHours(hour, 0, 0, 0);
   const pad = (n: number) => String(n).padStart(2, "0");

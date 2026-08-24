@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Users, TrendingUp, RefreshCw, AlertTriangle, Wrench,
   ArrowUpRight, DollarSign, X, Database, Clock, CheckCircle,
@@ -25,6 +25,16 @@ interface ModelMosaicProps {
 export function ModelMosaic({ models, region, highlightedModels = [] }: ModelMosaicProps) {
   const [selectedModel, setSelectedModel] = useState<ModelCardData | null>(null);
 
+  // Computed only after mount so the "last run" / "next run" timestamps are
+  // never rendered from a server-side Date.now() value, which would differ
+  // from the client's Date.now() and cause a hydration mismatch. `now` stays
+  // null through SSR and the initial client render (both render the same
+  // placeholder), then gets set once on mount.
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    setNow(Date.now());
+  }, []);
+
   return (
     <div className="relative">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="model-mosaic-grid">
@@ -36,6 +46,7 @@ export function ModelMosaic({ models, region, highlightedModels = [] }: ModelMos
             isHighlighted={highlightedModels.includes(model.id)}
             isSelected={selectedModel?.id === model.id}
             onClick={() => setSelectedModel(selectedModel?.id === model.id ? null : model)}
+            now={now}
           />
         ))}
       </div>
@@ -45,6 +56,7 @@ export function ModelMosaic({ models, region, highlightedModels = [] }: ModelMos
           model={selectedModel}
           region={region}
           onClose={() => setSelectedModel(null)}
+          now={now}
         />
       )}
     </div>
@@ -59,9 +71,10 @@ interface ModelCardProps {
   isHighlighted: boolean;
   isSelected: boolean;
   onClick: () => void;
+  now: number | null;
 }
 
-function ModelCard({ model, region, isHighlighted, isSelected, onClick }: ModelCardProps) {
+function ModelCard({ model, region, isHighlighted, isSelected, onClick, now }: ModelCardProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const Icon = iconMap[model.icon] || Activity;
@@ -191,7 +204,9 @@ function ModelCard({ model, region, isHighlighted, isSelected, onClick }: ModelC
       {/* Version */}
       <div className="mt-2 flex items-center gap-1 text-[9px]" style={{ color: textMuted }}>
         <Clock className="w-2.5 h-2.5" />
-                <span className="truncate">Last run: {formatUtcDate(model.lastRunOffsetHours).replace(" UTC", "")}</span>
+        <span className="truncate">
+          Last run: {now === null ? "—" : formatUtcDate(model.lastRunOffsetHours, now).replace(" UTC", "")}
+        </span>
       </div>
     </button>
   );
@@ -203,9 +218,10 @@ interface ModelDrawerProps {
   model: ModelCardData;
   region: Region;
   onClose: () => void;
+  now: number | null;
 }
 
-function ModelDrawer({ model, region, onClose }: ModelDrawerProps) {
+function ModelDrawer({ model, region, onClose, now }: ModelDrawerProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [drawerTab, setDrawerTab] = useState<"overview" | "pedigree" | "distribution">("overview");
@@ -490,7 +506,7 @@ function ModelDrawer({ model, region, onClose }: ModelDrawerProps) {
                   { label: "Output Type", value: model.pedigree.outputType, icon: Activity },
                   { label: "Training Data", value: model.pedigree.trainingDataSize, icon: Database },
                   { label: "Refresh Cadence", value: model.pedigree.refreshCadence, icon: RefreshCw },
-                  { label: "Next Scheduled Run", value: formatUtcDatePlus(model.pedigree.nextRunOffsetHours > 0 ? 1 : 0, 6), icon: Clock },
+                  { label: "Next Scheduled Run", value: now === null ? "—" : formatUtcDatePlus(model.pedigree.nextRunOffsetHours > 0 ? 1 : 0, 6, now), icon: Clock },
                   { label: "SLA Compliance", value: model.pedigree.slaCompliance, icon: Shield },
                 ].map((item) => (
                   <div key={item.label} className="flex items-start gap-3 p-3 rounded-xl"
