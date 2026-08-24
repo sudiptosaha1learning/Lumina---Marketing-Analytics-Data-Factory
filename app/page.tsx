@@ -34,6 +34,9 @@ function DashboardInner() {
       carModelMix: 50,
       lifecycleBias: 50,
       incentiveAggression: 50,
+      ownerEngagement: 50,
+      customerOffer: 50,
+      portfolio: 50,
     },
     simActive: false,
   });

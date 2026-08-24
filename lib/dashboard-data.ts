@@ -1521,7 +1521,7 @@ export const missions: Mission[] = [
         ],
       },
       {
-        id: "beverly-hills-jlr",
+        id: "beverly-hills-vpk",
         name: "Vantage Flexibles — Beverly Hills Plant",
         location: "Beverly Hills, CA 90210",
         region: "North America",
@@ -1590,7 +1590,7 @@ export const missions: Mission[] = [
         ],
       },
       {
-        id: "knightsbridge-jlr",
+        id: "knightsbridge-vpk",
         name: "Vantage Rigid Containers — South East UK Plant",
         location: "London, SW1X 7LY",
         region: "UK",
@@ -1659,7 +1659,7 @@ export const missions: Mission[] = [
         ],
       },
       {
-        id: "edinburgh-jlr",
+        id: "edinburgh-vpk",
         name: "Vantage Flexibles — Edinburgh Plant",
         location: "Edinburgh, EH3 9SR",
         region: "UK",
@@ -1709,7 +1709,7 @@ export const missions: Mission[] = [
         ],
       },
       {
-        id: "amsterdam-jlr",
+        id: "amsterdam-vpk",
         name: "Vantage Barrier Films — Amsterdam Plant",
         location: "Amsterdam, 1017 Netherlands",
         region: "Europe",
@@ -1778,7 +1778,7 @@ export const missions: Mission[] = [
         ],
       },
       {
-        id: "hamburg-jlr",
+        id: "hamburg-vpk",
         name: "Vantage Barrier Films — Hamburg Plant",
         location: "Hamburg, 20354 Germany",
         region: "Europe",
@@ -1847,7 +1847,7 @@ export const missions: Mission[] = [
         ],
       },
       {
-        id: "paris-jlr",
+        id: "paris-vpk",
         name: "Vantage Specialty Cartons — Paris Plant",
         location: "Paris, 75008 France",
         region: "Europe",
@@ -2036,7 +2036,7 @@ export const missions: Mission[] = [
         ],
       },
       {
-        id: "birmingham-jlr",
+        id: "birmingham-vpk",
         name: "Vantage Rigid Containers — Birmingham Plant",
         location: "Birmingham, B92 8NW",
         region: "UK",
@@ -2175,7 +2175,7 @@ export const missions: Mission[] = [
         ],
       },
       {
-        id: "munich-jlr",
+        id: "munich-vpk",
         name: "Vantage Barrier Films — Munich Plant",
         location: "Munich, Bavaria 80331",
         region: "Europe",
@@ -2225,7 +2225,7 @@ export const missions: Mission[] = [
         ],
       },
       {
-        id: "manchester-jlr",
+        id: "manchester-vpk",
         name: "Vantage Specialty Cartons — Manchester Plant",
         location: "Manchester, M3 4LQ",
         region: "UK",
